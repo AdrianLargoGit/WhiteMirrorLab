@@ -1,0 +1,76 @@
+{
+  "title": "Test de Percepción Social",
+  "description": "Responde con sinceridad. No hay respuestas correctas ni incorrectas.",
+  "questions": [
+    {
+      "id": "q1",
+      "text": "¿Te importa lo que piensen de ti personas que no conoces?",
+      "options": [
+        { "text": "Mucho", "score": 3 },
+        { "text": "Algo", "score": 2 },
+        { "text": "Poco", "score": 1 },
+        { "text": "Nada", "score": 0 }
+      ]
+    },
+    {
+      "id": "q2",
+      "text": "Si pudieras votar anónimamente sobre alguien, ¿lo harías?",
+      "options": [
+        { "text": "Sí, sin dudarlo", "score": 3 },
+        { "text": "Depende de la persona", "score": 2 },
+        { "text": "Probablemente no", "score": 1 },
+        { "text": "Nunca", "score": 0 }
+      ]
+    },
+    {
+      "id": "q3",
+      "text": "¿Crees que una puntuación pública cambia cómo actúa la gente?",
+      "options": [
+        { "text": "Totalmente", "score": 3 },
+        { "text": "En parte", "score": 2 },
+        { "text": "Muy poco", "score": 1 },
+        { "text": "Para nada", "score": 0 }
+      ]
+    },
+    {
+      "id": "q4",
+      "text": "¿Prefieres dar feedback positivo o negativo?",
+      "options": [
+        { "text": "Siempre positivo", "score": 0 },
+        { "text": "Mayormente positivo", "score": 1 },
+        { "text": "Equilibrado", "score": 2 },
+        { "text": "No tengo preferencia / negativo", "score": 3 }
+      ]
+    },
+    {
+      "id": "q5",
+      "text": "¿Participarías en un experimento social aunque pudieras perder reputación?",
+      "options": [
+        { "text": "Sí, me intriga", "score": 3 },
+        { "text": "Con condiciones", "score": 2 },
+        { "text": "Dudaría mucho", "score": 1 },
+        { "text": "No participaría", "score": 0 }
+      ]
+    }
+  ],
+  "results": [
+    {
+      "min": 0,
+      "max": 5,
+      "title": "Observador pasivo",
+      "description": "Tiendes a mantenerte al margen del juicio social. Probablemente observes el experimento más de lo que participas activamente."
+    },
+    {
+      "min": 6,
+      "max": 10,
+      "title": "Participante cauteloso",
+      "description": "Te interesa la dinámica social pero actúas con mesura. Tu comportamiento en WML 1.0 podría ser más reflexivo que impulsivo."
+    },
+    {
+      "min": 11,
+      "max": 15,
+      "title": "Agente social activo",
+      "description": "La opinión ajena y la reputación te importan. Eres un candidato a participar intensamente en el karma score — para bien o para mal."
+    }
+  ]
+}

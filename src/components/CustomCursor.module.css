@@ -1,0 +1,40 @@
+/* Only applied on fine-pointer (mouse) devices */
+@media (pointer: fine) {
+  .cursor {
+    width: 10px;
+    height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: difference;
+    transform: translate(-50%, -50%);
+  }
+
+  .cursorRing {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    opacity: 0.5;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s, opacity 0.3s;
+  }
+
+  .cursorRing.active {
+    width: 56px;
+    height: 56px;
+    opacity: 1;
+  }
+}
+
+@media (pointer: coarse) {
+  .cursor,
+  .cursorRing {
+    display: none;
+  }
+}

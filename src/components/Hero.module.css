@@ -1,0 +1,173 @@
+/* ── HERO ── */
+.hero {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(100px, 15vh, 140px) var(--px) clamp(60px, 10vh, 100px);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Grid background */
+.heroBgGrid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 60px 60px;
+  -webkit-mask-image: radial-gradient(
+    ellipse 80% 60% at 50% 50%,
+    black 30%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 80% 60% at 50% 50%,
+    black 30%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* Scan line */
+.heroScanLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: scan 6s linear infinite;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* ── Elements start invisible; JS adds animate* classes to trigger fadeUp ── */
+/* This pattern avoids the SSR "text invisible" bug where CSS animations fire
+   before React hydrates, leaving opacity:0 stuck because fill-mode already
+   consumed the animation. */
+
+.heroTag,
+.heroTitle,
+.heroDesc,
+.heroActions,
+.heroStats {
+  /* visible by default — animation classes override when mounted */
+  opacity: 1;
+}
+
+/* animate classes — added client-side after mount */
+.animate1 { animation: fadeUp 0.8s 0.2s both; }
+.animate2 { animation: fadeUp 0.8s 0.4s both; }
+.animate3 { animation: fadeUp 0.8s 0.6s both; }
+.animate4 { animation: fadeUp 0.8s 0.8s both; }
+.animate5 { animation: fadeUp 0.8s 1.0s both; }
+
+/* Tag */
+.heroTag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.heroTag::before {
+  content: '';
+  width: 32px;
+  height: 1px;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+/* Title */
+.heroTitle {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(44px, 9vw, 120px);
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  margin-bottom: 32px;
+}
+.heroTitle span {
+  display: block;
+}
+.outline {
+  -webkit-text-stroke: 1px var(--white);
+  color: transparent;
+}
+.accentWord {
+  color: var(--accent);
+}
+
+/* Description */
+.heroDesc {
+  max-width: 520px;
+  font-size: clamp(14px, 2vw, 16px);
+  line-height: 1.8;
+  color: rgba(245, 242, 238, 0.55);
+  margin-bottom: 44px;
+}
+
+/* Actions */
+.heroActions {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 4vw, 32px);
+  flex-wrap: wrap;
+}
+
+/* Stats */
+.heroStats {
+  display: flex;
+  gap: clamp(24px, 5vw, 48px);
+  margin-top: 60px;
+  flex-wrap: wrap;
+}
+
+.heroStatItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.heroStatNum {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(24px, 4vw, 36px);
+  letter-spacing: -0.03em;
+  color: var(--accent);
+  display: block;
+  line-height: 1;
+}
+
+.heroStatLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 4px;
+  display: block;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 400px) {
+  .heroTitle {
+    font-size: 38px;
+  }
+  .heroActions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+}
+
+/* Safe area for notched phones */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .hero {
+    padding-top: calc(clamp(100px, 15vh, 140px) + env(safe-area-inset-top));
+  }
+}
