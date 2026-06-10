@@ -4,6 +4,8 @@ import { useState } from 'react'
 import type { Photo } from '@/lib/types'
 import { uploadPhoto } from '@/lib/upload'
 import { captureEvent } from '@/lib/analytics'
+import { useLocale } from '@/hooks/useLocale'
+import { wmlCopy } from '@/lib/copy'
 
 interface PhotoGridProps {
   photos: Photo[]
@@ -13,6 +15,8 @@ interface PhotoGridProps {
 }
 
 export function PhotoGrid({ photos, userId, editable, onPhotoAdded }: PhotoGridProps) {
+  const locale = useLocale()
+  const t = wmlCopy[locale]
   const [uploading, setUploading] = useState(false)
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,10 +25,10 @@ export function PhotoGrid({ photos, userId, editable, onPhotoAdded }: PhotoGridP
     setUploading(true)
     try {
       await uploadPhoto(userId, file)
-      captureEvent('photo_uploaded')
+      captureEvent('photo_uploaded', { locale })
       onPhotoAdded?.()
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Error al subir foto')
+      alert(err instanceof Error ? err.message : t.uploadPhotoError)
     } finally {
       setUploading(false)
       e.target.value = ''
@@ -34,7 +38,7 @@ export function PhotoGrid({ photos, userId, editable, onPhotoAdded }: PhotoGridP
   return (
     <div>
       <div className="wml-section-title">
-        Fotos · máx. 5 {editable && '(la más antigua se borra al subir una nueva)'}
+        {t.photosTitle} {editable && t.photosReplaceHint}
       </div>
       <div className="wml-photos">
         {photos.map((photo) => (
@@ -44,13 +48,13 @@ export function PhotoGrid({ photos, userId, editable, onPhotoAdded }: PhotoGridP
         ))}
         {editable && photos.length < 5 && (
           <label className="wml-photo wml-upload-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--w-muted)' }}>
-            {uploading ? '…' : '+'}
+            {uploading ? '...' : '+'}
             <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} />
           </label>
         )}
         {editable && photos.length >= 5 && (
-          <label className="wml-photo wml-upload-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--w-muted)', fontSize: 11, textAlign: 'center', padding: 4 }}>
-            {uploading ? '…' : 'Nueva\n(reemplaza)'}
+          <label className="wml-photo wml-upload-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--w-muted)', fontSize: 11, textAlign: 'center', padding: 4, whiteSpace: 'pre-line' }}>
+            {uploading ? '...' : t.newPhoto}
             <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} />
           </label>
         )}

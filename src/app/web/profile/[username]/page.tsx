@@ -9,6 +9,9 @@ import { VoteWidget } from '@/components/wml/VoteWidget'
 import { ShareProfile } from '@/components/wml/ShareProfile'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { getMyVote } from '@/lib/votes'
+import { useLocale } from '@/hooks/useLocale'
+import { wmlCopy } from '@/lib/copy'
+import { publicProfilePath } from '@/lib/i18n'
 
 export default function ProfilePage({
   params,
@@ -16,6 +19,8 @@ export default function ProfilePage({
   params: Promise<{ username: string }>
 }) {
   const { username } = use(params)
+  const locale = useLocale()
+  const t = wmlCopy[locale]
   const { userId, loading: userLoading } = useCurrentUser()
   const [profile, setProfile] = useState<PublicProfile | null>(null)
   const [photos, setPhotos] = useState<Photo[]>([])
@@ -55,15 +60,18 @@ export default function ProfilePage({
   }, [username, userId])
 
   useEffect(() => {
-    loadProfile()
+    const id = window.setTimeout(() => {
+      void loadProfile()
+    }, 0)
+    return () => window.clearTimeout(id)
   }, [loadProfile])
 
   if (loading || userLoading) {
-    return <div className="wml-empty">Cargando perfil…</div>
+    return <div className="wml-empty">{t.loadingProfile}</div>
   }
 
   if (notFound || !profile) {
-    return <div className="wml-empty">Usuario no encontrado.</div>
+    return <div className="wml-empty">{t.profileNotFound}</div>
   }
 
   const isOwn = userId === profile.id
@@ -83,8 +91,8 @@ export default function ProfilePage({
           <h1 className="wml-profile-hero-name">{profile.display_name}</h1>
           <p className="wml-profile-hero-user">@{profile.username}</p>
           {isOwn && (
-            <Link href={`/p/${profile.username}`} className="wml-profile-public-link">
-              Ver página pública →
+            <Link href={publicProfilePath(locale, profile.username)} className="wml-profile-public-link">
+              {t.publicProfileLink}
             </Link>
           )}
         </div>

@@ -60,8 +60,9 @@
 /* ── DESKTOP LINKS ── */
 .desktopLinks {
   display: flex;
-  gap: 32px;
+  gap: clamp(14px, 2vw, 28px);
   list-style: none;
+  align-items: center;
 }
 
 .navLink {
@@ -212,5 +213,14 @@
   }
   .navScrolled {
     padding-top: calc(14px + env(safe-area-inset-top));
+  }
+}
+
+@media (max-width: 1120px) {
+  .desktopLinks {
+    display: none;
+  }
+  .hamburger {
+    display: flex;
   }
 }

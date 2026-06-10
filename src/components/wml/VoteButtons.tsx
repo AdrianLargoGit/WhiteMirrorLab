@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { castVote } from '@/lib/votes'
+import { useLocale } from '@/hooks/useLocale'
+import { wmlCopy } from '@/lib/copy'
 
 interface VoteButtonsProps {
   voterId: string
@@ -11,6 +13,8 @@ interface VoteButtonsProps {
 }
 
 export function VoteButtons({ voterId, targetId, initialVote, onVoted }: VoteButtonsProps) {
+  const locale = useLocale()
+  const t = wmlCopy[locale]
   const [myVote, setMyVote] = useState<boolean | null>(initialVote)
   const [loading, setLoading] = useState(false)
 
@@ -20,11 +24,7 @@ export function VoteButtons({ voterId, targetId, initialVote, onVoted }: VoteBut
     const result = await castVote(voterId, targetId, isPositive)
     setLoading(false)
     if (result.success) {
-      if (myVote === isPositive) {
-        setMyVote(null)
-      } else {
-        setMyVote(isPositive)
-      }
+      setMyVote(myVote === isPositive ? null : isPositive)
       onVoted?.()
     }
   }
@@ -39,7 +39,7 @@ export function VoteButtons({ voterId, targetId, initialVote, onVoted }: VoteBut
         onClick={() => handleVote(true)}
         disabled={loading}
       >
-        <span className="wml-vote-btn-icon">+</span> Positivo
+        <span className="wml-vote-btn-icon">+</span> {t.positive}
       </button>
       <button
         type="button"
@@ -47,7 +47,7 @@ export function VoteButtons({ voterId, targetId, initialVote, onVoted }: VoteBut
         onClick={() => handleVote(false)}
         disabled={loading}
       >
-        <span className="wml-vote-btn-icon">−</span> Negativo
+        <span className="wml-vote-btn-icon">-</span> {t.negative}
       </button>
     </div>
   )

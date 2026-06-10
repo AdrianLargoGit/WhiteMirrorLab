@@ -1,15 +1,20 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { captureEvent } from '@/lib/analytics'
 import { mapAuthError } from '@/lib/auth-errors'
+import { wmlCopy } from '@/lib/copy'
+import { useLocale } from '@/hooks/useLocale'
+import { wmlPath } from '@/lib/i18n'
 
 function AuthForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const next = searchParams.get('next')
+  const locale = useLocale()
+  const t = wmlCopy[locale]
   const [mode, setMode] = useState<'login' | 'signup'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -20,34 +25,38 @@ function AuthForm() {
   const [success, setSuccess] = useState('')
 
   const redirectAfterLogin = () => {
-    const dest = next && next.startsWith('/') ? next : '/web/feed'
+    const dest = next && next.startsWith('/') ? next : wmlPath(locale, '/feed')
     router.replace(dest)
   }
 
+  const resetMessages = () => {
+    setError('')
+    setSuccess('')
+  }
+
   const handleSubmit = async () => {
-    setError(''); setSuccess(''); setLoading(true)
+    resetMessages()
+    setLoading(true)
     try {
       if (mode === 'login') {
         const { error: loginErr } = await supabase.auth.signInWithPassword({ email, password })
         if (loginErr) throw loginErr
-        captureEvent('auth_login')
+        captureEvent('auth_login', { locale })
         redirectAfterLogin()
       } else {
         if (!username.match(/^[a-z0-9_]{3,20}$/)) {
-          throw new Error('Username: 3-20 caracteres, solo minúsculas, números y _')
+          throw new Error(t.usernameRule)
         }
         const { data: available } = await supabase
           .rpc('check_username_available', { p_username: username })
-        if (available === false) throw new Error('Ese username ya está en uso')
+        if (available === false) throw new Error(t.usernameTaken)
 
         const { data, error: signUpErr } = await supabase.auth.signUp({ email, password })
         if (signUpErr) throw signUpErr
 
         if (!data.session) {
-          captureEvent('auth_signup_pending_confirm', { username })
-          setSuccess(
-            'Cuenta creada. Confirma tu email desde el enlace que te hemos enviado y luego inicia sesión.'
-          )
+          captureEvent('auth_signup_pending_confirm', { username, locale })
+          setSuccess(t.confirmEmail)
           setMode('login')
           return
         }
@@ -65,12 +74,12 @@ function AuthForm() {
             is_bot: false,
           })
           if (profileErr) throw profileErr
-          captureEvent('auth_signup', { username })
+          captureEvent('auth_signup', { username, locale })
           redirectAfterLogin()
         }
       }
     } catch (e: unknown) {
-      setError(mapAuthError(e))
+      setError(mapAuthError(e, locale))
     } finally {
       setLoading(false)
     }
@@ -82,16 +91,14 @@ function AuthForm() {
         <div className="wml-auth-card">
           <div className="wml-auth-logo">
             <span style={{ display: 'inline-block', width: 7, height: 7, background: 'var(--w-accent)', borderRadius: '50%' }} />
-            WML 1.0 — Karma Score
+            WML 1.0 - Karma Score
           </div>
 
           <div className="wml-auth-title">
-            {mode === 'login' ? 'Acceder' : 'Crear cuenta'}
+            {mode === 'login' ? t.authTitleLogin : t.authTitleSignup}
           </div>
           <div className="wml-auth-sub">
-            {mode === 'login'
-              ? 'Entra al experimento.'
-              : 'Únete al experimento. Tu karma empieza en 0.'}
+            {mode === 'login' ? t.authSubLogin : t.authSubSignup}
           </div>
 
           {error && <div className="wml-error-msg">{error}</div>}
@@ -101,7 +108,7 @@ function AuthForm() {
             <>
               <input
                 className="wml-input"
-                placeholder="Username (ej: user_42)"
+                placeholder="Username (ex: user_42)"
                 value={username}
                 onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                 maxLength={20}
@@ -110,7 +117,7 @@ function AuthForm() {
               />
               <input
                 className="wml-input"
-                placeholder="Nombre visible"
+                placeholder={t.displayName}
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 maxLength={40}
@@ -130,7 +137,7 @@ function AuthForm() {
           <input
             className="wml-input"
             type="password"
-            placeholder="Contraseña"
+            placeholder={t.password}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
@@ -138,22 +145,29 @@ function AuthForm() {
           />
 
           <button
+            type="button"
             className="wml-btn wml-btn-primary"
             onClick={handleSubmit}
             disabled={loading}
             style={{ width: '100%', justifyContent: 'center', marginTop: 4 }}
           >
-            {loading ? '...' : mode === 'login' ? 'Acceder' : 'Crear cuenta'}
+            {loading ? '...' : mode === 'login' ? t.authTitleLogin : t.authTitleSignup}
           </button>
 
           <div className="wml-auth-switch">
             {mode === 'login' ? (
-              <>¿No tienes cuenta?{' '}
-                <button type="button" onClick={() => { setMode('signup'); setError(''); setSuccess('') }}>Regístrate</button>
+              <>
+                {t.noAccount}{' '}
+                <button type="button" onClick={() => { setMode('signup'); resetMessages() }}>
+                  {t.signup}
+                </button>
               </>
             ) : (
-              <>¿Ya tienes cuenta?{' '}
-                <button type="button" onClick={() => { setMode('login'); setError(''); setSuccess('') }}>Acceder</button>
+              <>
+                {t.haveAccount}{' '}
+                <button type="button" onClick={() => { setMode('login'); resetMessages() }}>
+                  {t.authTitleLogin}
+                </button>
               </>
             )}
           </div>
@@ -164,8 +178,9 @@ function AuthForm() {
 }
 
 export default function AuthPage() {
+  const locale = useLocale()
   return (
-    <Suspense fallback={<div className="wml-empty">Cargando…</div>}>
+    <Suspense fallback={<div className="wml-empty">{wmlCopy[locale].loadingExperiment}</div>}>
       <AuthForm />
     </Suspense>
   )

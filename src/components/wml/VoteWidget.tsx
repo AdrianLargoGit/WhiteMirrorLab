@@ -4,6 +4,9 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { castVote } from '@/lib/votes'
 import type { PublicProfile } from '@/lib/types'
+import { useLocale } from '@/hooks/useLocale'
+import { wmlCopy } from '@/lib/copy'
+import { wmlPath } from '@/lib/i18n'
 
 interface VoteWidgetProps {
   profile: PublicProfile
@@ -25,15 +28,18 @@ export function VoteWidget({
   voterId,
   initialVote = null,
   onVoted,
-  loginHref = '/web/consent',
+  loginHref,
   variant = 'default',
 }: VoteWidgetProps) {
+  const locale = useLocale()
+  const t = wmlCopy[locale]
   const [myVote, setMyVote] = useState<boolean | null>(initialVote)
   const [loading, setLoading] = useState(false)
   const [pulse, setPulse] = useState<'pos' | 'neg' | null>(null)
 
   const isOwn = voterId === profile.id
   const canVote = voterId && !isOwn
+  const resolvedLoginHref = loginHref ?? wmlPath(locale, '/consent')
 
   const handleVote = async (isPositive: boolean) => {
     if (!voterId || isOwn) return
@@ -43,11 +49,7 @@ export function VoteWidget({
     if (result.success) {
       setPulse(isPositive ? 'pos' : 'neg')
       setTimeout(() => setPulse(null), 600)
-      if (myVote === isPositive) {
-        setMyVote(null)
-      } else {
-        setMyVote(isPositive)
-      }
+      setMyVote(myVote === isPositive ? null : isPositive)
       onVoted?.()
     }
   }
@@ -64,19 +66,19 @@ export function VoteWidget({
       <div className="wml-vote-widget-stats">
         <div className="wml-vote-widget-stat pos">
           <span className="wml-vote-widget-stat-num">+{profile.votes_received_positive}</span>
-          <span className="wml-vote-widget-stat-label">positivos</span>
+          <span className="wml-vote-widget-stat-label">{t.positivePlural}</span>
         </div>
         <div className="wml-vote-widget-stat neg">
-          <span className="wml-vote-widget-stat-num">−{profile.votes_received_negative}</span>
-          <span className="wml-vote-widget-stat-label">negativos</span>
+          <span className="wml-vote-widget-stat-num">-{profile.votes_received_negative}</span>
+          <span className="wml-vote-widget-stat-label">{t.negativePlural}</span>
         </div>
       </div>
 
       {isOwn ? (
-        <p className="wml-vote-widget-hint">Este es tu perfil — compártelo para recibir votos.</p>
+        <p className="wml-vote-widget-hint">{t.ownProfileHint}</p>
       ) : canVote ? (
         <div className="wml-vote-widget-actions">
-          <p className="wml-vote-widget-cta">Tu voto es anónimo. ¿Qué karma le das?</p>
+          <p className="wml-vote-widget-cta">{t.voteCta}</p>
           <div className="wml-vote-btns wml-vote-btns-large">
             <button
               type="button"
@@ -85,7 +87,7 @@ export function VoteWidget({
               disabled={loading}
             >
               <span className="wml-vote-btn-icon">+</span>
-              <span>Positivo</span>
+              <span>{t.positive}</span>
             </button>
             <button
               type="button"
@@ -93,18 +95,18 @@ export function VoteWidget({
               onClick={() => handleVote(false)}
               disabled={loading}
             >
-              <span className="wml-vote-btn-icon">−</span>
-              <span>Negativo</span>
+              <span className="wml-vote-btn-icon">-</span>
+              <span>{t.negative}</span>
             </button>
           </div>
         </div>
       ) : (
         <div className="wml-vote-widget-guest">
           <p className="wml-vote-widget-cta">
-            Entra al experimento y vota a <strong>@{profile.username}</strong> de forma anónima.
+            {t.guestCta} <strong>@{profile.username}</strong>
           </p>
-          <Link href={loginHref} className="wml-btn wml-btn-primary wml-vote-widget-join">
-            Entrar y votar
+          <Link href={resolvedLoginHref} className="wml-btn wml-btn-primary wml-vote-widget-join">
+            {t.joinAndVote}
           </Link>
         </div>
       )}

@@ -1,16 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { useRouter } from 'next/navigation'
-
-const LINKS = [
-  { href: '/web/feed', label: 'Feed' },
-  { href: '/web/ranking', label: 'Ranking' },
-  { href: '/web/search', label: 'Buscar' },
-  { href: '/web/me', label: 'Perfil' },
-]
+import { wmlCopy } from '@/lib/copy'
+import { getLocaleFromPathname, homePath, toInternalPath, wmlPath } from '@/lib/i18n'
 
 const IconArrowLeft = () => (
   <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
@@ -21,24 +15,34 @@ const IconArrowLeft = () => (
 export function WmlNav() {
   const pathname = usePathname()
   const router = useRouter()
+  const locale = getLocaleFromPathname(pathname)
+  const t = wmlCopy[locale]
+  const internalPathname = toInternalPath(pathname)
 
-  if (pathname === '/web/consent') return null
+  const links = [
+    { href: wmlPath(locale, '/feed'), path: '/web/feed', label: t.feed },
+    { href: wmlPath(locale, '/ranking'), path: '/web/ranking', label: t.ranking },
+    { href: wmlPath(locale, '/search'), path: '/web/search', label: t.search },
+    { href: wmlPath(locale, '/me'), path: '/web/me', label: t.profile },
+  ]
 
-  const isAuth = pathname === '/web/auth'
+  if (internalPathname === '/web/consent') return null
+
+  const isAuth = internalPathname === '/web/auth'
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    router.replace('/web/auth')
+    router.replace(wmlPath(locale, '/auth'))
   }
 
   if (isAuth) {
     return (
       <header className="wml-back-bar">
-        <Link href="/" className="wml-back-link" aria-label="Volver al inicio">
+        <Link href={homePath(locale)} className="wml-back-link" aria-label={t.backHomeLabel}>
           <IconArrowLeft />
-          <span>Inicio</span>
+          <span>{t.backHome}</span>
         </Link>
-        <span className="wml-back-title">Acceso</span>
+        <span className="wml-back-title">{t.access}</span>
         <span className="wml-back-spacer" />
       </header>
     )
@@ -48,20 +52,20 @@ export function WmlNav() {
     <>
       <nav className="wml-nav">
         <div className="wml-nav-left">
-          <Link href="/" className="wml-back-link wml-back-link-compact" aria-label="Volver al inicio">
+          <Link href={homePath(locale)} className="wml-back-link wml-back-link-compact" aria-label={t.backHomeLabel}>
             <IconArrowLeft />
           </Link>
-          <Link href="/web/feed" className="wml-nav-logo">
+          <Link href={wmlPath(locale, '/feed')} className="wml-nav-logo">
             <span className="wml-nav-logo-dot" />
             WML 1.0
           </Link>
         </div>
         <div className="wml-nav-links">
-          {LINKS.map((link) => (
+          {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`wml-nav-link${pathname === link.href ? ' active' : ''}`}
+              className={`wml-nav-link${internalPathname === link.path ? ' active' : ''}`}
             >
               {link.label}
             </Link>
@@ -71,20 +75,20 @@ export function WmlNav() {
             className="wml-nav-link wml-nav-logout"
             onClick={handleLogout}
           >
-            Salir
+            {t.logout}
           </button>
         </div>
       </nav>
 
       <nav className="wml-bottom-nav">
-        <Link href="/" className="wml-bottom-back" aria-label="Inicio">
-          ←
+        <Link href={homePath(locale)} className="wml-bottom-back" aria-label={t.backHome}>
+          &lt;-
         </Link>
-        {LINKS.map((link) => (
+        {links.map((link) => (
           <Link
             key={link.href}
             href={link.href}
-            className={pathname === link.href ? 'active' : ''}
+            className={internalPathname === link.path ? 'active' : ''}
           >
             {link.label}
           </Link>

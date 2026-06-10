@@ -6,6 +6,8 @@ import { supabase } from '@/lib/supabase'
 import type { Photo, PublicProfile } from '@/lib/types'
 import { VoteWidget } from './VoteWidget'
 import { getMyVote } from '@/lib/votes'
+import { useLocale } from '@/hooks/useLocale'
+import { homePath, wmlPath, wmlProfilePath } from '@/lib/i18n'
 import '@/app/web/wml.css'
 
 interface PublicVotePageProps {
@@ -14,12 +16,13 @@ interface PublicVotePageProps {
 }
 
 export function PublicVotePage({ profile, photos }: PublicVotePageProps) {
+  const locale = useLocale()
   const [userId, setUserId] = useState<string | null>(null)
   const [myVote, setMyVote] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(true)
 
   const avatarUrl = photos.length > 0 ? photos[photos.length - 1].url : null
-  const loginHref = `/web/consent?next=${encodeURIComponent(`/web/profile/${profile.username}`)}`
+  const loginHref = `${wmlPath(locale, '/consent')}?next=${encodeURIComponent(wmlProfilePath(locale, profile.username))}`
 
   const refresh = useCallback(async (uid: string | null) => {
     if (uid) {
@@ -41,8 +44,10 @@ export function PublicVotePage({ profile, photos }: PublicVotePageProps) {
   return (
     <div className="public-page">
       <header className="public-header">
-        <Link href="/" className="public-back">← Inicio</Link>
-        <span className="public-brand">WML 1.0 · Karma Score</span>
+        <Link href={homePath(locale)} className="public-back">
+          {locale === 'es' ? '<- Inicio' : '<- Home'}
+        </Link>
+        <span className="public-brand">WML 1.0 / Karma Score</span>
       </header>
 
       <main className="public-main">
@@ -57,7 +62,9 @@ export function PublicVotePage({ profile, photos }: PublicVotePageProps) {
           <h1 className="public-name">{profile.display_name}</h1>
           <p className="public-username">@{profile.username}</p>
           <p className="public-tagline">
-            Experimento social de reputación anónima. Tu voto no se revela.
+            {locale === 'es'
+              ? 'Experimento social de reputacion anonima. Tu voto no se revela.'
+              : 'Anonymous reputation social experiment. Your vote is not revealed.'}
           </p>
         </div>
 
@@ -83,7 +90,9 @@ export function PublicVotePage({ profile, photos }: PublicVotePageProps) {
         )}
 
         <p className="public-footer">
-          White Mirror Lab · <Link href="/web/consent">Unirse al experimento</Link>
+          White Mirror Lab / <Link href={wmlPath(locale, '/consent')}>
+            {locale === 'es' ? 'Unirse al experimento' : 'Join the experiment'}
+          </Link>
         </p>
       </main>
     </div>

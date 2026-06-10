@@ -1,42 +1,13 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { heroCopy } from '@/lib/copy'
+import { localizedHashPath, type Locale } from '@/lib/i18n'
 import styles from './Hero.module.css'
 
 interface HeroProps {
-  lang?: 'es' | 'en'
-}
-
-const copy = {
-  es: {
-    tag: 'Laboratorio de Experimentación Social',
-    line1: '¿Qué hace',
-    line2: 'el ser humano',
-    line3pre: 'cuando',
-    line3accent: 'nadie',
-    line4: 'lo observa?',
-    desc: 'Diseñamos aplicaciones que empujan los límites del comportamiento colectivo. Experimentos sociales controlados, éticos y temporales que revelan las verdades incómodas de nuestra naturaleza digital.',
-    ctaPrimary: 'Ver Experimentos',
-    ctaGhost: 'Nuestro Manifiesto',
-    statParticipants: 'Participantes',
-    statExperiments: 'Experimentos',
-    statOptin: 'Opt-in',
-  },
-  en: {
-    tag: 'Social Experimentation Lab',
-    line1: 'What does',
-    line2: 'the human being',
-    line3pre: 'do when',
-    line3accent: 'nobody',
-    line4: 'is watching?',
-    desc: 'We design applications that push the limits of collective behaviour. Controlled, ethical, time-limited social experiments that reveal uncomfortable truths about our digital nature.',
-    ctaPrimary: 'See Experiments',
-    ctaGhost: 'Our Manifesto',
-    statParticipants: 'Participants',
-    statExperiments: 'Experiments',
-    statOptin: 'Opt-in',
-  },
+  lang: Locale
 }
 
 function animateCounter(el: HTMLElement, target: number, suffix: string) {
@@ -52,20 +23,13 @@ function animateCounter(el: HTMLElement, target: number, suffix: string) {
   requestAnimationFrame(step)
 }
 
-export default function Hero({ lang = 'es' }: HeroProps) {
-  const t = copy[lang]
-  // mounted guards SSR — keeps opacity:0 off until client hydrates
-  const [mounted, setMounted] = useState(false)
+export default function Hero({ lang }: HeroProps) {
+  const t = heroCopy[lang]
   const statsRef = useRef<HTMLDivElement>(null)
   const participantsRef = useRef<HTMLSpanElement>(null)
   const experimentsRef = useRef<HTMLSpanElement>(null)
   const counterFiredRef = useRef(false)
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  // Re-run counter whenever lang changes (resets the fired guard)
   useEffect(() => {
     counterFiredRef.current = false
   }, [lang])
@@ -91,19 +55,14 @@ export default function Hero({ lang = 'es' }: HeroProps) {
 
   return (
     <section className={styles.hero}>
-      {/* Background grid */}
       <div className={styles.heroBgGrid} aria-hidden="true" />
-
-      {/* Animated scan line */}
       <div className={styles.heroScanLine} aria-hidden="true" />
 
-      {/* Tag — mounted class triggers animation, avoids SSR opacity:0 flash */}
-      <p className={`${styles.heroTag} ${mounted ? styles.animate1 : ''}`}>
+      <p className={`${styles.heroTag} ${styles.animate1}`}>
         {t.tag}
       </p>
 
-      {/* Title */}
-      <h1 className={`${styles.heroTitle} ${mounted ? styles.animate2 : ''}`}>
+      <h1 className={`${styles.heroTitle} ${styles.animate2}`}>
         <span>{t.line1}</span>
         <span className={styles.outline}>{t.line2}</span>
         <span>
@@ -113,25 +72,22 @@ export default function Hero({ lang = 'es' }: HeroProps) {
         <span className={styles.outline}>{t.line4}</span>
       </h1>
 
-      {/* Description */}
-      <p className={`${styles.heroDesc} ${mounted ? styles.animate3 : ''}`}>
+      <p className={`${styles.heroDesc} ${styles.animate3}`}>
         {t.desc}
       </p>
 
-      {/* CTA buttons */}
-      <div className={`${styles.heroActions} ${mounted ? styles.animate4 : ''}`}>
-        <Link href="#experiments" className="btn-primary">
+      <div className={`${styles.heroActions} ${styles.animate4}`}>
+        <Link href={localizedHashPath(lang, '#experiments')} className="btn-primary">
           <span>{t.ctaPrimary}</span>
         </Link>
-        <Link href="#manifesto" className="btn-ghost">
+        <Link href={localizedHashPath(lang, '#manifesto')} className="btn-ghost">
           <span className="btn-ghost-arrow" aria-hidden="true" />
           <span>{t.ctaGhost}</span>
         </Link>
       </div>
 
-      {/* Stats */}
       <div
-        className={`${styles.heroStats} ${mounted ? styles.animate5 : ''}`}
+        className={`${styles.heroStats} ${styles.animate5}`}
         ref={statsRef}
       >
         <div className={styles.heroStatItem}>

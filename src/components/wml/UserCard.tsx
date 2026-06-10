@@ -3,6 +3,9 @@
 import Link from 'next/link'
 import type { PublicProfile } from '@/lib/types'
 import { VoteButtons } from './VoteButtons'
+import { useLocale } from '@/hooks/useLocale'
+import { wmlCopy } from '@/lib/copy'
+import { wmlProfilePath } from '@/lib/i18n'
 
 interface UserCardProps {
   profile: PublicProfile
@@ -19,10 +22,13 @@ function karmaClass(score: number) {
 }
 
 export function UserCard({ profile, currentUserId, myVote, avatarUrl, onVoted }: UserCardProps) {
+  const locale = useLocale()
+  const t = wmlCopy[locale]
+
   return (
     <div className="wml-card">
       <div className="wml-card-header">
-        <Link href={`/web/profile/${profile.username}`} className="wml-card-user">
+        <Link href={wmlProfilePath(locale, profile.username)} className="wml-card-user">
           <div className="wml-card-avatar">
             {avatarUrl ? (
               <img src={avatarUrl} alt="" />
@@ -41,8 +47,8 @@ export function UserCard({ profile, currentUserId, myVote, avatarUrl, onVoted }:
       </div>
 
       <div className="wml-vote-stats">
-        <span className="pos">+{profile.votes_received_positive} positivos</span>
-        <span className="neg">−{profile.votes_received_negative} negativos</span>
+        <span className="pos">+{profile.votes_received_positive} {t.positivePlural}</span>
+        <span className="neg">-{profile.votes_received_negative} {t.negativePlural}</span>
       </div>
 
       <VoteButtons

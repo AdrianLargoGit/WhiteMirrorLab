@@ -9,48 +9,53 @@ import {
 } from '@/lib/share'
 import { captureEvent } from '@/lib/analytics'
 import type { PublicProfile } from '@/lib/types'
+import { useLocale } from '@/hooks/useLocale'
+import { wmlCopy } from '@/lib/copy'
 
 interface ShareProfileProps {
   profile: PublicProfile
 }
 
 export function ShareProfile({ profile }: ShareProfileProps) {
+  const locale = useLocale()
+  const t = wmlCopy[locale]
   const [copied, setCopied] = useState(false)
 
-  const url = getPublicProfileUrl(profile.username)
-  const message = getShareMessage(profile.display_name, profile.username, profile.karma_score)
+  const url = getPublicProfileUrl(profile.username, locale)
+  const message = getShareMessage(profile.display_name, profile.username, profile.karma_score, locale)
   const whatsappUrl = getWhatsAppShareUrl(message, url)
+
+  const markCopied = () => {
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2500)
+  }
 
   const handleCopy = async () => {
     const ok = await copyToClipboard(`${message}\n${url}`)
     if (ok) {
-      setCopied(true)
-      captureEvent('profile_link_copied', { username: profile.username })
-      setTimeout(() => setCopied(false), 2500)
+      markCopied()
+      captureEvent('profile_link_copied', { username: profile.username, locale })
     }
   }
 
   const handleWhatsApp = () => {
-    captureEvent('profile_shared_whatsapp', { username: profile.username })
+    captureEvent('profile_shared_whatsapp', { username: profile.username, locale })
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
   }
 
   const handleInstagram = async () => {
     await copyToClipboard(url)
-    setCopied(true)
-    captureEvent('profile_shared_instagram', { username: profile.username })
-    setTimeout(() => setCopied(false), 2500)
+    markCopied()
+    captureEvent('profile_shared_instagram', { username: profile.username, locale })
   }
 
   return (
     <div className="wml-share-card">
-      <div className="wml-section-title">Comparte tu perfil</div>
-      <p className="wml-share-desc">
-        Pide votos anónimos. Quien abra tu enlace puede votarte tras unirse al experimento.
-      </p>
+      <div className="wml-section-title">{t.shareProfile}</div>
+      <p className="wml-share-desc">{t.shareDesc}</p>
 
       <div className="wml-share-preview">
-        <span className="wml-share-preview-label">Tu enlace</span>
+        <span className="wml-share-preview-label">{t.yourLink}</span>
         <code className="wml-share-url">{url.replace(/^https?:\/\//, '')}</code>
       </div>
 
@@ -64,14 +69,12 @@ export function ShareProfile({ profile }: ShareProfileProps) {
           Instagram
         </button>
         <button type="button" className="wml-share-btn wml-share-btn-copy" onClick={handleCopy}>
-          <span className="wml-share-btn-icon" aria-hidden="true">⎘</span>
-          {copied ? '¡Copiado!' : 'Copiar'}
+          <span className="wml-share-btn-icon" aria-hidden="true">[]</span>
+          {copied ? t.copied : t.copy}
         </button>
       </div>
 
-      <p className="wml-share-hint">
-        Instagram: copiamos el enlace — pégalo en tu historia o bio.
-      </p>
+      <p className="wml-share-hint">{t.shareHint}</p>
     </div>
   )
 }

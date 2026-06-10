@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { wmlCopy } from '@/lib/copy'
+import { getLocaleFromPathname, homePath, toInternalPath } from '@/lib/i18n'
 
 const IconArrowLeft = () => (
   <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
@@ -16,18 +18,21 @@ interface WmlBackBarProps {
 
 export function WmlBackBar({ title, showNav = false }: WmlBackBarProps) {
   const pathname = usePathname()
-  const isConsent = pathname === '/web/consent'
-  const isAuth = pathname === '/web/auth'
+  const locale = getLocaleFromPathname(pathname)
+  const t = wmlCopy[locale]
+  const internalPathname = toInternalPath(pathname)
+  const isConsent = internalPathname === '/web/consent'
+  const isAuth = internalPathname === '/web/auth'
 
   return (
     <header className="wml-back-bar">
-      <Link href="/" className="wml-back-link" aria-label="Volver al inicio">
+      <Link href={homePath(locale)} className="wml-back-link" aria-label={t.backHomeLabel}>
         <IconArrowLeft />
-        <span>Inicio</span>
+        <span>{t.backHome}</span>
       </Link>
       {(title || isConsent || isAuth) && (
         <span className="wml-back-title">
-          {title ?? (isConsent ? 'Consentimiento' : isAuth ? 'Acceso' : '')}
+          {title ?? (isConsent ? t.consent : isAuth ? t.access : '')}
         </span>
       )}
       {showNav && <span className="wml-back-spacer" />}

@@ -5,8 +5,13 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import type { PublicProfile } from '@/lib/types'
 import { captureEvent } from '@/lib/analytics'
+import { useLocale } from '@/hooks/useLocale'
+import { wmlCopy } from '@/lib/copy'
+import { wmlProfilePath } from '@/lib/i18n'
 
 export default function SearchPage() {
+  const locale = useLocale()
+  const t = wmlCopy[locale]
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<PublicProfile[]>([])
   const [searched, setSearched] = useState(false)
@@ -24,33 +29,34 @@ export default function SearchPage() {
 
     setResults((data ?? []) as PublicProfile[])
     setSearched(true)
-    captureEvent('user_search', { query: q, results: data?.length ?? 0 })
+    captureEvent('user_search', { query: q, results: data?.length ?? 0, locale })
   }
 
   return (
     <div>
-      <div className="wml-section-title">Buscar usuarios</div>
+      <div className="wml-section-title">{t.searchUsers}</div>
       <input
         className="wml-search-input"
-        placeholder="Username o nombre…"
+        placeholder={t.searchPlaceholder}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
       />
       <button
+        type="button"
         className="wml-btn wml-btn-primary"
         onClick={handleSearch}
         style={{ width: '100%', justifyContent: 'center', marginBottom: 24 }}
       >
-        Buscar
+        {t.search}
       </button>
 
       {searched && results.length === 0 && (
-        <div className="wml-empty">No se encontraron usuarios.</div>
+        <div className="wml-empty">{t.noUsersFound}</div>
       )}
 
       {results.map((p) => (
-        <Link key={p.id} href={`/web/profile/${p.username}`} className="wml-rank-item">
+        <Link key={p.id} href={wmlProfilePath(locale, p.username)} className="wml-rank-item">
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600 }}>{p.display_name}</div>
             <div style={{ fontFamily: 'var(--w-mono)', fontSize: 11, color: 'var(--w-muted)' }}>

@@ -4,8 +4,13 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import type { PublicProfile } from '@/lib/types'
+import { useLocale } from '@/hooks/useLocale'
+import { wmlCopy } from '@/lib/copy'
+import { wmlProfilePath } from '@/lib/i18n'
 
 export default function RankingPage() {
+  const locale = useLocale()
+  const t = wmlCopy[locale]
   const [profiles, setProfiles] = useState<PublicProfile[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -25,19 +30,18 @@ export default function RankingPage() {
   }, [])
 
   if (loading) {
-    return <div className="wml-empty">Cargando ranking…</div>
+    return <div className="wml-empty">{t.loadingRanking}</div>
   }
 
   return (
     <div>
-      <div className="wml-section-title">Ranking · Karma Score</div>
+      <div className="wml-section-title">{t.rankingTitle}</div>
       <p style={{ fontSize: 13, color: 'var(--w-muted)', marginBottom: 24 }}>
-        El participante con mayor karma al final del experimento recibirá el premio.
-        Los votos son anónimos — nadie puede ver a quién has votado.
+        {t.rankingText}
       </p>
 
       {profiles.map((p, i) => (
-        <Link key={p.id} href={`/web/profile/${p.username}`} className="wml-rank-item">
+        <Link key={p.id} href={wmlProfilePath(locale, p.username)} className="wml-rank-item">
           <span className={`wml-rank-pos${i < 3 ? ' top' : ''}`}>{i + 1}</span>
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600 }}>{p.display_name}</div>
@@ -50,7 +54,7 @@ export default function RankingPage() {
               {p.karma_score > 0 ? '+' : ''}{p.karma_score}
             </div>
             <div style={{ fontFamily: 'var(--w-mono)', fontSize: 10, color: 'var(--w-muted)', marginTop: 4 }}>
-              +{p.votes_received_positive} / −{p.votes_received_negative}
+              +{p.votes_received_positive} / -{p.votes_received_negative}
             </div>
           </div>
         </Link>

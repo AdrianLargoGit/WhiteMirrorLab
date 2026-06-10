@@ -1,14 +1,19 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import type { PublicProfile, Story } from '@/lib/types'
 import { UserCard } from '@/components/wml/UserCard'
 import { StoryBar } from '@/components/wml/StoryBar'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
-import Link from 'next/link'
+import { useLocale } from '@/hooks/useLocale'
+import { wmlCopy } from '@/lib/copy'
+import { wmlProfilePath } from '@/lib/i18n'
 
 export default function FeedPage() {
+  const locale = useLocale()
+  const t = wmlCopy[locale]
   const { userId, profile, loading: userLoading } = useCurrentUser()
   const [profiles, setProfiles] = useState<PublicProfile[]>([])
   const [stories, setStories] = useState<(Story & { profile: PublicProfile })[]>([])
@@ -75,23 +80,25 @@ export default function FeedPage() {
   }, [userId])
 
   useEffect(() => {
-    if (userId) loadData()
+    if (!userId) return
+    const id = window.setTimeout(() => {
+      void loadData()
+    }, 0)
+    return () => window.clearTimeout(id)
   }, [userId, loadData])
 
   if (userLoading || loading) {
-    return <div className="wml-empty">Cargando experimento…</div>
+    return <div className="wml-empty">{t.loadingExperiment}</div>
   }
 
   return (
     <div>
       {profile && (
         <div className="wml-feed-banner">
-          <div className="wml-feed-banner-title">Consigue votos para tu karma</div>
-          <p className="wml-feed-banner-text">
-            Comparte tu perfil en WhatsApp o Instagram y pide a otros que voten anónimamente.
-          </p>
-          <Link href={`/web/profile/${profile.username}`} className="wml-feed-banner-link">
-            Ir a mi perfil y compartir →
+          <div className="wml-feed-banner-title">{t.feedBannerTitle}</div>
+          <p className="wml-feed-banner-text">{t.feedBannerText}</p>
+          <Link href={wmlProfilePath(locale, profile.username)} className="wml-feed-banner-link">
+            {t.feedBannerLink}
           </Link>
         </div>
       )}
@@ -102,12 +109,10 @@ export default function FeedPage() {
         onStoryAdded={loadData}
       />
 
-      <div className="wml-section-title">Participantes</div>
+      <div className="wml-section-title">{t.participants}</div>
 
       {profiles.length === 0 ? (
-        <div className="wml-empty">
-          Aún no hay más participantes. Invita a alguien al experimento.
-        </div>
+        <div className="wml-empty">{t.noParticipants}</div>
       ) : (
         profiles.map((p) => (
           <UserCard
