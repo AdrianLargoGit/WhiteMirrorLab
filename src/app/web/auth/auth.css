@@ -1,0 +1,241 @@
+/* ==========================================
+   ── WHITE MIRROR LAB: AUTH STYLES ──
+   ========================================== */
+
+/* Variables locales por si no las tienes en tu global */
+.wml-auth-wrap {
+  --auth-bg: #09090b;
+  --auth-card: #18181b;
+  --auth-border: #27272a;
+  --auth-border-hover: #3f3f46;
+  --auth-text: #f4f4f5;
+  --auth-muted: #a1a1aa;
+  --auth-accent: #10b981; /* Verde esmeralda tipo 'Karma' */
+  --auth-error-bg: rgba(239, 68, 68, 0.1);
+  --auth-error-text: #ef4444;
+  --auth-success-bg: rgba(16, 185, 129, 0.1);
+  --auth-success-text: #10b981;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--auth-bg);
+  padding: 20px;
+  font-family: var(--font-sans, system-ui, sans-serif);
+}
+
+.wml-auth {
+  width: 100%;
+  max-width: 420px; /* Tamaño ideal para formularios */
+}
+
+/* LA TARJETA DEL FORMULARIO */
+.wml-auth-card {
+  background-color: var(--auth-card);
+  border: 1px solid var(--auth-border);
+  border-radius: 16px;
+  padding: 32px 28px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+}
+
+/* CABECERA (Logo, Título, Subtítulo) */
+.wml-auth-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--auth-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 24px;
+}
+
+.wml-auth-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--auth-text);
+  margin: 0 0 6px 0;
+  letter-spacing: -0.02em;
+}
+
+.wml-auth-sub {
+  font-size: 14px;
+  color: var(--auth-muted);
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+/* MENSAJES DE ERROR Y ÉXITO */
+.wml-error-msg,
+.wml-success-msg {
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  border: 1px solid transparent;
+  line-height: 1.4;
+}
+
+.wml-error-msg {
+  background-color: var(--auth-error-bg);
+  color: var(--auth-error-text);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.wml-success-msg {
+  background-color: var(--auth-success-bg);
+  color: var(--auth-success-text);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+/* INPUTS Y SELECTS */
+.wml-input {
+  width: 100%;
+  background-color: #09090b; /* Fondo más oscuro que la tarjeta */
+  border: 1px solid var(--auth-border);
+  color: var(--auth-text);
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+  margin-bottom: 12px; /* Separación automática entre inputs */
+  box-sizing: border-box;
+}
+
+.wml-input::placeholder {
+  color: #52525b;
+}
+
+.wml-input:hover {
+  border-color: var(--auth-border-hover);
+}
+
+.wml-input:focus {
+  border-color: var(--auth-accent);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15); /* Halo verde suave */
+}
+
+/* ESTILIZAR EL SELECT PARA QUE NO SE VEA BLANCO Y FEO EN MODO OSCURO */
+select.wml-input {
+  appearance: none; /* Quita la flecha fea por defecto */
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23a1a1aa%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px top 50%;
+  background-size: 10px auto;
+  cursor: pointer;
+}
+
+select.wml-input option {
+  background-color: var(--auth-card);
+  color: var(--auth-text);
+  padding: 8px;
+}
+
+/* CHECKBOX DE TÉRMINOS */
+.wml-auth-card label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--auth-muted);
+  cursor: pointer;
+  margin-top: 4px;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+.wml-auth-card input[type="checkbox"] {
+  appearance: none;
+  background-color: #09090b;
+  margin: 0;
+  font: inherit;
+  color: currentColor;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--auth-border);
+  border-radius: 4px;
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.wml-auth-card input[type="checkbox"]::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  transform: scale(0);
+  transition: 120ms transform ease-in-out;
+  box-shadow: inset 1em 1em var(--auth-accent);
+  background-color: var(--auth-accent);
+  transform-origin: center;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+
+.wml-auth-card input[type="checkbox"]:checked::before {
+  transform: scale(1);
+}
+
+.wml-auth-card input[type="checkbox"]:checked {
+  border-color: var(--auth-accent);
+}
+
+/* BOTÓN PRINCIPAL */
+.wml-btn-primary {
+  background-color: var(--auth-text);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.wml-btn-primary:hover:not(:disabled) {
+  background-color: #d4d4d8;
+}
+
+.wml-btn-primary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.wml-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* TEXTO PARA CAMBIAR DE LOGIN A SIGNUP */
+.wml-auth-switch {
+  text-align: center;
+  font-size: 13px;
+  color: var(--auth-muted);
+}
+
+.wml-auth-switch button {
+  background: none;
+  border: none;
+  color: var(--auth-text);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-size: inherit;
+  margin-left: 4px;
+}
+
+.wml-auth-switch button:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}

@@ -64,7 +64,7 @@ export default function AvisoLegalPage() {
 
       <div className="legal-contact-box">
         <p>
-          <strong>Contacto legal:</strong> legal@whitemirror.lab
+          <strong>Contacto legal:</strong> whitemirrorlab.info@gmail.com
         </p>
       </div>
     </LegalShell>

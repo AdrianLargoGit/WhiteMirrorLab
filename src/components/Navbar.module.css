@@ -10,7 +10,7 @@
   width: 0;
 }
 
-/* ── NAV ── */
+/* ── NAV / HEADER CONTAINER ── */
 .nav {
   position: fixed;
   top: 0;
@@ -63,6 +63,8 @@
   gap: clamp(14px, 2vw, 28px);
   list-style: none;
   align-items: center;
+  margin: 0;
+  padding: 0;
 }
 
 .navLink {
@@ -85,7 +87,7 @@
   gap: 16px;
 }
 
-/* ── LANGUAGE TOGGLE ── */
+/* ── LANGUAGE TOGGLE (DESKTOP) ── */
 .langToggle {
   display: flex;
   align-items: center;
@@ -111,7 +113,7 @@
   color: var(--black);
 }
 
-/* ── CTA ── */
+/* ── CTA (DESKTOP) ── */
 .navCta {
   font-family: var(--font-mono);
   font-size: 10px;
@@ -129,9 +131,9 @@
   color: var(--black);
 }
 
-/* ── HAMBURGER ── */
+/* ── HAMBURGER BUTTON ── */
 .hamburger {
-  display: none;
+  display: none; /* Se activa en el breakpoint móvil */
   align-items: center;
   justify-content: center;
   width: 36px;
@@ -144,7 +146,9 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* ── MOBILE MENU ── */
+/* ==========================================
+   ── MENÚ MÓVIL DESPLEGABLE (OVERLAY) ──
+   ========================================== */
 .mobileMenu {
   position: fixed;
   top: 0;
@@ -157,70 +161,85 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 36px;
+  gap: 40px;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s;
+  transition: opacity 0.3s ease;
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
+  padding: 20px;
 }
+
 .mobileMenuOpen {
   opacity: 1;
   pointer-events: all;
 }
 
+/* Contenedor de enlaces dentro del menú móvil */
+.mobileMenu nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px; /* Separación perfecta entre enlaces */
+  width: 100%;
+}
+
 .mobileLink {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 32px;
+  font-size: 28px; /* Tamaño optimizado para pantallas pequeñas */
   letter-spacing: -0.03em;
   text-decoration: none;
   color: var(--white);
   transition: color 0.2s;
+  text-align: center;
+  display: block;
+  width: 100%;
 }
 .mobileLink:hover {
   color: var(--accent);
 }
 
+/* Selector de idioma móvil */
 .mobileLang {
   display: flex;
   border: 1px solid var(--border);
   overflow: hidden;
-  margin-top: 16px;
+  margin-top: 8px;
 }
 .mobileLang .langBtn {
   padding: 10px 20px;
-  font-size: 12px;
+  font-size: 11px;
 }
 
-/* ── RESPONSIVE ── */
-@media (max-width: 900px) {
-  .desktopLinks {
-    display: none;
-  }
+/* ==========================================
+   ── RESPONSIVE / MEDIA QUERIES ──
+   ========================================== */
+@media (max-width: 1120px) {
+  /* Ocultamos TODOS los elementos innecesarios de escritorio */
+  .desktopLinks,
+  .langToggle,
   .navCta {
-    display: none;
+    display: none !important;
   }
+  
+  /* Mostramos la hamburguesa */
   .hamburger {
     display: flex;
   }
+  
+  /* Ajustamos el espacio del lado derecho */
+  .navRight {
+    gap: 0px;
+  }
 }
 
-/* Safe area for notched phones */
+/* Soporte para notches y barras de navegación en móviles modernos */
 @supports (padding-top: env(safe-area-inset-top)) {
   .nav {
     padding-top: calc(22px + env(safe-area-inset-top));
   }
   .navScrolled {
     padding-top: calc(14px + env(safe-area-inset-top));
-  }
-}
-
-@media (max-width: 1120px) {
-  .desktopLinks {
-    display: none;
-  }
-  .hamburger {
-    display: flex;
   }
 }

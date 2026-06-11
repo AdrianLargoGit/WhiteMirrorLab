@@ -70,13 +70,12 @@ export default function AppShell({ children }: AppShellProps) {
   }
 
   const navLinks = [
-    { href: '/web/feed',                                        label: 'Feed',      icon: <IcoHome /> },
-    { href: '/web/stories',                                     label: 'Historias', icon: <IcoCircles /> },
-    { href: '/web/pulses',                                      label: 'Pulses',    icon: <IcoPulse /> },
-    { href: '/web/ranking',                                     label: 'Ranking',   icon: <IcoTrophy /> },
-    { href: '/web/search',                                      label: 'Buscar',    icon: <IcoSearch /> },
-    { href: '/web/upload',                                      label: 'Publicar',  icon: <IcoPlus /> },
-    ...(profile ? [{ href: `/web/profile/${profile.username}`,  label: 'Perfil',    icon: <IcoUser /> }] : []),
+    { href: '/web/feed',    label: 'Feed',     icon: <IcoHome /> },
+    { href: '/web/me',          label: 'Perfil',   icon: <IcoUser /> }, /* ← Cambiado aquí */
+    { href: '/web/pulses',  label: 'Pulses',   icon: <IcoPulse /> },
+    { href: '/web/ranking', label: 'Ranking',  icon: <IcoTrophy /> },
+    { href: '/web/search',  label: 'Buscar',   icon: <IcoSearch /> },
+    { href: '/web/upload',  label: 'Publicar', icon: <IcoPlus /> },
   ]
 
   const handleSignOut = async () => {
@@ -205,25 +204,28 @@ export function KarmaBadge({ score, style }: { score: number; style?: React.CSSP
 
 // ── Terms gate ────────────────────────────────────────────────────────────────
 function TermsGate() {
-  const { profile, refreshProfile } = useAuth()
-  const [visible, setVisible]     = useState(false)
+  const { profile, refreshProfile, loading } = useAuth() // Asegúrate de traer 'loading'
   const [accepting, setAccepting] = useState(false)
+  const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
-    if (profile && !profile.accepted_terms_version) setVisible(true)
-  }, [profile])
+    setIsClient(true)
+  }, [])
 
-  if (!visible) return null
+  // 1. Si no estamos en el cliente o los datos siguen cargando, no renderizamos nada
+  // Esto asegura que el servidor SIEMPRE reciba un null consistente.
+  if (!isClient || loading || !profile) return null
+
+  // 2. Si ya aceptó, no renderizamos nada
+  if (profile.accepted_terms_version === '1.0') return null
 
   const accept = async () => {
     setAccepting(true)
     await supabase
       .from('profiles')
       .update({ accepted_terms_version: '1.0', accepted_at: new Date().toISOString() })
-      .eq('id', profile!.id)
-    //captureEvent('terms_accepted', { version: '1.0' })
+      .eq('id', profile.id)
     await refreshProfile()
-    setVisible(false)
     setAccepting(false)
   }
 

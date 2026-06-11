@@ -1,0 +1,634 @@
+/* ── VARIABLES DE DISEÑO (Por si no están globales) ── */
+:root {
+  --w-bg: #09090b;
+  --w-surface: #141417;
+  --w-surface-hover: #1f1f23;
+  --w-border: #222226;
+  --w-text: #f4f4f5;
+  --w-muted: #71717a;
+  --w-accent: #3b82f6;
+  --w-pos: #10b981;
+  --w-neg: #ef4444;
+  --w-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --w-font-display: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* RESET BASE PARA EL SHELL */
+.wml-app {
+  background-color: var(--w-bg);
+  color: var(--w-text);
+  font-family: var(--w-font-display);
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wml-shell a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ── LAYOUT RESPONSIVO (El truco maestro) ── */
+
+/* Versión Móvil (< 768px) */
+@media (max-width: 767px) {
+  .wml-shell {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 68px; /* Espacio para la barra inferior */
+  }
+  .wml-sidebar {
+    display: none; /* Escondemos la barra lateral en móvil */
+  }
+  .wml-topnav {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+  }
+}
+
+/* Versión Escritorio (>= 768px) */
+@media (min-width: 768px) {
+  .wml-shell {
+    display: grid;
+    grid-template-areas: 
+      "header header"
+      "sidebar main";
+    grid-template-rows: 60px 1fr;
+    grid-template-columns: 240px 1fr;
+    height: 100vh;
+  }
+  .wml-topnav { grid-area: header; }
+  .wml-sidebar { grid-area: sidebar; display: flex; }
+  .wml-main { grid-area: main; overflow-y: auto; }
+  .wml-bottom-nav { 
+    display: none; /* Escondemos la barra inferior en escritorio */
+  }
+}
+
+/* ── 1. CABECERA (Topnav) ── */
+.wml-topnav {
+  background: rgba(9, 9, 11, 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--w-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 60px;
+  box-sizing: border-box;
+}
+
+.wml-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--w-font-mono);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: -0.02em;
+}
+
+.wml-logo-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--w-pos);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--w-pos);
+}
+
+/* Buscador de la Cabecera */
+.wml-nav-search {
+  position: relative;
+  width: 100%;
+  max-width: 280px;
+}
+
+.wml-nav-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--w-muted);
+  display: flex;
+}
+
+.wml-nav-search input {
+  width: 100%;
+  background: var(--w-surface);
+  border: 1px solid var(--w-border);
+  border-radius: 8px;
+  padding: 8px 12px 8px 34px;
+  color: var(--w-text);
+  font-size: 13px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.wml-nav-search input:focus {
+  border-color: var(--w-accent);
+  background: #000;
+}
+
+/* Desplegable de Resultados de Búsqueda */
+.wml-search-results {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: var(--w-surface);
+  border: 1px solid var(--w-border);
+  border-radius: 10px;
+  padding: 6px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 50;
+}
+
+.wml-search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.wml-search-result-item:hover {
+  background: var(--w-surface-hover);
+}
+
+.wml-search-result-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.wml-search-result-handle {
+  font-size: 11px;
+  color: var(--w-muted);
+  font-family: var(--w-font-mono);
+}
+
+
+/* ── 2. BARRA LATERAL (Sidebar) ── */
+.wml-sidebar {
+  background: var(--w-bg);
+  border-right: 1px solid var(--w-border);
+  flex-direction: column;
+  padding: 20px 12px;
+  box-sizing: border-box;
+  gap: 4px;
+}
+
+.wml-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--w-muted);
+  transition: all 0.2s ease;
+}
+
+.wml-nav-item:hover {
+  color: var(--w-text);
+  background: var(--w-surface-hover);
+}
+
+.wml-nav-item.active {
+  color: var(--w-text);
+  background: var(--w-surface);
+  font-weight: 600;
+}
+
+.wml-nav-icon {
+  display: flex;
+  align-items: center;
+  color: inherit;
+}
+
+.wml-nav-spacer {
+  flex: 1;
+}
+
+.wml-sidebar-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--w-surface);
+  border: 1px solid var(--w-border);
+  border-radius: 12px;
+  margin-top: auto;
+}
+
+
+/* ── 3. VISTA PRINCIPAL (wml-main) Y VISTA BUSCAR CENTRAL ── */
+.wml-main {
+  padding: 40px 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Esto maqueta automáticamente tu vista interior de "Buscar" */
+.wml-main h1 {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin: 0 0 6px 0;
+}
+
+.wml-main p {
+  color: var(--w-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0 0 32px 0;
+}
+
+/* El input blanco feo de la página central de búsqueda */
+.wml-main input[type="text"]:not(.wml-nav-search input) {
+  width: 100%;
+  max-width: 440px;
+  background: var(--w-surface);
+  border: 1px solid var(--w-border);
+  color: #fff;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.wml-main input[type="text"]:not(.wml-nav-search input):focus {
+  border-color: var(--w-accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+
+/* ── 4. MENÚ INFERIOR MÓVIL (Bottom nav) ── */
+.wml-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: rgba(20, 20, 23, 0.85);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--w-border);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 40;
+  padding-bottom: env(safe-area-inset-bottom); /* iOS support */
+}
+
+.wml-bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--w-muted);
+  font-size: 10px;
+  font-weight: 500;
+  flex: 1;
+}
+
+.wml-bottom-nav-item svg {
+  width: 18px;
+  height: 18px;
+}
+
+.wml-bottom-nav-item.active {
+  color: var(--w-text);
+}
+
+
+/* ── 5. COMPONENTES AUXILIARES (Avatars, Badges, Botones) ── */
+.wml-avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--w-border);
+}
+
+.wml-avatar-placeholder {
+  border-radius: 50%;
+  background: var(--w-surface-hover);
+  color: var(--w-text);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--w-border);
+}
+
+.wml-karma-badge {
+  font-family: var(--w-font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #27272a;
+  color: #fff;
+}
+
+.wml-karma-badge.pos { background: rgba(16, 185, 129, 0.15); color: var(--w-pos); }
+.wml-karma-badge.neg { background: rgba(239, 68, 68, 0.15); color: var(--w-neg); }
+
+/* Botones */
+.wml-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.wml-btn-primary {
+  background: #ffffff;
+  color: #000000;
+}
+
+.wml-btn-primary:hover {
+  background: #e4e4e7;
+}
+
+.wml-btn-ghost {
+  background: transparent;
+  color: var(--w-muted);
+  border-color: var(--w-border);
+}
+
+.wml-btn-ghost:hover {
+  color: #fff;
+  background: var(--w-surface);
+}
+
+
+/* ── 6. PANTALLA DE TÉRMINOS (Terms Gate Modal) ── */
+.wml-terms-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.wml-terms-card {
+  background: var(--w-surface);
+  border: 1px solid var(--w-border);
+  border-radius: 16px;
+  max-width: 480px;
+  width: 100%;
+  padding: 28px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+}
+
+.wml-terms-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+
+.wml-terms-body {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #d4d4d8;
+  margin-bottom: 24px;
+}
+
+/* ==========================================
+   ── CONTENEDOR DEL FEED Y PUBLICACIONES ──
+   ========================================== */
+
+/* Centro y alineación del Feed principal */
+.wml-feed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px; /* Separación limpia entre publicaciones */
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* LA TARJETA DEL POST */
+.wml-post-card {
+  background: var(--w-surface, #141417);
+  border: 1px solid var(--w-border, #222226);
+  border-radius: 14px; /* Bordes redondeados modernos */
+  width: 100%;
+  max-width: 520px; /* El tamaño estándar ideal para feeds visuales */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Cabecera del Post (Avatar, Nombres, Badge) */
+.wml-post-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.wml-post-username {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--w-text, #f4f4f5);
+}
+
+.wml-post-username:hover {
+  text-decoration: underline;
+}
+
+.wml-post-time {
+  font-size: 12px;
+  color: var(--w-muted, #71717a);
+  margin-top: 1px;
+}
+
+/* ¡EL ARREGLO DE LAS FOTOS GIGANTES! */
+.wml-post-image {
+  width: 100%;
+  height: auto;
+  max-height: 500px; /* Máximo alto vertical para que nunca domine toda la pantalla */
+  object-fit: cover; /* Recorta la imagen limpiamente si es excesivamente larga sin deformarla */
+  background-color: #0b0b0d; /* Fondo neutro mientras carga */
+  display: block;
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+/* Zona de Acciones (Botones de votación) */
+.wml-post-actions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px 6px 16px;
+}
+
+.wml-vote-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--w-bg, #09090b);
+  border: 1px solid var(--w-border, #222226);
+  color: var(--w-muted, #71717a);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wml-vote-btn svg {
+  transition: transform 0.2s ease;
+}
+
+.wml-vote-btn:hover {
+  color: var(--w-text, #f4f4f5);
+  border-color: #3f3f46;
+  background: var(--w-surface-hover, #1f1f23);
+}
+
+.wml-vote-btn:hover svg {
+  transform: translateY(-1px);
+}
+
+/* Estados activos del voto en base a tus clases condicionales */
+.wml-vote-btn.pos {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: var(--w-pos, #10b981);
+  color: var(--w-pos, #10b981);
+}
+
+.wml-vote-btn.neg {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: var(--w-neg, #ef4444);
+  color: var(--w-neg, #ef4444);
+}
+
+/* Pie del Post (Texto / Caption) */
+.wml-post-caption {
+  padding: 6px 16px 16px 16px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #e4e4e7;
+  margin: 0;
+}
+
+
+/* ==========================================
+   ── BARRA DE HISTORIAS (STORIES BAR) ──
+   ========================================== */
+.wml-stories-bar {
+  display: flex;
+  gap: 14px;
+  padding: 4px 16px 16px 16px;
+  overflow-x: auto;
+  width: 100%;
+  max-width: 520px; /* Alineado milimétricamente con el feed */
+  margin: 0 auto 8px auto;
+  scrollbar-width: none; /* Oculta la barra de scroll en Firefox */
+}
+
+.wml-stories-bar::-webkit-scrollbar {
+  display: none; /* Oculta la barra de scroll en Chrome/Safari */
+}
+
+.wml-story-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* El círculo exterior (Gradiente dinámico si no se ha visto) */
+.wml-story-ring {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  padding: 2px;
+  background: linear-gradient(45deg, #3b82f6, #a855f7, #ec4899); /* Gradiente premium */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.wml-story-item:hover .wml-story-ring {
+  transform: scale(1.04);
+}
+
+/* Apaga el anillo si la historia ya fue vista */
+.wml-story-ring.seen {
+  background: var(--w-border, #222226);
+}
+
+.wml-story-ring-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--w-surface, #141417);
+  padding: 2px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.wml-story-ring-inner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.wml-story-username {
+  font-size: 11px;
+  font-family: var(--w-font-mono);
+  color: var(--w-muted, #71717a);
+  max-width: 68px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* ==========================================
+   ── ANIMACIÓN PARA EL SKELETON (CARGA) ──
+   ========================================== */
+.wml-skeleton {
+  background: linear-gradient(90deg, #18181b 25%, #27272a 50%, #18181b 75%);
+  background-size: 200% 100%;
+  animation: wmlPulse 1.6s infinite ease-in-out;
+}
+
+@keyframes wmlPulse {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+/* Fuerza la desaparición de la barra inferior en pantallas de ordenador */
+@media (min-width: 768px) {
+  .wml-bottom-nav {
+    display: none !important;
+  }
+}
