@@ -25,16 +25,18 @@ export function useCurrentUser() {
       setUserId(user.id)
 
       const { data } = await supabase
-        .from('public_profiles')
+        .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single()
 
-      if (mounted && data) {
-        setProfile(data as PublicProfile)
-        identifyUser(user.id, { username: data.username })
+      if (mounted) {
+        if(data) {
+          setProfile(data as PublicProfile)
+          identifyUser(user.id, { username: data.username })
+        }
+        setLoading(false)
       }
-      if (mounted) setLoading(false)
     }
 
     load()

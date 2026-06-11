@@ -17,7 +17,7 @@ export default function PrivacidadPage() {
       <h2>1. Responsable del tratamiento</h2>
       <ul>
         <li><strong>Responsable:</strong> White Mirror Lab</li>
-        <li><strong>Contacto:</strong> privacy@whitemirror.lab</li>
+        <li><strong>Contacto:</strong> whitemirrorlab.info@gmail.com</li>
         <li><strong>Finalidad principal:</strong> Gestión de la participación en experimentos sociales digitales</li>
       </ul>
 
@@ -76,7 +76,7 @@ export default function PrivacidadPage() {
       </ul>
 
       <h2>6. Tus derechos</h2>
-      <p>Puedes ejercer los siguientes derechos contactando en privacy@whitemirror.lab:</p>
+      <p>Puedes ejercer los siguientes derechos contactando en whitemirrorlab.info@gmail.com:</p>
       <ul>
         <li>Acceso, rectificación y supresión</li>
         <li>Limitación u oposición al tratamiento</li>
@@ -100,7 +100,7 @@ export default function PrivacidadPage() {
 
       <div className="legal-contact-box">
         <p>
-          <strong>Delegado de protección de datos / contacto privacidad:</strong> privacy@whitemirror.lab
+          <strong>Delegado de protección de datos / contacto privacidad:</strong> whitemirrorlab.info@gmail.com
         </p>
       </div>
     </LegalShell>

@@ -78,6 +78,7 @@ export interface Database {
           country: string | null
           event_type: string
           target_post_id: string | null
+          target_pulse_id: string | null
           metadata: Json | null
           created_at: string
         }
@@ -86,6 +87,22 @@ export interface Database {
           created_at?: string
         }
         Update: Partial<Database['public']['Tables']['behavioral_analytics']['Insert']>
+      }
+      pulses: {
+        Row: {
+          id: string
+          user_id: string
+          body: string
+          reply_to_id: string | null
+          reply_count: number
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['pulses']['Row'], 'id' | 'reply_count' | 'created_at'> & {
+          id?: string
+          reply_count?: number
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['pulses']['Insert']>
       }
     }
     Views: Record<string, never>
@@ -96,13 +113,16 @@ export interface Database {
   }
 }
 
-export type Profile = Database['public']['Tables']['profiles']['Row']
-export type Post = Database['public']['Tables']['posts']['Row']
-export type Story = Database['public']['Tables']['stories']['Row']
-export type Vote = Database['public']['Tables']['votes']['Row']
+export type Profile    = Database['public']['Tables']['profiles']['Row']
+export type Post       = Database['public']['Tables']['posts']['Row']
+export type Story      = Database['public']['Tables']['stories']['Row']
+export type Vote       = Database['public']['Tables']['votes']['Row']
+export type Pulse      = Database['public']['Tables']['pulses']['Row']
 export type BehavioralEvent = Database['public']['Tables']['behavioral_analytics']['Row']
 
-export type ProfileWithPosts = Profile & { posts: Post[] }
-export type PostWithProfile = Post & { profile: Profile }
+export type ProfileWithPosts  = Profile & { posts: Post[] }
+export type PostWithProfile   = Post & { profile: Profile }
+export type PulseWithProfile  = Pulse & { profile: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url' | 'karma_score'> }
+export type PulseWithReply    = PulseWithProfile & { reply_to?: PulseWithProfile | null }
 
 export type VoteType = 1 | -1

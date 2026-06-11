@@ -32,6 +32,7 @@ const WML_ROUTE_ALIASES = new Map([
   ['/search', '/search'],
   ['/me', '/me'],
   ['/profile', '/profile'],
+  ['/pulses', '/pulses'],
 ])
 
 export function isLocale(value: unknown): value is Locale {

@@ -70,7 +70,7 @@ export default function TerminosPage() {
       <h2>7. Retirada y baja</h2>
       <p>
         Puedes retirarte del experimento en cualquier momento cerrando sesión o solicitando la
-        eliminación de tu cuenta y datos en privacy@whitemirror.lab. La retirada no afecta a la
+        eliminación de tu cuenta y datos en whitemirrorlab.info@gmail.com. La retirada no afecta a la
         licitud del tratamiento realizado hasta ese momento.
       </p>
 
@@ -97,7 +97,7 @@ export default function TerminosPage() {
 
       <h2>11. Contacto</h2>
       <div className="legal-contact-box">
-        <p>legal@whitemirror.lab · <a href="/legal/etica">Marco ético</a> · <a href="/legal/privacidad">Privacidad</a></p>
+        <p>whitemirrorlab.info@gmail.com · <a href="/legal/etica">Marco ético</a> · <a href="/legal/privacidad">Privacidad</a></p>
       </div>
     </LegalShell>
   )

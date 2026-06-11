@@ -86,7 +86,7 @@ export default function EticaPage() {
       <h2>5. Derecho a retirarse</h2>
       <p>
         Puedes abandonar el experimento en cualquier momento. Para solicitar la eliminación completa
-        de tus datos: privacy@whitemirror.lab. Procesaremos las solicitudes en un plazo máximo de
+        de tus datos: whitemirrorlab.info@gmail.com. Procesaremos las solicitudes en un plazo máximo de
         30 días.
       </p>
 
@@ -99,7 +99,7 @@ export default function EticaPage() {
 
       <div className="legal-contact-box">
         <p>
-          <strong>Consultas éticas:</strong> ethics@whitemirror.lab
+          <strong>Consultas éticas:</strong> whitemirrorlab.info@gmail.com
         </p>
       </div>
     </LegalShell>

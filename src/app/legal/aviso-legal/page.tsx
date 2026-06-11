@@ -19,7 +19,7 @@ export default function AvisoLegalPage() {
         <li><strong>Denominación:</strong> White Mirror Lab</li>
         <li><strong>Actividad:</strong> Laboratorio de experimentación social digital</li>
         <li><strong>Domicilio:</strong> Unión Europea (España)</li>
-        <li><strong>Correo electrónico:</strong> legal@whitemirror.lab</li>
+        <li><strong>Correo electrónico:</strong> whitemirrorlab.info@gmail.com</li>
         <li><strong>Sitio web:</strong> whitemirror.lab</li>
       </ul>
 

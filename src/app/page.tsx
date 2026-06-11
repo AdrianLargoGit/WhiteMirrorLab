@@ -328,7 +328,7 @@ export default function Home() {
           <h4>{t.footerContact}</h4>
           <ul>
             <li><a href={localizedHashPath(lang, '#signup')}>{t.navJoin}</a></li>
-            <li><a href="mailto:lab@whitemirrorlab.com">lab@whitemirrorlab.com</a></li>
+            <li><a href="mailto:whitemirrorlab.info@gmail.com">whitemirrorlab.info@gmail.com</a></li>
           </ul>
         </div>
         <div className={styles.footerBottom}>

@@ -239,3 +239,98 @@ export async function deletePost(postId: string, imageUrl: string, userId: strin
   if (storagePath) await supabase.storage.from('posts').remove([storagePath])
   return supabase.from('posts').delete().eq('id', postId).eq('user_id', userId)
 }
+
+// ════════════════════════════════════════════════════════════════════════════════
+// PULSES  (texto libre tipo tweet, máx 280 chars, con replies)
+// ════════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Feed global de pulses — paginado, sin replies (solo tops).
+ * Cada pulse trae el profile del autor embebido.
+ */
+export async function fetchPulsesFeed(page = 0, pageSize = 20) {
+  return supabase
+    .from('pulses')
+    .select('*, profile:profiles(id, username, display_name, avatar_url, karma_score)')
+    .is('reply_to_id', null)              // solo pulses raíz, no replies
+    .order('created_at', { ascending: false })
+    .range(page * pageSize, (page + 1) * pageSize - 1)
+}
+
+/**
+ * Pulses de un usuario concreto (para su perfil).
+ * Incluye replies propios también.
+ */
+export async function fetchUserPulses(userId: string, page = 0, pageSize = 20) {
+  return supabase
+    .from('pulses')
+    .select('*, profile:profiles(id, username, display_name, avatar_url, karma_score)')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .range(page * pageSize, (page + 1) * pageSize - 1)
+}
+
+/**
+ * Un pulse concreto con su autor y el pulse al que responde (si existe).
+ */
+export async function fetchPulseById(pulseId: string) {
+  return supabase
+    .from('pulses')
+    .select(`
+      *,
+      profile:profiles(id, username, display_name, avatar_url, karma_score),
+      reply_to:pulses!reply_to_id(
+        id, body, created_at, reply_count,
+        profile:profiles(id, username, display_name, avatar_url, karma_score)
+      )
+    `)
+    .eq('id', pulseId)
+    .single()
+}
+
+/**
+ * Replies directos a un pulse, ordenados cronológicamente.
+ */
+export async function fetchPulseReplies(pulseId: string, page = 0, pageSize = 20) {
+  return supabase
+    .from('pulses')
+    .select('*, profile:profiles(id, username, display_name, avatar_url, karma_score)')
+    .eq('reply_to_id', pulseId)
+    .order('created_at', { ascending: true })
+    .range(page * pageSize, (page + 1) * pageSize - 1)
+}
+
+/**
+ * Crear un pulse (tweet raíz o reply).
+ * reply_to_id = null → pulse raíz
+ * reply_to_id = UUID → reply a ese pulse
+ */
+export async function createPulse(
+  userId: string,
+  body: string,
+  replyToId: string | null = null
+): Promise<{ data: { id: string } | null; error: string | null }> {
+  const trimmed = body.trim()
+  if (!trimmed) return { data: null, error: 'El pulse no puede estar vacío.' }
+  if (trimmed.length > 280) return { data: null, error: 'Máximo 280 caracteres.' }
+
+  const { data, error } = await supabase
+    .from('pulses')
+    .insert({ user_id: userId, body: trimmed, reply_to_id: replyToId })
+    .select('id')
+    .single()
+
+  if (error) return { data: null, error: error.message }
+  return { data, error: null }
+}
+
+/**
+ * Borrar un pulse propio (el trigger actualiza reply_count del padre).
+ */
+export async function deletePulse(pulseId: string, userId: string) {
+  return supabase
+    .from('pulses')
+    .delete()
+    .eq('id', pulseId)
+    .eq('user_id', userId)
+}

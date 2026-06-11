@@ -56,7 +56,7 @@ export default function CookiesPage() {
 
       <h2>5. Más información</h2>
       <p>
-        Para consultas sobre cookies: privacy@whitemirror.lab. Consulta también nuestra{' '}
+        Para consultas sobre cookies: whitemirrorlab.info@gmail.com. Consulta también nuestra{' '}
         <a href="/legal/privacidad">Política de privacidad</a>.
       </p>
     </LegalShell>
