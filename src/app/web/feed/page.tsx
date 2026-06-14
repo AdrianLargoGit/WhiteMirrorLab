@@ -3,8 +3,11 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/lib/authcontext'
-import { fetchFeedPosts, fetchActiveStories, castVote, getMyVoteOnTarget } from '@/lib/queries'
+import { fetchFeedPosts, fetchActiveStories } from '@/lib/queries'
+import { castVote, getMyVote } from '@/lib/votes'
 import { captureEvent } from '@/lib/posthog'
+import { useLocale, wmlPath } from '@/lib/i18n'
+import { wmlCopy } from '@/lib/copy'
 import { AvatarMini, KarmaBadge } from '@/components/wml10/AppShell'
 import type { Post, Profile, Story, VoteType } from '@/lib/database.types'
 import StoryViewer from '@/components/wml10/StoryViewer'
@@ -15,10 +18,11 @@ type StoryWithProfile = Story & { profile: Pick<Profile, 'id' | 'username' | 'av
 const ICO_UP   = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
 const ICO_DOWN = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
 
-function timeAgo(iso: string): string {
+// Función de tiempo relativo adaptada al idioma activo
+function timeAgo(iso: string, locale: 'es' | 'en'): string {
   const diff = Date.now() - new Date(iso).getTime()
   const m = Math.floor(diff / 60000)
-  if (m < 1) return 'ahora'
+  if (m < 1) return locale === 'es' ? 'ahora' : 'now'
   if (m < 60) return `${m}m`
   const h = Math.floor(m / 60)
   if (h < 24) return `${h}h`
@@ -27,6 +31,9 @@ function timeAgo(iso: string): string {
 
 export default function FeedPage() {
   const { user } = useAuth()
+  const locale = useLocale()
+  const copy = wmlCopy[locale]
+
   const [posts, setPosts]               = useState<FeedPost[]>([])
   const [stories, setStories]           = useState<StoryWithProfile[]>([])
   const [page, setPage]                 = useState(0)
@@ -54,7 +61,7 @@ export default function FeedPage() {
       setPosts(postsData)
       setStories((storiesRes.data ?? []) as StoryWithProfile[])
       setLoading(false)
-      captureEvent('ranking_view') // reuse event type — represents any feed view
+      captureEvent('ranking_view')
 
       // Pre-load my votes for visible profiles
       if (user) {
@@ -63,7 +70,8 @@ export default function FeedPage() {
         for (const post of postsData) {
           if (!seen.has(post.user_id) && post.user_id !== user.id) {
             seen.add(post.user_id)
-            votes[post.user_id] = await getMyVoteOnTarget(user.id, post.user_id)
+            const isPositive = await getMyVote(user.id, post.user_id)
+            votes[post.user_id] = isPositive === null ? null : (isPositive ? 1 : -1)
           }
         }
         setMyVotes(votes)
@@ -93,12 +101,27 @@ export default function FeedPage() {
 
   const handleVote = async (targetId: string, type: VoteType) => {
     if (!user) return
-    const current  = myVotes[targetId]
-    const newType  = current === type ? null : type
+    
+    const current = myVotes[targetId]
+    const newType = current === type ? null : type
+    
+    // 1. Optimistic UI update
     setMyVotes((prev) => ({ ...prev, [targetId]: newType }))
-    if (newType !== null) {
-      await castVote(user.id, targetId, newType)
-      captureEvent(current !== null ? 'vote_flipped' : 'vote_cast', { vote_type: newType })
+    
+    // 2. Database mutation
+    const result = await castVote({
+      voterId: user.id,
+      receiverId: targetId,
+      isPositive: type === 1
+    })
+
+    // 3. Analytics log or rollback
+    if (result.success) {
+      if (result.action === 'cast') captureEvent('vote_cast', { vote_type: type })
+      if (result.action === 'changed') captureEvent('vote_flipped', { vote_type: type })
+    } else {
+      setMyVotes((prev) => ({ ...prev, [targetId]: current }))
+      console.error("No se pudo procesar el voto:", result.error)
     }
   }
 
@@ -148,7 +171,7 @@ export default function FeedPage() {
       <div className="wml-feed">
         {posts.length === 0 && (
           <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--w-muted)', fontFamily: 'var(--w-font-mono)', fontSize: 11, letterSpacing: '0.12em' }}>
-            NO HAY PUBLICACIONES AÚN
+            {locale === 'es' ? 'NO HAY PUBLICACIONES AÚN' : 'NO POSTS YET'}
           </div>
         )}
 
@@ -176,22 +199,25 @@ function PostCard({ post, isOwnPost, myVote, onVote }: {
   myVote: VoteType | null
   onVote: (targetId: string, type: VoteType) => void
 }) {
+  const locale = useLocale()
+  const copy = wmlCopy[locale]
+
   return (
     <article className="wml-post-card">
       <div className="wml-post-header">
         <AvatarMini profile={post.profile} size={36} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <Link href={`/web/profile/${post.profile.username}`} className="wml-post-username">
+          <Link href={wmlPath(locale, `/profile/${post.profile.username}`)} className="wml-post-username">
             {post.profile.display_name}
           </Link>
-          <div className="wml-post-time">@{post.profile.username} · {timeAgo(post.created_at)}</div>
+          <div className="wml-post-time">@{post.profile.username} · {timeAgo(post.created_at, locale)}</div>
         </div>
         <KarmaBadge score={post.profile.karma_score} />
       </div>
 
       <img
         src={post.image_url}
-        alt={post.caption ?? 'Publicación'}
+        alt={post.caption ?? (locale === 'es' ? 'Publicación' : 'Post')}
         className="wml-post-image"
         loading="lazy"
       />
@@ -201,16 +227,16 @@ function PostCard({ post, isOwnPost, myVote, onVote }: {
           <button
             className={`wml-vote-btn ${myVote === 1 ? 'pos' : ''}`}
             onClick={() => onVote(post.user_id, 1)}
-            title="Voto positivo"
+            title={copy.positive}
           >
-            <ICO_UP /> Positivo
+            <ICO_UP /> {copy.positive}
           </button>
           <button
             className={`wml-vote-btn ${myVote === -1 ? 'neg' : ''}`}
             onClick={() => onVote(post.user_id, -1)}
-            title="Voto negativo"
+            title={copy.negative}
           >
-            <ICO_DOWN /> Negativo
+            <ICO_DOWN /> {copy.negative}
           </button>
         </div>
       )}

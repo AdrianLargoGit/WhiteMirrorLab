@@ -6,12 +6,17 @@ CREATE TABLE IF NOT EXISTS profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   username TEXT UNIQUE NOT NULL,
   display_name TEXT NOT NULL DEFAULT '',
+  avatar_url TEXT,
+  country TEXT,
+  preferred_language TEXT DEFAULT 'es',
   karma_score INTEGER NOT NULL DEFAULT 0,
   votes_received_positive INTEGER NOT NULL DEFAULT 0,
   votes_received_negative INTEGER NOT NULL DEFAULT 0,
   total_votes_given_positive INTEGER NOT NULL DEFAULT 0,
   total_votes_given_negative INTEGER NOT NULL DEFAULT 0,
   is_bot BOOLEAN NOT NULL DEFAULT false,
+  accepted_terms_version TEXT,
+  accepted_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -24,6 +29,9 @@ SELECT
   id,
   username,
   display_name,
+  avatar_url,
+  country,
+  preferred_language,
   karma_score,
   votes_received_positive,
   votes_received_negative,
@@ -41,23 +49,35 @@ $$ LANGUAGE sql SECURITY DEFINER STABLE;
 
 GRANT EXECUTE ON FUNCTION check_username_available(TEXT) TO anon, authenticated;
 
--- Photos (max 5 per user, FIFO enforced by trigger)
-CREATE TABLE IF NOT EXISTS photos (
+-- Posts / Photos (max 5 per user, FIFO enforced by trigger)
+CREATE TABLE IF NOT EXISTS posts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  storage_path TEXT NOT NULL,
-  url TEXT NOT NULL,
+  image_url TEXT NOT NULL,
+  caption TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS photos_user_created_idx ON photos (user_id, created_at ASC);
+CREATE INDEX IF NOT EXISTS posts_user_created_idx ON posts (user_id, created_at ASC);
+
+-- Pulses (Text posts / Microblogging)
+CREATE TABLE IF NOT EXISTS pulses (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  body TEXT NOT NULL,
+  reply_to_id UUID REFERENCES pulses(id) ON DELETE CASCADE,
+  reply_count INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS pulses_user_idx ON pulses (user_id);
+CREATE INDEX IF NOT EXISTS pulses_reply_to_idx ON pulses (reply_to_id);
 
 -- Stories (24h expiry)
 CREATE TABLE IF NOT EXISTS stories (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  storage_path TEXT NOT NULL,
-  url TEXT NOT NULL,
+  media_url TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   expires_at TIMESTAMPTZ NOT NULL DEFAULT (now() + INTERVAL '24 hours')
 );
@@ -65,26 +85,44 @@ CREATE TABLE IF NOT EXISTS stories (
 CREATE INDEX IF NOT EXISTS stories_expires_idx ON stories (expires_at);
 CREATE INDEX IF NOT EXISTS stories_user_idx ON stories (user_id);
 
--- Anonymous votes (voter_id stored but never exposed to other users)
+-- Behavioral Analytics
+CREATE TABLE IF NOT EXISTS behavioral_analytics (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_hash_id TEXT NOT NULL,
+  country TEXT,
+  event_type TEXT NOT NULL,
+  target_post_id UUID REFERENCES posts(id) ON DELETE SET NULL,
+  target_pulse_id UUID REFERENCES pulses(id) ON DELETE SET NULL,
+  metadata JSONB,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- MULTI-TARGET VOTES TABLE (Profiles, Pulses and Posts)
 CREATE TABLE IF NOT EXISTS votes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   voter_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  target_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  is_positive BOOLEAN NOT NULL,
+  receiver_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  pulse_id UUID REFERENCES pulses(id) ON DELETE CASCADE,
+  posts_id UUID REFERENCES posts(id) ON DELETE CASCADE,
+  vote_type SMALLINT NOT NULL CHECK (vote_type IN (1, -1)),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE (voter_id, target_id),
-  CHECK (voter_id <> target_id)
+  
+  -- Evita que el mismo usuario vote dos veces al mismo contenido exacto
+  UNIQUE (voter_id, receiver_id, pulse_id, posts_id),
+  CHECK (voter_id <> receiver_id)
 );
 
-CREATE INDEX IF NOT EXISTS votes_target_idx ON votes (target_id);
+CREATE INDEX IF NOT EXISTS votes_receiver_idx ON votes (receiver_id);
+CREATE INDEX IF NOT EXISTS votes_pulse_idx ON votes (pulse_id) WHERE pulse_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS votes_posts_idx ON votes (posts_id) WHERE posts_id IS NOT NULL;
 
--- Trigger: enforce max 5 photos (delete oldest)
-CREATE OR REPLACE FUNCTION enforce_photo_limit()
+-- Trigger: enforce max 5 posts (delete oldest)
+CREATE OR REPLACE FUNCTION enforce_post_limit()
 RETURNS TRIGGER AS $$
 BEGIN
-  IF (SELECT COUNT(*) FROM photos WHERE user_id = NEW.user_id) >= 5 THEN
-    DELETE FROM photos WHERE id = (
-      SELECT id FROM photos
+  IF (SELECT COUNT(*) FROM posts WHERE user_id = NEW.user_id) >= 5 THEN
+    DELETE FROM posts WHERE id = (
+      SELECT id FROM posts
       WHERE user_id = NEW.user_id
       ORDER BY created_at ASC
       LIMIT 1
@@ -94,69 +132,71 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
-DROP TRIGGER IF EXISTS photo_limit_trigger ON photos;
-CREATE TRIGGER photo_limit_trigger
-  BEFORE INSERT ON photos
+DROP TRIGGER IF EXISTS post_limit_trigger ON posts;
+CREATE TRIGGER post_limit_trigger
+  BEFORE INSERT ON posts
   FOR EACH ROW
-  EXECUTE FUNCTION enforce_photo_limit();
+  EXECUTE FUNCTION enforce_post_limit();
 
--- Trigger: update karma on vote insert/update/delete
+-- Trigger: update karma on vote insert/update/delete (Multi-target safe)
 CREATE OR REPLACE FUNCTION update_karma_on_vote()
 RETURNS TRIGGER AS $$
 BEGIN
   IF TG_OP = 'INSERT' THEN
-    IF NEW.is_positive THEN
+    IF NEW.vote_type = 1 THEN
       UPDATE profiles SET
         votes_received_positive = votes_received_positive + 1,
         karma_score = karma_score + 1
-      WHERE id = NEW.target_id;
+      WHERE id = NEW.receiver_id;
       UPDATE profiles SET total_votes_given_positive = total_votes_given_positive + 1
       WHERE id = NEW.voter_id;
     ELSE
       UPDATE profiles SET
         votes_received_negative = votes_received_negative + 1,
         karma_score = karma_score - 1
-      WHERE id = NEW.target_id;
+      WHERE id = NEW.receiver_id;
       UPDATE profiles SET total_votes_given_negative = total_votes_given_negative + 1
       WHERE id = NEW.voter_id;
     END IF;
     RETURN NEW;
+    
   ELSIF TG_OP = 'UPDATE' THEN
-    IF OLD.is_positive AND NOT NEW.is_positive THEN
+    IF OLD.vote_type = 1 AND NEW.vote_type = -1 THEN
       UPDATE profiles SET
         votes_received_positive = votes_received_positive - 1,
         votes_received_negative = votes_received_negative + 1,
         karma_score = karma_score - 2
-      WHERE id = NEW.target_id;
+      WHERE id = NEW.receiver_id;
       UPDATE profiles SET
         total_votes_given_positive = total_votes_given_positive - 1,
         total_votes_given_negative = total_votes_given_negative + 1
       WHERE id = NEW.voter_id;
-    ELSIF NOT OLD.is_positive AND NEW.is_positive THEN
+    ELSIF OLD.vote_type = -1 AND NEW.vote_type = 1 THEN
       UPDATE profiles SET
         votes_received_positive = votes_received_positive + 1,
         votes_received_negative = votes_received_negative - 1,
         karma_score = karma_score + 2
-      WHERE id = NEW.target_id;
+      WHERE id = NEW.receiver_id;
       UPDATE profiles SET
         total_votes_given_positive = total_votes_given_positive + 1,
         total_votes_given_negative = total_votes_given_negative - 1
       WHERE id = NEW.voter_id;
     END IF;
     RETURN NEW;
+    
   ELSIF TG_OP = 'DELETE' THEN
-    IF OLD.is_positive THEN
+    IF OLD.vote_type = 1 THEN
       UPDATE profiles SET
         votes_received_positive = votes_received_positive - 1,
         karma_score = karma_score - 1
-      WHERE id = OLD.target_id;
+      WHERE id = OLD.receiver_id;
       UPDATE profiles SET total_votes_given_positive = total_votes_given_positive - 1
       WHERE id = OLD.voter_id;
     ELSE
       UPDATE profiles SET
         votes_received_negative = votes_received_negative - 1,
         karma_score = karma_score + 1
-      WHERE id = OLD.target_id;
+      WHERE id = OLD.receiver_id;
       UPDATE profiles SET total_votes_given_negative = total_votes_given_negative - 1
       WHERE id = OLD.voter_id;
     END IF;
@@ -174,38 +214,37 @@ CREATE TRIGGER karma_vote_trigger
 
 -- RLS
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE photos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pulses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE stories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE votes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE behavioral_analytics ENABLE ROW LEVEL SECURITY;
 
--- Profiles: anyone authenticated can read; owner can update display_name
+-- Profiles Policies
 CREATE POLICY profiles_select ON profiles FOR SELECT TO authenticated USING (true);
 CREATE POLICY profiles_insert ON profiles FOR INSERT TO authenticated WITH CHECK (auth.uid() = id);
 CREATE POLICY profiles_update ON profiles FOR UPDATE TO authenticated USING (auth.uid() = id);
 
--- Photos
-CREATE POLICY photos_select ON photos FOR SELECT TO authenticated USING (true);
-CREATE POLICY photos_insert ON photos FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
-CREATE POLICY photos_delete ON photos FOR DELETE TO authenticated USING (auth.uid() = user_id);
+-- Posts Policies
+CREATE POLICY posts_select ON posts FOR SELECT TO authenticated USING (true);
+CREATE POLICY posts_insert ON posts FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
+CREATE POLICY posts_delete ON posts FOR DELETE TO authenticated USING (auth.uid() = user_id);
 
--- Stories
-CREATE POLICY stories_select ON stories FOR SELECT TO authenticated
-  USING (expires_at > now());
+-- Pulses Policies
+CREATE POLICY pulses_select ON pulses FOR SELECT TO authenticated USING (true);
+CREATE POLICY pulses_insert ON pulses FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
+CREATE POLICY pulses_delete ON pulses FOR DELETE TO authenticated USING (auth.uid() = user_id);
+
+-- Stories Policies
+CREATE POLICY stories_select ON stories FOR SELECT TO authenticated USING (expires_at > now());
 CREATE POLICY stories_insert ON stories FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
 CREATE POLICY stories_delete ON stories FOR DELETE TO authenticated USING (auth.uid() = user_id);
 
--- Votes: insert own, read only own votes (anonymity)
+-- Votes Policies
 CREATE POLICY votes_insert ON votes FOR INSERT TO authenticated WITH CHECK (auth.uid() = voter_id);
 CREATE POLICY votes_select_own ON votes FOR SELECT TO authenticated USING (auth.uid() = voter_id);
 CREATE POLICY votes_update_own ON votes FOR UPDATE TO authenticated USING (auth.uid() = voter_id);
 CREATE POLICY votes_delete_own ON votes FOR DELETE TO authenticated USING (auth.uid() = voter_id);
 
--- Storage buckets (run in Supabase dashboard or via API)
--- INSERT INTO storage.buckets (id, name, public) VALUES ('photos', 'photos', true);
--- INSERT INTO storage.buckets (id, name, public) VALUES ('stories', 'stories', true);
-
--- Storage policies
--- CREATE POLICY "photos_read" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'photos');
--- CREATE POLICY "photos_upload" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'photos' AND auth.uid()::text = (storage.foldername(name))[1]);
--- CREATE POLICY "stories_read" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'stories');
--- CREATE POLICY "stories_upload" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'stories' AND auth.uid()::text = (storage.foldername(name))[1]);
+-- Analytics Policies
+CREATE POLICY analytics_insert ON behavioral_analytics FOR INSERT TO authenticated WITH CHECK (true);

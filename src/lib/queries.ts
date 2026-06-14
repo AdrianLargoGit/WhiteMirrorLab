@@ -145,47 +145,12 @@ export async function fetchRanking(limit = 50) {
     .limit(limit)
 }
 
-/** Cast or flip a vote (anonymous to target) */
-export async function castVote(
-  voterId: string,
-  targetId: string,
-  voteType: VoteType
-): Promise<{ error: string | null }> {
-  if (voterId === targetId) return { error: 'Cannot vote for yourself' }
-  try {
-    const { error } = await supabase
-      .from('votes')
-      .upsert(
-        { voter_id: voterId, target_id: targetId, vote_type: voteType },
-        { onConflict: 'voter_id,target_id' }
-      )
-    if (error) throw error
-    return { error: null }
-  } catch (e: unknown) {
-    return { error: e instanceof Error ? e.message : 'Unknown error' }
-  }
-}
-
-/** Get current user's vote on a target (returns vote_type or null) */
-export async function getMyVoteOnTarget(
-  voterId: string,
-  targetId: string
-): Promise<VoteType | null> {
+/** Fetch vote totals (positive and negative) for a profile — Actualizado a receiver_id */
+export async function fetchVoteSummary(receiverId: string) {
   const { data } = await supabase
     .from('votes')
     .select('vote_type')
-    .eq('voter_id', voterId)
-    .eq('target_id', targetId)
-    .single()
-  return (data?.vote_type as VoteType) ?? null
-}
-
-/** Fetch vote totals (positive and negative) for a profile */
-export async function fetchVoteSummary(targetId: string) {
-  const { data } = await supabase
-    .from('votes')
-    .select('vote_type')
-    .eq('target_id', targetId)
+    .eq('receiver_id', receiverId)
 
   if (!data) return { positive: 0, negative: 0 }
   const positive = data.filter((v) => v.vote_type === 1).length
@@ -252,7 +217,7 @@ export async function fetchPulsesFeed(page = 0, pageSize = 20) {
   return supabase
     .from('pulses')
     .select('*, profile:profiles(id, username, display_name, avatar_url, karma_score)')
-    .is('reply_to_id', null)              // solo pulses raíz, no replies
+    .is('reply_to_id', null)               // solo pulses raíz, no replies
     .order('created_at', { ascending: false })
     .range(page * pageSize, (page + 1) * pageSize - 1)
 }

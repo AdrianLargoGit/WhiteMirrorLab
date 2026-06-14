@@ -6,6 +6,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/authcontext'
 import { supabase } from '@/lib/supabase'
 import { searchProfiles } from '@/lib/queries'
+import { useLocale, wmlPath } from '@/lib/i18n'
+import { wmlCopy } from '@/lib/copy'
 //import { captureEvent } from '@/lib/posthog'
 import type { Profile } from '@/lib/database.types'
 
@@ -16,7 +18,6 @@ const IcoSearch  = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="n
 const IcoPlus    = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 5v14M5 12h14"/></svg>
 const IcoUser    = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.58-7 8-7s8 3 8 7"/></svg>
 const IcoLogout  = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-const IcoCircles = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
 const IcoPulse   = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
 
 interface AppShellProps { children: ReactNode }
@@ -25,19 +26,22 @@ export default function AppShell({ children }: AppShellProps) {
   const { user, profile, loading, signOut } = useAuth()
   const pathname  = usePathname()
   const router    = useRouter()
+  const locale    = useLocale()
+  const copy      = wmlCopy[locale]
+
   const [searchQ, setSearchQ]           = useState('')
   const [searchResults, setSearchResults] = useState<Profile[]>([])
   const [showResults, setShowResults]   = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
 
-  // Redirect to auth if not logged in
+  // Redirección al auth si no hay sesión iniciada (sensible al idioma)
   useEffect(() => {
     if (!loading && !user && !pathname.endsWith('/auth')) {
-      router.replace('/web/auth')
+      router.replace(wmlPath(locale, '/auth'))
     }
-  }, [loading, user, pathname, router])
+  }, [loading, user, pathname, router, locale])
 
-  // Search debounce
+  // Debounce de búsqueda de perfiles
   useEffect(() => {
     if (searchQ.trim().length < 2) { setSearchResults([]); return }
     const id = setTimeout(async () => {
@@ -49,7 +53,7 @@ export default function AppShell({ children }: AppShellProps) {
     return () => clearTimeout(id)
   }, [searchQ])
 
-  // Close search on outside click
+  // Cerrar desplegable al hacer clic fuera
   useEffect(() => {
     const h = (e: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) setShowResults(false)
@@ -58,30 +62,32 @@ export default function AppShell({ children }: AppShellProps) {
     return () => document.removeEventListener('mousedown', h)
   }, [])
 
-  // Auth page — bare layout
+  // Vista limpia para la página de autenticación
   if (pathname.endsWith('/auth')) return <div className="wml-app">{children}</div>
 
   if (loading) {
     return (
       <div className="wml-app" style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontFamily: 'var(--w-font-mono)', fontSize: 11, color: 'var(--w-muted)', letterSpacing: '0.12em' }}>CARGANDO...</span>
+        <span style={{ fontFamily: 'var(--w-font-mono)', fontSize: 11, color: 'var(--w-muted)', letterSpacing: '0.12em' }}>
+          {copy.loadingExperiment.toUpperCase()}
+        </span>
       </div>
     )
   }
 
+  // Enlaces de navegación estructurados dinámicamente
   const navLinks = [
-    { href: '/web/feed',    label: 'Feed',     icon: <IcoHome /> },
-    { href: '/web/me',          label: 'Perfil',   icon: <IcoUser /> }, /* ← Cambiado aquí */
-    { href: '/web/pulses',  label: 'Pulses',   icon: <IcoPulse /> },
-    { href: '/web/ranking', label: 'Ranking',  icon: <IcoTrophy /> },
-    { href: '/web/search',  label: 'Buscar',   icon: <IcoSearch /> },
-    { href: '/web/upload',  label: 'Publicar', icon: <IcoPlus /> },
+    { href: wmlPath(locale, '/feed'),    label: copy.feed,                                   icon: <IcoHome /> },
+    { href: wmlPath(locale, '/me'),      label: copy.profile,                                icon: <IcoUser /> },
+    { href: wmlPath(locale, '/pulses'),  label: 'Pulses',                                    icon: <IcoPulse /> },
+    { href: wmlPath(locale, '/ranking'), label: copy.ranking,                                icon: <IcoTrophy /> },
+    { href: wmlPath(locale, '/upload'),  label: locale === 'es' ? 'Publicar' : 'Publish',    icon: <IcoPlus /> },
   ]
 
   const handleSignOut = async () => {
     //captureEvent('auth_login', { action: 'logout' })
     await signOut()
-    router.replace('/web/auth')
+    router.replace(wmlPath(locale, '/auth'))
   }
 
   return (
@@ -91,16 +97,16 @@ export default function AppShell({ children }: AppShellProps) {
 
         {/* ── Top nav ── */}
         <header className="wml-topnav">
-          <Link href="/web/feed" className="wml-logo">
+          <Link href={wmlPath(locale, '/feed')} className="wml-logo">
             <span className="wml-logo-dot" />
             WML 1.0
           </Link>
 
-          {/* Search */}
+          {/* Buscador Global */}
           <div className="wml-nav-search" ref={searchRef}>
             <span className="wml-nav-search-icon"><IcoSearch /></span>
             <input
-              placeholder="Buscar usuario..."
+              placeholder={copy.searchPlaceholder}
               value={searchQ}
               onChange={(e) => { setSearchQ(e.target.value); setShowResults(true) }}
               onFocus={() => searchQ.length >= 2 && setShowResults(true)}
@@ -110,7 +116,7 @@ export default function AppShell({ children }: AppShellProps) {
                 {searchResults.map((p) => (
                   <Link
                     key={p.id}
-                    href={`/web/profile/${p.username}`}
+                    href={wmlPath(locale, `/profile/${p.username}`)}
                     className="wml-search-result-item"
                     onClick={() => { setShowResults(false); setSearchQ('') }}
                   >
@@ -126,21 +132,21 @@ export default function AppShell({ children }: AppShellProps) {
             )}
           </div>
 
-          {/* Profile mini */}
+          {/* Perfil Mini Superior */}
           {profile && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Link href={`/web/profile/${profile.username}`} style={{ display: 'flex', alignItems: 'center', gap: 7, textDecoration: 'none' }}>
+              <Link href={wmlPath(locale, `/profile/${profile.username}`)} style={{ display: 'flex', alignItems: 'center', gap: 7, textDecoration: 'none' }}>
                 <AvatarMini profile={profile} size={30} />
                 <KarmaBadge score={profile.karma_score} />
               </Link>
-              <button className="wml-btn wml-btn-ghost" onClick={handleSignOut} style={{ padding: '6px 10px', fontSize: 10 }} title="Cerrar sesión">
+              <button className="wml-btn wml-btn-ghost" onClick={handleSignOut} style={{ padding: '6px 10px', fontSize: 10 }} title={copy.logout}>
                 <IcoLogout />
               </button>
             </div>
           )}
         </header>
 
-        {/* ── Sidebar ── */}
+        {/* ── Sidebar (Escritorio) ── */}
         <aside className="wml-sidebar">
           {navLinks.map((l) => (
             <Link key={l.href} href={l.href} className={`wml-nav-item ${pathname.startsWith(l.href) ? 'active' : ''}`}>
@@ -150,7 +156,7 @@ export default function AppShell({ children }: AppShellProps) {
           ))}
           <div className="wml-nav-spacer" />
           {profile && (
-            <Link href={`/web/profile/${profile.username}`} className="wml-sidebar-profile">
+            <Link href={wmlPath(locale, `/profile/${profile.username}`)} className="wml-sidebar-profile">
               <AvatarMini profile={profile} size={32} />
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontFamily: 'var(--w-font-display)', fontWeight: 700, fontSize: 12, letterSpacing: '-0.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -164,7 +170,7 @@ export default function AppShell({ children }: AppShellProps) {
           )}
         </aside>
 
-        {/* ── Main ── */}
+        {/* ── Main Content ── */}
         <main className="wml-main">{children}</main>
 
         {/* ── Mobile bottom nav ── */}
@@ -204,19 +210,17 @@ export function KarmaBadge({ score, style }: { score: number; style?: React.CSSP
 
 // ── Terms gate ────────────────────────────────────────────────────────────────
 function TermsGate() {
-  const { profile, refreshProfile, loading } = useAuth() // Asegúrate de traer 'loading'
+  const { profile, refreshProfile, loading } = useAuth()
   const [accepting, setAccepting] = useState(false)
   const [isClient, setIsClient] = useState(false)
+  const locale = useLocale()
+  const copy = wmlCopy[locale]
 
   useEffect(() => {
     setIsClient(true)
   }, [])
 
-  // 1. Si no estamos en el cliente o los datos siguen cargando, no renderizamos nada
-  // Esto asegura que el servidor SIEMPRE reciba un null consistente.
   if (!isClient || loading || !profile) return null
-
-  // 2. Si ya aceptó, no renderizamos nada
   if (profile.accepted_terms_version === '1.0') return null
 
   const accept = async () => {
@@ -232,23 +236,22 @@ function TermsGate() {
   return (
     <div className="wml-terms-overlay">
       <div className="wml-terms-card">
-        <div className="wml-terms-title">Consentimiento Informado</div>
+        <div className="wml-terms-title">{copy.consentTitle}</div>
         <div className="wml-terms-body">
-          <p>Estás a punto de participar en <strong>WML 1.0 — Karma Score</strong>, un experimento social controlado.</p>
+          <p>{copy.consentLead}</p>
           <br />
-          <p><strong>Qué implica:</strong></p>
+          <p><strong>{copy.consentInfoTitle}:</strong></p>
           <ul style={{ paddingLeft: 18, marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <li>Otros usuarios pueden votarte positiva o negativamente de forma anónima.</li>
-            <li>Tu puntuación Karma (votos positivos − negativos) es pública.</li>
-            <li>Tus publicaciones son visibles para todos los participantes.</li>
-            <li>Tus datos de comportamiento se registran de forma anonimizada.</li>
-            <li>El experimento finaliza en una fecha definida; todos los datos se publicarán.</li>
+            {copy.consentBullets.map((bullet, idx) => (
+              <li key={idx}>{bullet}</li>
+            ))}
           </ul>
           <br />
-          <p>Puedes abandonar en cualquier momento solicitando la eliminación de tu cuenta.</p>
+          <p style={{ fontSize: 11, color: 'var(--w-muted)', lineHeight: '1.4' }}>{copy.consentAge}</p>
+          <p style={{ fontSize: 11, color: 'var(--w-muted)', lineHeight: '1.4', marginTop: 4 }}>{copy.consentVoluntary}</p>
         </div>
         <button className="wml-btn wml-btn-primary" onClick={accept} disabled={accepting} style={{ width: '100%', justifyContent: 'center' }}>
-          {accepting ? 'Aceptando...' : 'Entiendo y acepto participar'}
+          {accepting ? (locale === 'es' ? 'Aceptando...' : 'Accepting...') : copy.acceptAndJoin}
         </button>
       </div>
     </div>

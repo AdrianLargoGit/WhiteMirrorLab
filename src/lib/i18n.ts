@@ -1,3 +1,6 @@
+'use client'
+import { usePathname } from 'next/navigation' // 👈 Importamos el hook nativo de Next.js
+
 export const LOCALE_COOKIE = 'wml_locale'
 
 export type Locale = 'es' | 'en'
@@ -29,11 +32,20 @@ const WML_ROUTE_ALIASES = new Map([
   ['/auth', '/auth'],
   ['/feed', '/feed'],
   ['/ranking', '/ranking'],
-  ['/search', '/search'],
+  ['/upload', '/upload'],
   ['/me', '/me'],
   ['/profile', '/profile'],
   ['/pulses', '/pulses'],
 ])
+
+export const WML_ROUTES = {
+  feed:    '/web/feed',
+  pulses:  '/web/pulses',
+  ranking: '/web/ranking',
+  upload:  '/web/upload',
+  auth:    '/web/auth',
+  profile: (username: string) => `/web/profile/${username}`,
+} as const
 
 export function isLocale(value: unknown): value is Locale {
   return value === 'es' || value === 'en'
@@ -119,4 +131,15 @@ export function alternateLocalePath(pathname: string, nextLocale: Locale): strin
     return internal.replace(ROUTES.es.wml, ROUTES.en.wml)
   }
   return internal
+}
+
+/**
+ * 👑 HOOK: useLocale
+ * Devuelve de forma reactiva el idioma actual leyendo la URL del navegador.
+ * Puede usarse en cualquier Client Component ('use client').
+ */
+export function useLocale(): Locale {
+  const pathname = usePathname()
+  if (!pathname) return DEFAULT_LOCALE
+  return getLocaleFromPathname(pathname)
 }

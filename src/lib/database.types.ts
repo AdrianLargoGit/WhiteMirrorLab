@@ -61,13 +61,17 @@ export interface Database {
         Row: {
           id: string
           voter_id: string
-          target_id: string
+          receiver_id: string        // 🔴 Actualizado: El usuario que recibe el voto/karma
+          pulse_id: string | null    // 🔴 Actualizado: ID del pulse si es un voto a un pulse
+          posts_id: string | null    // 🔴 Actualizado: ID del post/foto si es un voto a una foto
           vote_type: 1 | -1
           created_at: string
         }
         Insert: Omit<Database['public']['Tables']['votes']['Row'], 'id' | 'created_at'> & {
           id?: string
           created_at?: string
+          pulse_id?: string | null
+          posts_id?: string | null
         }
         Update: Partial<Database['public']['Tables']['votes']['Insert']>
       }
@@ -113,11 +117,11 @@ export interface Database {
   }
 }
 
-export type Profile    = Database['public']['Tables']['profiles']['Row']
-export type Post       = Database['public']['Tables']['posts']['Row']
-export type Story      = Database['public']['Tables']['stories']['Row']
-export type Vote       = Database['public']['Tables']['votes']['Row']
-export type Pulse      = Database['public']['Tables']['pulses']['Row']
+export type Profile     = Database['public']['Tables']['profiles']['Row']
+export type Post        = Database['public']['Tables']['posts']['Row']
+export type Story       = Database['public']['Tables']['stories']['Row']
+export type Vote        = Database['public']['Tables']['votes']['Row']
+export type Pulse       = Database['public']['Tables']['pulses']['Row']
 export type BehavioralEvent = Database['public']['Tables']['behavioral_analytics']['Row']
 
 export type ProfileWithPosts  = Profile & { posts: Post[] }

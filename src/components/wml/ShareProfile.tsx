@@ -1,80 +1,61 @@
 'use client'
 
 import { useState } from 'react'
-import {
-  copyToClipboard,
-  getPublicProfileUrl,
-  getShareMessage,
-  getWhatsAppShareUrl,
-} from '@/lib/share'
-import { captureEvent } from '@/lib/analytics'
-import type { PublicProfile } from '@/lib/types'
-import { useLocale } from '@/hooks/useLocale'
-import { wmlCopy } from '@/lib/copy'
 
-interface ShareProfileProps {
-  profile: PublicProfile
-}
+const ICO_SHARE = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="18" cy="5" r="3"></circle>
+    <circle cx="6" cy="12" r="3"></circle>
+    <circle cx="18" cy="19" r="3"></circle>
+    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+  </svg>
+)
 
-export function ShareProfile({ profile }: ShareProfileProps) {
-  const locale = useLocale()
-  const t = wmlCopy[locale]
+export default function ShareProfileButton({ 
+  username, 
+  displayName 
+}: { 
+  username: string
+  displayName: string 
+}) {
   const [copied, setCopied] = useState(false)
 
-  const url = getPublicProfileUrl(profile.username, locale)
-  const message = getShareMessage(profile.display_name, profile.username, profile.karma_score, locale)
-  const whatsappUrl = getWhatsAppShareUrl(message, url)
+  const handleShare = async () => {
+    const profileUrl = `${window.location.origin}/web/profile/${username}`
+    const shareTitle = `¡Vota por ${displayName} en WML!`
+    const shareText = `¡Entra a mi perfil y apóyame con un voto positivo! 🚀`
 
-  const markCopied = () => {
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2500)
-  }
-
-  const handleCopy = async () => {
-    const ok = await copyToClipboard(`${message}\n${url}`)
-    if (ok) {
-      markCopied()
-      captureEvent('profile_link_copied', { username: profile.username, locale })
+    // Intenta abrir el menú nativo (iOS/Android)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: profileUrl,
+        })
+      } catch (error) {
+        console.log('Interacción cancelada o error', error)
+      }
+    } else {
+      // Si no hay menú nativo (PC), copia al portapapeles
+      try {
+        await navigator.clipboard.writeText(profileUrl)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      } catch (err) {
+        console.error('Error al copiar', err)
+      }
     }
   }
 
-  const handleWhatsApp = () => {
-    captureEvent('profile_shared_whatsapp', { username: profile.username, locale })
-    window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
-  }
-
-  const handleInstagram = async () => {
-    await copyToClipboard(url)
-    markCopied()
-    captureEvent('profile_shared_instagram', { username: profile.username, locale })
-  }
-
   return (
-    <div className="wml-share-card">
-      <div className="wml-section-title">{t.shareProfile}</div>
-      <p className="wml-share-desc">{t.shareDesc}</p>
-
-      <div className="wml-share-preview">
-        <span className="wml-share-preview-label">{t.yourLink}</span>
-        <code className="wml-share-url">{url.replace(/^https?:\/\//, '')}</code>
-      </div>
-
-      <div className="wml-share-btns">
-        <button type="button" className="wml-share-btn wml-share-btn-wa" onClick={handleWhatsApp}>
-          <span className="wml-share-btn-icon" aria-hidden="true">WA</span>
-          WhatsApp
-        </button>
-        <button type="button" className="wml-share-btn wml-share-btn-ig" onClick={handleInstagram}>
-          <span className="wml-share-btn-icon" aria-hidden="true">IG</span>
-          Instagram
-        </button>
-        <button type="button" className="wml-share-btn wml-share-btn-copy" onClick={handleCopy}>
-          <span className="wml-share-btn-icon" aria-hidden="true">[]</span>
-          {copied ? t.copied : t.copy}
-        </button>
-      </div>
-
-      <p className="wml-share-hint">{t.shareHint}</p>
-    </div>
+    <button 
+      className="wml-btn wml-btn-ghost" 
+      onClick={handleShare}
+      style={{ padding: '6px 12px', fontSize: 12, borderRadius: '6px', display: 'flex', gap: '6px', alignItems: 'center' }}
+    >
+      <ICO_SHARE /> {copied ? '¡Copiado!' : 'Compartir'}
+    </button>
   )
 }

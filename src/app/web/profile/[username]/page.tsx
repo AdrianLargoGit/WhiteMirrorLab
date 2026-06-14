@@ -3,21 +3,21 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/authcontext'
+import { useLocale, wmlPath } from '@/lib/i18n'
+import { wmlCopy } from '@/lib/copy'
 import {
   fetchProfileByUsername,
   fetchUserPosts,
   fetchUserPulses,
-  fetchVoteSummary,
-  getMyVoteOnTarget,
-  castVote,
   deletePost,
   deletePulse,
   uploadAvatar,
   updateProfile,
 } from '@/lib/queries'
+import { castVote, getMyVote } from '@/lib/votes'
 import { AvatarMini } from '@/components/wml10/AppShell'
-//import { captureEvent } from '@/lib/posthog'
-import type { Profile, Post, VoteType, PulseWithProfile } from '@/lib/database.types'
+import ShareProfileButton from '@/components/wml/ShareProfile'
+import type { Profile, Post, PulseWithProfile } from '@/lib/database.types'
 
 const ICO_UP    = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
 const ICO_DOWN  = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
@@ -26,10 +26,10 @@ const ICO_EDIT  = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="no
 
 type TabId = 'posts' | 'pulses'
 
-function timeAgo(iso: string): string {
+function timeAgo(iso: string, locale: string): string {
   const diff = Date.now() - new Date(iso).getTime()
   const m = Math.floor(diff / 60000)
-  if (m < 1) return 'ahora'
+  if (m < 1) return locale === 'es' ? 'ahora' : 'now'
   if (m < 60) return `${m}m`
   const h = Math.floor(m / 60)
   if (h < 24) return `${h}h`
@@ -42,12 +42,13 @@ export default function ProfilePage() {
 
   const { user, profile: myProfile, refreshProfile } = useAuth()
   const router = useRouter()
+  const locale = useLocale()
+  const copy = wmlCopy[locale]
 
   const [profile, setProfile]           = useState<Profile | null>(null)
   const [posts, setPosts]               = useState<Post[]>([])
   const [pulses, setPulses]             = useState<PulseWithProfile[]>([])
-  const [voteSummary, setVoteSummary]   = useState({ positive: 0, negative: 0 })
-  const [myVote, setMyVote]             = useState<VoteType | null>(null)
+  const [myVote, setMyVote]             = useState<boolean | null>(null) // true = positivo, false = negativo
   const [loading, setLoading]           = useState(true)
   const [error, setError]               = useState<string | null>(null)
   const [activeTab, setActiveTab]       = useState<TabId>('posts')
@@ -71,7 +72,7 @@ export default function ProfilePage() {
       if (cancelled) return
 
       if (profErr || !prof) {
-        setError('Usuario no encontrado.')
+        setError(locale === 'es' ? 'Usuario no encontrado.' : 'User not found.')
         setLoading(false)
         return
       }
@@ -79,20 +80,18 @@ export default function ProfilePage() {
       setProfile(prof)
       setEditName(prof.display_name)
 
-      const [pRes, pulsesRes, vsRes] = await Promise.all([
+      const [pRes, pulsesRes] = await Promise.all([
         fetchUserPosts(prof.id),
         fetchUserPulses(prof.id),
-        fetchVoteSummary(prof.id),
       ])
 
       if (cancelled) return
 
       setPosts((pRes.data ?? []) as Post[])
       setPulses((pulsesRes.data ?? []) as PulseWithProfile[])
-      setVoteSummary(vsRes)
 
       if (user && user.id !== prof.id) {
-        const vote = await getMyVoteOnTarget(user.id, prof.id)
+        const vote = await getMyVote(user.id, prof.id, null, null)
         if (!cancelled) setMyVote(vote)
       }
 
@@ -101,15 +100,25 @@ export default function ProfilePage() {
 
     load()
     return () => { cancelled = true }
-  }, [username, user])
+  }, [username, user, locale])
 
-  const handleVote = async (type: VoteType) => {
+  const handleVote = async (isPositive: boolean) => {
     if (!user || !profile) return
-    const newType = myVote === type ? null : type
-    setMyVote(newType)
-    if (newType !== null) {
-      await castVote(user.id, profile.id, newType)
-      setVoteSummary(await fetchVoteSummary(profile.id))
+    
+    const isSameButton = myVote === isPositive
+    setMyVote(isSameButton ? null : isPositive)
+
+    const res = await castVote({
+      voterId: user.id,
+      receiverId: profile.id,
+      isPositive: isPositive,
+      pulseId: null,
+      photoId: null
+    })
+
+    if (res.success) {
+      const { data: updatedProf } = await fetchProfileByUsername(username)
+      if (updatedProf) setProfile(updatedProf)
     }
   }
 
@@ -136,14 +145,14 @@ export default function ProfilePage() {
   }
 
   const handleDeletePost = async (post: Post) => {
-    if (!window.confirm('¿Eliminar esta publicación?')) return
+    if (!window.confirm(locale === 'es' ? '¿Eliminar esta publicación?' : 'Delete this post?')) return
     await deletePost(post.id, post.image_url, user!.id)
     setPosts((prev) => prev.filter((p) => p.id !== post.id))
     setSelectedPost(null)
   }
 
   const handleDeletePulse = async (pulseId: string) => {
-    if (!window.confirm('¿Eliminar este pulse?')) return
+    if (!window.confirm(locale === 'es' ? '¿Eliminar este pulse?' : 'Delete this pulse?')) return
     await deletePulse(pulseId, user!.id)
     setPulses((prev) => prev.filter((p) => p.id !== pulseId))
   }
@@ -156,7 +165,7 @@ export default function ProfilePage() {
           {error}
         </div>
         <button className="wml-btn wml-btn-ghost" onClick={() => router.back()} style={{ padding: '8px 24px', borderRadius: '8px' }}>
-          Volver
+          {locale === 'es' ? 'Volver' : 'Go back'}
         </button>
       </div>
     )
@@ -165,8 +174,8 @@ export default function ProfilePage() {
   if (loading) return <ProfileSkeleton />
   if (!profile) return null
 
-  const votespositive = profile.total_votes_given_positive
-  const votessnegative = profile.total_votes_given_negative
+  const votespositive = profile.votes_received_positive
+  const votessnegative = profile.votes_received_negative
   const netKarma   = profile.karma_score ? profile.karma_score : votespositive - votessnegative
   const karmaClass = netKarma > 0 ? 'pos' : netKarma < 0 ? 'neg' : ''
 
@@ -202,20 +211,25 @@ export default function ProfilePage() {
                 autoFocus
               />
               <button className="wml-btn wml-btn-primary" onClick={handleSaveEdit} disabled={saving} style={{ padding: '8px 16px', borderRadius: '6px' }}>
-                {saving ? '...' : 'Guardar'}
+                {saving ? '...' : (locale === 'es' ? 'Guardar' : 'Save')}
               </button>
               <button className="wml-btn wml-btn-ghost" onClick={() => setEditing(false)} style={{ padding: '8px 16px', borderRadius: '6px' }}>
-                Cancelar
+                {locale === 'es' ? 'Cancelar' : 'Cancel'}
               </button>
             </div>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4, flexWrap: 'wrap' }}>
-              <h1 className="wml-profile-display-name" style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600 }}>{profile.display_name}</h1>
+              <h1 className="wml-profile-display-name" style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600 }}>
+                {profile.display_name}
+              </h1>
+              
               {isOwn && (
                 <button className="wml-btn wml-btn-ghost" onClick={() => setEditing(true)} style={{ padding: '6px 12px', fontSize: 12, borderRadius: '6px', display: 'flex', gap: '6px', alignItems: 'center' }}>
-                  <ICO_EDIT /> Editar
+                  <ICO_EDIT /> {locale === 'es' ? 'Editar' : 'Edit'}
                 </button>
               )}
+              
+              <ShareProfileButton username={profile.username} displayName={profile.display_name} />
             </div>
           )}
 
@@ -226,9 +240,9 @@ export default function ProfilePage() {
           <div className="wml-profile-stats" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             {[
               { label: 'Karma', val: `${netKarma > 0 ? '+' : ''}${netKarma}`, cls: karmaClass },
-              { label: 'Votos +', val: votespositive, cls: 'pos' },
-              { label: 'Votos −', val: votessnegative, cls: 'neg' },
-              { label: 'Fotos', val: posts.length, cls: '' },
+              { label: locale === 'es' ? 'Votos +' : 'Upvotes', val: votespositive, cls: 'pos' },
+              { label: locale === 'es' ? 'Votos −' : 'Downvotes', val: votessnegative, cls: 'neg' },
+              { label: locale === 'es' ? 'Fotos' : 'Photos', val: posts.length, cls: '' },
               { label: 'Pulses', val: pulses.length, cls: '' },
             ].map((stat, i) => (
               <div key={i} className="wml-profile-stat" style={{ background: 'var(--w-surface)', border: '1px solid var(--w-border)', padding: '10px 16px', borderRadius: '8px', display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '70px' }}>
@@ -240,11 +254,11 @@ export default function ProfilePage() {
 
           {!isOwn && user && (
             <div className="wml-profile-vote-actions" style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
-              <button className={`wml-vote-btn ${myVote === 1 ? 'pos' : ''}`} onClick={() => handleVote(1)} style={{ padding: '8px 16px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid var(--w-border)', background: myVote === 1 ? 'var(--w-accent-subtle)' : 'transparent' }}>
-                <ICO_UP /> Positivo
+              <button className={`wml-vote-btn ${myVote === true ? 'pos' : ''}`} onClick={() => handleVote(true)} style={{ padding: '8px 16px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid var(--w-border)', background: myVote === true ? 'var(--w-accent-subtle)' : 'transparent' }}>
+                <ICO_UP /> {copy.positive}
               </button>
-              <button className={`wml-vote-btn ${myVote === -1 ? 'neg' : ''}`} onClick={() => handleVote(-1)} style={{ padding: '8px 16px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid var(--w-border)', background: myVote === -1 ? 'rgba(255,0,0,0.1)' : 'transparent' }}>
-                <ICO_DOWN /> Negativo
+              <button className={`wml-vote-btn ${myVote === false ? 'neg' : ''}`} onClick={() => handleVote(false)} style={{ padding: '8px 16px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid var(--w-border)', background: myVote === false ? 'rgba(255,0,0,0.1)' : 'transparent' }}>
+                <ICO_DOWN /> {copy.negative}
               </button>
             </div>
           )}
@@ -274,7 +288,9 @@ export default function ProfilePage() {
               cursor: 'pointer', transition: 'all 0.2s ease',
             }}
           >
-            {tab === 'posts' ? `Fotos (${posts.length})` : `Pulses (${pulses.length})`}
+            {tab === 'posts' 
+              ? (locale === 'es' ? `Fotos (${posts.length})` : `Photos (${posts.length})`) 
+              : `Pulses (${pulses.length})`}
           </button>
         ))}
       </div>
@@ -282,7 +298,7 @@ export default function ProfilePage() {
       {/* ── Posts grid ── */}
       {activeTab === 'posts' && (
         posts.length === 0 ? (
-          <EmptyTab isOwn={isOwn} type="posts" />
+          <EmptyTab isOwn={isOwn} type="posts" locale={locale} />
         ) : (
           <div className="wml-posts-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '8px', padding: '16px' }}>
             {posts.map((post) => (
@@ -305,7 +321,7 @@ export default function ProfilePage() {
       {/* ── Pulses list ── */}
       {activeTab === 'pulses' && (
         pulses.length === 0 ? (
-          <EmptyTab isOwn={isOwn} type="pulses" />
+          <EmptyTab isOwn={isOwn} type="pulses" locale={locale} />
         ) : (
           <div style={{ padding: '0 16px' }}>
             {pulses.map((pulse) => (
@@ -327,16 +343,16 @@ export default function ProfilePage() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
                   <span style={{ fontFamily: 'var(--w-font-mono)', fontSize: 11, color: 'var(--w-muted-2)' }}>
-                    {timeAgo(pulse.created_at)}
+                    {timeAgo(pulse.created_at, locale)}
                   </span>
                   {pulse.reply_count > 0 && (
                     <span style={{ fontFamily: 'var(--w-font-mono)', fontSize: 11, color: 'var(--w-accent)' }}>
-                      {pulse.reply_count} resp.
+                      {pulse.reply_count} {locale === 'es' ? 'resp.' : 'replies'}
                     </span>
                   )}
                   {pulse.reply_to_id && (
                     <span style={{ fontFamily: 'var(--w-font-mono)', fontSize: 10, color: 'var(--w-muted)', background: 'var(--w-surface-2)', padding: '2px 8px', borderRadius: '12px' }}>
-                      RESPUESTA
+                      {locale === 'es' ? 'RESPUESTA' : 'REPLY'}
                     </span>
                   )}
                 </div>
@@ -367,10 +383,12 @@ export default function ProfilePage() {
             <div style={{ padding: '12px 16px', borderTop: '1px solid var(--w-border)', display: 'flex', gap: 12, justifyContent: 'flex-end', background: 'var(--w-bg)' }}>
               {isOwn && (
                 <button className="wml-btn wml-btn-danger" onClick={() => handleDeletePost(selectedPost)} style={{ padding: '8px 16px', borderRadius: '6px', display: 'flex', gap: '6px', alignItems: 'center' }}>
-                  <ICO_TRASH /> Eliminar
+                  <ICO_TRASH /> {locale === 'es' ? 'Eliminar' : 'Delete'}
                 </button>
               )}
-              <button className="wml-btn wml-btn-ghost" onClick={() => setSelectedPost(null)} style={{ padding: '8px 16px', borderRadius: '6px' }}>Cerrar</button>
+              <button className="wml-btn wml-btn-ghost" onClick={() => setSelectedPost(null)} style={{ padding: '8px 16px', borderRadius: '6px' }}>
+                {locale === 'es' ? 'Cerrar' : 'Close'}
+              </button>
             </div>
           </div>
         </div>
@@ -379,12 +397,23 @@ export default function ProfilePage() {
   )
 }
 
-function EmptyTab({ isOwn, type }: { isOwn: boolean; type: 'posts' | 'pulses' }) {
+function EmptyTab({ isOwn, type, locale }: { isOwn: boolean; type: 'posts' | 'pulses'; locale: string }) {
+  const isEs = locale === 'es'
+  let text = ''
+  
+  if (isOwn) {
+    text = type === 'posts' 
+      ? (isEs ? 'Aún no has publicado fotos' : "You haven't posted any photos yet") 
+      : (isEs ? 'Aún no has escrito ningún pulse' : "You haven't written any pulses yet")
+  } else {
+    text = type === 'posts' 
+      ? (isEs ? 'Sin publicaciones' : 'No posts yet') 
+      : (isEs ? 'Sin pulses' : 'No pulses yet')
+  }
+
   return (
     <div style={{ padding: '80px 20px', textAlign: 'center', fontFamily: 'var(--w-font-mono)', fontSize: 13, color: 'var(--w-muted-2)', letterSpacing: '0.05em' }}>
-      {isOwn
-        ? type === 'posts' ? 'Aún no has publicado fotos' : 'Aún no has escrito ningún pulse'
-        : type === 'posts' ? 'Sin publicaciones' : 'Sin pulses'}
+      {text}
     </div>
   )
 }
