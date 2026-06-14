@@ -6,7 +6,8 @@ import { useAuth } from '@/lib/authcontext'
 import { fetchFeedPosts, fetchActiveStories } from '@/lib/queries'
 import { castVote, getMyVote } from '@/lib/votes'
 import { captureEvent } from '@/lib/posthog'
-import { useLocale, wmlPath } from '@/lib/i18n'
+import { useLocale } from '@/lib/i18nutils' // ✅ Solo componentes cliente
+import { wmlPath } from '@/lib/i18n'   // ✅ Puedes usar las funciones puras también
 import { wmlCopy } from '@/lib/copy'
 import { AvatarMini, KarmaBadge } from '@/components/wml10/AppShell'
 import type { Post, Profile, Story, VoteType } from '@/lib/database.types'

@@ -1,4 +1,3 @@
-'use client'
 import { usePathname } from 'next/navigation' // 👈 Importamos el hook nativo de Next.js
 
 export const LOCALE_COOKIE = 'wml_locale'
@@ -131,15 +130,4 @@ export function alternateLocalePath(pathname: string, nextLocale: Locale): strin
     return internal.replace(ROUTES.es.wml, ROUTES.en.wml)
   }
   return internal
-}
-
-/**
- * 👑 HOOK: useLocale
- * Devuelve de forma reactiva el idioma actual leyendo la URL del navegador.
- * Puede usarse en cualquier Client Component ('use client').
- */
-export function useLocale(): Locale {
-  const pathname = usePathname()
-  if (!pathname) return DEFAULT_LOCALE
-  return getLocaleFromPathname(pathname)
 }

@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { fetchRanking } from '@/lib/queries'
-import { useLocale, wmlPath } from '@/lib/i18n'
+import { useLocale } from '@/lib/i18nutils' // ✅ Solo componentes cliente
+import { wmlPath } from '@/lib/i18n' 
 import { wmlCopy } from '@/lib/copy'
 import { AvatarMini } from '@/components/wml10/AppShell'
 import type { Profile } from '@/lib/database.types'

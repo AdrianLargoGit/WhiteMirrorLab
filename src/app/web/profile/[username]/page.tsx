@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/authcontext'
-import { useLocale, wmlPath } from '@/lib/i18n'
+import { useLocale } from '@/lib/i18nutils' // ✅ Solo componentes cliente
+import { wmlPath } from '@/lib/i18n' 
 import { wmlCopy } from '@/lib/copy'
 import {
   fetchProfileByUsername,
