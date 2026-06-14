@@ -1,5 +1,3 @@
-import { usePathname } from 'next/navigation' // 👈 Importamos el hook nativo de Next.js
-
 export const LOCALE_COOKIE = 'wml_locale'
 
 export type Locale = 'es' | 'en'

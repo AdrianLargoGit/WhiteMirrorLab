@@ -1,4 +1,4 @@
-'use client' // 👈 Importante
+'use client' 
 
 import { usePathname } from 'next/navigation'
 import { getLocaleFromPathname, DEFAULT_LOCALE, type Locale } from './i18n'
