@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useLocale } from '@/lib/i18nutils' // <-- Importamos el lector de idioma
 
 const ICO_SHARE = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -20,13 +21,25 @@ export default function ShareProfileButton({
   displayName: string 
 }) {
   const [copied, setCopied] = useState(false)
+  const locale = useLocale() // <-- Inicializamos el idioma actual
+  const isEn = locale === 'en'
 
   const handleShare = async () => {
-    const profileUrl = `${window.location.origin}/web/profile/${username}`
-    const shareTitle = `¡Vota por ${displayName} en WML!`
-    const shareText = `¡Entra a mi perfil y apóyame con un voto positivo! 🚀`
+    // Generar URL correcta dependiendo del idioma activo
+    const profileUrl = isEn
+      ? `${window.location.origin}/en/wml-1-0/profile/${username}`
+      : `${window.location.origin}/web/profile/${username}`
+      
+    // Textos adaptados
+    const shareTitle = isEn 
+      ? `Vote for ${displayName} on WML!` 
+      : `¡Vota por ${displayName} en WML!`
+      
+    const shareText = isEn 
+      ? `Check out my profile and support me with an upvote! 🚀` 
+      : `¡Entra a mi perfil y apóyame con un voto positivo! 🚀`
 
-    // Intenta abrir el menú nativo (iOS/Android)
+    // Menú nativo del dispositivo (móviles)
     if (navigator.share) {
       try {
         await navigator.share({
@@ -38,7 +51,7 @@ export default function ShareProfileButton({
         console.log('Interacción cancelada o error', error)
       }
     } else {
-      // Si no hay menú nativo (PC), copia al portapapeles
+      // Portapapeles (Escritorio / PC)
       try {
         await navigator.clipboard.writeText(profileUrl)
         setCopied(true)
@@ -55,7 +68,12 @@ export default function ShareProfileButton({
       onClick={handleShare}
       style={{ padding: '6px 12px', fontSize: 12, borderRadius: '6px', display: 'flex', gap: '6px', alignItems: 'center' }}
     >
-      <ICO_SHARE /> {copied ? '¡Copiado!' : 'Compartir'}
+      <ICO_SHARE /> 
+      {/* Texto adaptado dinámicamente */}
+      {copied 
+        ? (isEn ? 'Copied!' : '¡Copiado!') 
+        : (isEn ? 'Share' : 'Compartir')
+      }
     </button>
   )
 }

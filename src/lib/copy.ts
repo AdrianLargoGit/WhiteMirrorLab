@@ -214,6 +214,7 @@ export const heroCopy = {
 
 export const wmlCopy = {
   es: {
+    
     backHome: 'Inicio',
     backHomeLabel: 'Volver al inicio',
     access: 'Acceso',
@@ -233,7 +234,7 @@ export const wmlCopy = {
     participants: 'Participantes',
     noParticipants: 'Aun no hay mas participantes. Invita a alguien al experimento.',
     rankingTitle: 'Ranking / Karma Score',
-    rankingText: 'El participante con mayor karma al final del experimento recibira el premio. Los votos son anonimos: nadie puede ver a quien has votado.',
+    rankingText: 'El participante con mayor karma al final del experimento recibira el premio. Los votos son anónimos; por cada 5 negativos sumarás tú 1 de karma, por cada 8 positivos también lo sumarás.',
     searchUsers: 'Buscar usuarios',
     searchPlaceholder: 'Username o nombre...',
     noUsersFound: 'No se encontraron usuarios.',
@@ -317,7 +318,7 @@ export const wmlCopy = {
     participants: 'Participants',
     noParticipants: 'There are no more participants yet. Invite someone to the experiment.',
     rankingTitle: 'Ranking / Karma Score',
-    rankingText: 'The participant with the highest karma at the end of the experiment will receive the prize. Votes are anonymous: nobody can see who you voted for.',
+    rankingText: 'The participant with the highest karma at the end of the experiment will receive the prize. Voting is anonymous; for every 5 negative votes, you will gain 1 karma point, and for every 8 positive votes, you will also gain 1 point.',
     searchUsers: 'Search users',
     searchPlaceholder: 'Username or name...',
     noUsersFound: 'No users found.',

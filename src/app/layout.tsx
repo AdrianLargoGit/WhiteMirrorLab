@@ -5,6 +5,7 @@ import './globals.css'
 import { PHProvider } from './providers'
 import { PostHogPageView } from './PostHogPageView'
 import { DEFAULT_LOCALE, isLocale, type Locale } from '@/lib/i18n'
+import CookieBanner from '@/components/CookieBanner'
 
 export const metadata: Metadata = {
   title: 'White Mirror Lab',
@@ -35,6 +36,7 @@ export default async function RootLayout({
             <PostHogPageView />
           </Suspense>
           {children}
+          <CookieBanner />
         </PHProvider>
       </body>
     </html>

@@ -172,14 +172,30 @@ export default function PulsesPage() {
                 {charsLeft}
               </div>
               <button
-                className="wml-btn wml-btn-primary"
-                onClick={handlePost}
-                disabled={posting || !body.trim() || isOverLimit}
-                style={{ padding: '8px 18px', gap: 6 }}
-              >
-                <IcoSend />
-                {posting ? 'Publicando...' : 'Pulsar'}
-              </button>
+  className="wml-btn wml-btn-primary"
+  onClick={handlePost}
+  disabled={posting || !body.trim() || isOverLimit}
+  style={{ 
+    padding: '8px 18px', 
+    gap: 6,
+    // ─── NUEVOS ESTILOS DE VISIBILIDAD ESTRICTOS ───
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: 'none',
+    borderRadius: '8px',
+    fontWeight: 600,
+    fontSize: '14px',
+    transition: 'all 0.2s ease',
+    // Si está deshabilitado (posting, vacío o límite excedido) se vuelve gris oscuro, si está listo se vuelve blanco brillante
+    backgroundColor: (posting || !body.trim() || isOverLimit) ? '#27272a' : '#ffffff',
+    color: (posting || !body.trim() || isOverLimit) ? '#71717a' : '#000000',
+    cursor: (posting || !body.trim() || isOverLimit) ? 'not-allowed' : 'pointer',
+  }}
+>
+  <IcoSend />
+  {posting ? 'Publicando...' : 'Pulsar'}
+</button>
             </div>
           </div>
         </div>

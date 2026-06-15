@@ -6,7 +6,7 @@ import { fetchRanking } from '@/lib/queries'
 import { useLocale } from '@/lib/i18nutils' // ✅ Solo componentes cliente
 import { wmlPath } from '@/lib/i18n' 
 import { wmlCopy } from '@/lib/copy'
-import { AvatarMini } from '@/components/wml10/AppShell'
+import { AvatarMini } from '@/components/wml/AppShell'
 import type { Profile } from '@/lib/database.types'
 
 type RankProfile = Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url' | 'karma_score' | 'country' | 'created_at'>

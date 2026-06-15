@@ -6,6 +6,19 @@ import { useEffect, type ReactNode } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/lib/authcontext'
 
+// Función interna rápida para comprobar si el usuario dio permiso de analíticas
+const hasAnalyticsConsent = (): boolean => {
+  if (typeof window === 'undefined') return false
+  const consentRaw = localStorage.getItem('wml_cookie_consent')
+  if (!consentRaw) return true // Si aún no ha contestado el banner, permitimos el tracking inicial (o pon false si quieres ser estricto GDPR)
+  try {
+    const consent = JSON.parse(consentRaw)
+    return consent.analytics !== false
+  } catch {
+    return true
+  }
+}
+
 // ── Initialise PostHog once ───────────────────────────────────────────────────
 if (typeof window !== 'undefined') {
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY_WML_1_0
@@ -13,25 +26,20 @@ if (typeof window !== 'undefined') {
 
   if (key && host) {
     posthog.init(key, {
-      // Route through Next.js rewrites (/ingest → posthog host) to avoid adblockers
       api_host: '/ingest',
       ui_host: host,
-      // Capture pageviews manually so we get the right Next.js route
-      capture_pageview: false,
-      // Respect Do Not Track
+      capture_pageview: false, // Controlado manualmente abajo
       respect_dnt: true,
-      // Session recording — useful for UX research
       session_recording: {
-        maskAllInputs: true,          // never record passwords / emails
-        maskTextSelector: '[data-ph-mask]', // opt-in mask for sensitive UI text
+        maskAllInputs: true,
+        maskTextSelector: '[data-ph-mask]',
       },
-      // Persistence: use localStorage so anonymous IDs survive refreshes
       persistence: 'localStorage+cookie',
     })
   }
 }
 
-// ── Pageview tracker (inside PHProvider so usePostHog works) ─────────────────
+// ── Pageview tracker ─────────────────────────────────────────────────────────
 function PageviewTracker() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -39,6 +47,10 @@ function PageviewTracker() {
 
   useEffect(() => {
     if (!ph) return
+    
+    // CANDADO: Si no hay consentimiento de analíticas, bloqueamos el tracking de páginas
+    if (!hasAnalyticsConsent()) return
+
     ph.capture('$pageview', {
       $current_url: window.location.href,
     })
@@ -47,15 +59,18 @@ function PageviewTracker() {
   return null
 }
 
-// ── Identity linker — ties PostHog anonymous ID to Supabase user once logged in
+// ── Identity linker (Supabase UUID ↔ PostHog Anonymous ID) ───────────────────
 function IdentityLinker() {
   const { profile } = useAuth()
   const ph = usePostHog()
 
   useEffect(() => {
     if (!ph) return
+    
+    // CANDADO: Si no hay consentimiento, no vinculamos identidades
+    if (!hasAnalyticsConsent()) return
+
     if (profile) {
-      // Identify by a non-PII stable ID (Supabase UUID)
       ph.identify(profile.id, {
         username: profile.username,
         country: profile.country ?? undefined,
@@ -81,7 +96,7 @@ export function PostHogProvider({ children }: { children: ReactNode }) {
   )
 }
 
-// ── Typed event helper — import and call anywhere in the app ─────────────────
+// ── Tipos de Eventos de la App ───────────────────────────────────────────────
 export type WMLEvent =
   | 'post_upload'
   | 'story_upload'
@@ -98,11 +113,32 @@ export type WMLEvent =
   | 'auth_login'
   | 'terms_accepted'
   | 'post_deleted'
+  | 'auth_signup_pending_confirm'
+  | 'experiment_consent_given'
+  | 'vote_changed'
+  | 'experiment_started'
+  | 'vote_removed'
 
-
+// ── AYUDANTE 1: Captura de eventos tipados en cualquier parte ─────────────────
 export function captureEvent(
   event: WMLEvent,
   properties?: Record<string, string | number | boolean | null | undefined>
 ) {
+  if (typeof window === 'undefined') return
+  
+  // CANDADO: Si rechazó las cookies analíticas, salimos en seco sin enviar nada
+  if (!hasAnalyticsConsent()) return
+
   posthog.capture(event, properties)
+}
+
+// ── AYUDANTE 2: Identificación manual (Por si acaso la necesitas fuera del Provider) ──
+export function identifyUser(
+  userId: string,
+  properties?: Record<string, unknown>
+) {
+  if (typeof window === 'undefined') return
+  if (!hasAnalyticsConsent()) return
+
+  posthog.identify(userId, properties)
 }

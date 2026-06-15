@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { AuthProvider } from '@/lib/authcontext'
 import { PostHogProvider } from '@/lib/posthog'
-import AppShell from '@/components/wml10/AppShell'
+import AppShell from '@/components/wml/AppShell'
 import '@/app/web/navbarwml.css'
 
 export const metadata: Metadata = {

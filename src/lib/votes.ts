@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import { captureEvent } from './analytics'
+import { captureEvent } from './posthog'
 
 interface CastVoteParams {
   voterId: string;
