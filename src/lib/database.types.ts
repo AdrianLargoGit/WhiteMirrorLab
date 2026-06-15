@@ -14,17 +14,17 @@ export interface Database {
           country: string | null
           preferred_language: AppLanguage | null
           karma_score: number
-          total_votes_given_positive: number
-          total_votes_given_negative: number
+          votes_received_positive: number
+          votes_received_negative: number
           is_bot: boolean
           accepted_terms_version: string | null
           accepted_at: string | null
           created_at: string
         }
-        Insert: Omit<Database['public']['Tables']['profiles']['Row'], 'karma_score' | 'total_votes_given_positive' | 'total_votes_given_negative' | 'is_bot' | 'created_at'> & {
+        Insert: Omit<Database['public']['Tables']['profiles']['Row'], 'karma_score' | 'votes_received_positive' | 'votes_received_negative' | 'is_bot' | 'created_at'> & {
           karma_score?: number
-          total_votes_given_positive?: number
-          total_votes_given_negative?: number
+          votes_received_positive?: number
+          votes_received_negative?: number
           is_bot?: boolean
           created_at?: string
         }

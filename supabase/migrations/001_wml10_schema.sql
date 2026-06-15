@@ -12,8 +12,8 @@ CREATE TABLE IF NOT EXISTS profiles (
   karma_score INTEGER NOT NULL DEFAULT 0,
   votes_received_positive INTEGER NOT NULL DEFAULT 0,
   votes_received_negative INTEGER NOT NULL DEFAULT 0,
-  total_votes_given_positive INTEGER NOT NULL DEFAULT 0,
-  total_votes_given_negative INTEGER NOT NULL DEFAULT 0,
+  votes_received_positive INTEGER NOT NULL DEFAULT 0,
+  votes_received_negative INTEGER NOT NULL DEFAULT 0,
   is_bot BOOLEAN NOT NULL DEFAULT false,
   accepted_terms_version TEXT,
   accepted_at TIMESTAMPTZ,
@@ -148,14 +148,14 @@ BEGIN
         votes_received_positive = votes_received_positive + 1,
         karma_score = karma_score + 1
       WHERE id = NEW.receiver_id;
-      UPDATE profiles SET total_votes_given_positive = total_votes_given_positive + 1
+      UPDATE profiles SET votes_received_positive = votes_received_positive + 1
       WHERE id = NEW.voter_id;
     ELSE
       UPDATE profiles SET
         votes_received_negative = votes_received_negative + 1,
         karma_score = karma_score - 1
       WHERE id = NEW.receiver_id;
-      UPDATE profiles SET total_votes_given_negative = total_votes_given_negative + 1
+      UPDATE profiles SET votes_received_negative = votes_received_negative + 1
       WHERE id = NEW.voter_id;
     END IF;
     RETURN NEW;
@@ -168,8 +168,8 @@ BEGIN
         karma_score = karma_score - 2
       WHERE id = NEW.receiver_id;
       UPDATE profiles SET
-        total_votes_given_positive = total_votes_given_positive - 1,
-        total_votes_given_negative = total_votes_given_negative + 1
+        votes_received_positive = votes_received_positive - 1,
+        votes_received_negative = votes_received_negative + 1
       WHERE id = NEW.voter_id;
     ELSIF OLD.vote_type = -1 AND NEW.vote_type = 1 THEN
       UPDATE profiles SET
@@ -178,8 +178,8 @@ BEGIN
         karma_score = karma_score + 2
       WHERE id = NEW.receiver_id;
       UPDATE profiles SET
-        total_votes_given_positive = total_votes_given_positive + 1,
-        total_votes_given_negative = total_votes_given_negative - 1
+        votes_received_positive = votes_received_positive + 1,
+        votes_received_negative = votes_received_negative - 1
       WHERE id = NEW.voter_id;
     END IF;
     RETURN NEW;
@@ -190,14 +190,14 @@ BEGIN
         votes_received_positive = votes_received_positive - 1,
         karma_score = karma_score - 1
       WHERE id = OLD.receiver_id;
-      UPDATE profiles SET total_votes_given_positive = total_votes_given_positive - 1
+      UPDATE profiles SET votes_received_positive = votes_received_positive - 1
       WHERE id = OLD.voter_id;
     ELSE
       UPDATE profiles SET
         votes_received_negative = votes_received_negative - 1,
         karma_score = karma_score + 1
       WHERE id = OLD.receiver_id;
-      UPDATE profiles SET total_votes_given_negative = total_votes_given_negative - 1
+      UPDATE profiles SET votes_received_negative = votes_received_negative - 1
       WHERE id = OLD.voter_id;
     END IF;
     RETURN OLD;
