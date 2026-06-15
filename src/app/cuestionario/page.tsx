@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useLocale } from '@/hooks/useLocale'
-import { captureEvent } from '@/lib/analytics'
+import { captureEvent } from '@/lib/posthog'
 
 type Answers = Record<string, number>
 

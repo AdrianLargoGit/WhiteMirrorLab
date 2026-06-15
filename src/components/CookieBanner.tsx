@@ -1,15 +1,47 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useLocale } from '@/hooks/useLocale'
+
+// Diccionario de textos en Español e Inglés
+const translations = {
+  es: {
+    title: 'Aviso de Cookies',
+    description: 'Utilizamos cookies para garantizar el funcionamiento básico de la plataforma y mejorar tu experiencia de simulación. Puedes personalizar tus opciones en cualquier momento.',
+    essentialTitle: 'Esenciales y Seguridad',
+    essentialDesc: 'Necesarias para iniciar sesión y proteger tu cuenta.',
+    required: 'Obligatorias',
+    analyticsTitle: 'Métricas y Rendimiento',
+    analyticsDesc: 'Nos ayudan de forma anónima a saber qué funciones usas más.',
+    acceptAll: 'Aceptar todas',
+    configure: 'Configurar',
+    saveSettings: 'Guardar configuración',
+    onlyEssential: 'Solo esenciales'
+  },
+  en: {
+    title: 'Cookie Notice',
+    description: 'We use cookies to ensure the basic functionality of the platform and improve your simulation experience. You can customize your choices at any time.',
+    essentialTitle: 'Essential & Security',
+    essentialDesc: 'Required to log in and secure your account.',
+    required: 'Required',
+    analyticsTitle: 'Metrics & Performance',
+    analyticsDesc: 'They anonymously help us know which features you use the most.',
+    acceptAll: 'Accept all',
+    configure: 'Configure',
+    saveSettings: 'Save settings',
+    onlyEssential: 'Only essential'
+  }
+}
 
 export default function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
-  
-  // Estados de las cookies
   const [analyticsConsent, setAnalyticsConsent] = useState(true)
 
-  // Comprobar si ya aceptó las cookies anteriormente
+  // Detectamos el idioma actual ('en', o por defecto 'es')
+  const locale = useLocale()
+  const t = translations[locale as keyof typeof translations] || translations.es
+
   useEffect(() => {
     const hasConsent = localStorage.getItem('wml_cookie_consent')
     if (!hasConsent) {
@@ -17,7 +49,6 @@ export default function CookieBanner() {
     }
   }, [])
 
-  // Función para guardar el consentimiento
   const saveConsent = (allAccepted: boolean) => {
     const consentObj = {
       essential: true,
@@ -26,12 +57,6 @@ export default function CookieBanner() {
     }
     
     localStorage.setItem('wml_cookie_consent', JSON.stringify(consentObj))
-    
-    // Aquí puedes inicializar tus scripts de Analytics si analytics es true
-    if (consentObj.analytics) {
-      // window.gtag(...) o tu sistema de analíticas
-    }
-
     setIsVisible(false)
   }
 
@@ -44,13 +69,13 @@ export default function CookieBanner() {
       right: '24px',
       left: '24px',
       maxWidth: '420px',
-      backgroundColor: '#121214', // Fondo gris oscuro premium
+      backgroundColor: '#121214',
       border: '1px solid #27272a',
       borderRadius: '16px',
       boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4)',
       padding: '20px',
-      zIndex: 999999, // Por encima de todo, incluso del chat o menús
-      margin: '0 auto', // Centrado en móviles automáticamente
+      zIndex: 999999,
+      margin: '0 auto',
     }}>
       
       {/* Título y Texto Principal */}
@@ -61,14 +86,14 @@ export default function CookieBanner() {
             <path d="M8.5 14.5A1.5 1.5 0 1 1 7 13a1.5 1.5 0 0 1 1.5 1.5Z" />
             <path d="M16.5 15.5A1.5 1.5 0 1 1 15 14a1.5 1.5 0 0 1 1.5 1.5Z" />
           </svg>
-          Aviso de Cookies
+          {t.title}
         </h3>
         <p style={{ fontSize: '13px', color: '#a1a1aa', lineHeight: '1.5', margin: 0 }}>
-          Utilizamos cookies para garantizar el funcionamiento básico de la plataforma y mejorar tu experiencia de simulación. Puedes personalizar tus opciones en cualquier momento.
+          {t.description}
         </p>
       </div>
 
-      {/* Panel de Configuración Avanzada (Se despliega al pulsar "Configurar") */}
+      {/* Panel de Configuración Avanzada */}
       {showSettings && (
         <div style={{ 
           backgroundColor: '#09090b', 
@@ -83,10 +108,12 @@ export default function CookieBanner() {
           {/* Esenciales */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <div style={{ fontSize: '13px', fontWeight: 500, color: '#ffffff' }}>Esenciales y Seguridad</div>
-              <div style={{ fontSize: '11px', color: '#71717a' }}>Necesarias para iniciar sesión y proteger tu cuenta.</div>
+              <div style={{ fontSize: '13px', fontWeight: 500, color: '#ffffff' }}>{t.essentialTitle}</div>
+              <div style={{ fontSize: '11px', color: '#71717a' }}>{t.essentialDesc}</div>
             </div>
-            <span style={{ fontSize: '11px', fontWeight: 600, color: '#00f0ff', backgroundColor: 'rgba(0,240,255,0.05)', padding: '2px 6px', borderRadius: '4px' }}>Obligatorias</span>
+            <span style={{ fontSize: '11px', fontWeight: 600, color: '#00f0ff', backgroundColor: 'rgba(0,240,255,0.05)', padding: '2px 6px', borderRadius: '4px' }}>
+              {t.required}
+            </span>
           </div>
 
           <hr style={{ border: '0', borderTop: '1px solid #1f2937', margin: 0 }} />
@@ -94,8 +121,8 @@ export default function CookieBanner() {
           {/* Analíticas */}
           <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
             <div>
-              <div style={{ fontSize: '13px', fontWeight: 500, color: '#ffffff' }}>Métricas y Rendimiento</div>
-              <div style={{ fontSize: '11px', color: '#71717a' }}>Nos ayudan de forma anónima a saber qué funciones usas más.</div>
+              <div style={{ fontSize: '13px', fontWeight: 500, color: '#ffffff' }}>{t.analyticsTitle}</div>
+              <div style={{ fontSize: '11px', color: '#71717a' }}>{t.analyticsDesc}</div>
             </div>
             <input 
               type="checkbox" 
@@ -120,8 +147,8 @@ export default function CookieBanner() {
             borderRadius: '8px',
             fontWeight: 700,
             fontSize: '13px',
-            backgroundColor: '#ffffff', // Forzado blanco brillante
-            color: '#000000', // Texto negro absoluto
+            backgroundColor: '#ffffff',
+            color: '#000000',
             border: 'none',
             cursor: 'pointer',
             transition: 'opacity 0.2s ease',
@@ -129,7 +156,7 @@ export default function CookieBanner() {
           onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
           onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
         >
-          Aceptar todas
+          {t.acceptAll}
         </button>
 
         {/* Fila de acciones secundarias */}
@@ -140,7 +167,7 @@ export default function CookieBanner() {
             type="button"
             onClick={() => {
               if (showSettings) {
-                saveConsent(false) // Guarda lo que haya seleccionado
+                saveConsent(false)
               } else {
                 setShowSettings(true)
               }
@@ -157,7 +184,7 @@ export default function CookieBanner() {
               cursor: 'pointer',
             }}
           >
-            {showSettings ? 'Guardar configuración' : 'Configurar'}
+            {showSettings ? t.saveSettings : t.configure}
           </button>
 
           {/* Botón rápido: Solo esenciales */}
@@ -180,7 +207,7 @@ export default function CookieBanner() {
                 cursor: 'pointer',
               }}
             >
-              Solo esenciales
+              {t.onlyEssential}
             </button>
           )}
         </div>

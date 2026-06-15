@@ -118,6 +118,7 @@ export type WMLEvent =
   | 'vote_changed'
   | 'experiment_started'
   | 'vote_removed'
+  | 'quiz_completed'
 
 // ── AYUDANTE 1: Captura de eventos tipados en cualquier parte ─────────────────
 export function captureEvent(
