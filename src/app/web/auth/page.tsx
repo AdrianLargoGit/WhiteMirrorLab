@@ -4,7 +4,7 @@ import { Suspense, useState, useEffect } from 'react'
 import { hasConsentCookie, clearConsentCookie } from '@/lib/consent' // <-- Añadido clearConsentCookie
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { captureEvent } from '@/lib/analytics'
+import { captureEvent } from '@/lib/posthog'
 import { mapAuthError } from '@/lib/auth-errors'
 import { wmlCopy } from '@/lib/copy'
 import { useLocale } from '@/hooks/useLocale'

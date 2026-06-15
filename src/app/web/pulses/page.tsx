@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useAuth } from '@/lib/authcontext'
 import { fetchPulsesFeed, createPulse, deletePulse, fetchPulseReplies } from '@/lib/queries'
 //import { captureEvent } from '@/lib/posthog'
-import { AvatarMini, KarmaBadge } from '@/components/wml10/AppShell'
+import { AvatarMini, KarmaBadge } from '@/components/wml/AppShell'
 import type { PulseWithProfile } from '@/lib/database.types'
 
 // ── Icons ─────────────────────────────────────────────────────────────────────

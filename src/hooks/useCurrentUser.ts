@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { identifyUser } from '@/lib/analytics'
+import { identifyUser } from '@/lib/posthog'
 import type { PublicProfile } from '@/lib/types'
 
 export function useCurrentUser() {

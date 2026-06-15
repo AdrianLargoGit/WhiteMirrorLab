@@ -15,7 +15,7 @@ import {
   updateProfile,
 } from '@/lib/queries'
 import { castVote, getMyVote } from '@/lib/votes'
-import { AvatarMini } from '@/components/wml10/AppShell'
+import { AvatarMini } from '@/components/wml/AppShell'
 import ShareProfileButton from '@/components/wml/ShareProfile'
 import type { Profile, Post, PulseWithProfile } from '@/lib/database.types'
 

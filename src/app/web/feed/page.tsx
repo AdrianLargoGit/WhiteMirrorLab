@@ -9,9 +9,9 @@ import { captureEvent } from '@/lib/posthog'
 import { useLocale } from '@/lib/i18nutils' // ✅ Solo componentes cliente
 import { wmlPath } from '@/lib/i18n'   // ✅ Puedes usar las funciones puras también
 import { wmlCopy } from '@/lib/copy'
-import { AvatarMini, KarmaBadge } from '@/components/wml10/AppShell'
+import { AvatarMini, KarmaBadge } from '@/components/wml/AppShell'
 import type { Post, Profile, Story, VoteType } from '@/lib/database.types'
-import StoryViewer from '@/components/wml10/StoryViewer'
+import StoryViewer from '@/components/wml/StoryViewer'
 
 type FeedPost        = Post & { profile: Profile }
 type StoryWithProfile = Story & { profile: Pick<Profile, 'id' | 'username' | 'avatar_url' | 'display_name'> }
