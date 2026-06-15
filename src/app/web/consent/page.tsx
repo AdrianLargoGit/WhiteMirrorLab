@@ -47,16 +47,11 @@ function ConsentForm() {
     setConsentCookie()
     captureEvent('experiment_consent_given', { version: 'wml_consent_v1', locale })
     
-    const params = new URLSearchParams()
-    if (next) params.set('next', next)
-    if (mode) params.set('mode', mode)
-
-    const queryString = params.toString()
-    const authUrl = queryString
-      ? `${wmlPath(locale, '/auth')}?${queryString}`
-      : wmlPath(locale, '/auth')
+    // Genera la ruta a la página principal respetando el idioma actual
+    const homeUrl = wmlPath(locale, '/')
       
-    router.push(authUrl)
+    // Redirige al usuario
+    router.push(homeUrl)
   }
 
   return (
