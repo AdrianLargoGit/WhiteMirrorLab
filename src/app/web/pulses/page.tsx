@@ -477,14 +477,29 @@ function PulseCard({
                       Cancelar
                     </button>
                     <button
-                      className="wml-btn wml-btn-primary"
-                      onClick={handlePostReply}
-                      disabled={postingReply || !replyBody.trim() || isOverLimit}
-                      style={{ padding: '6px 14px', fontSize: 10, gap: 5 }}
-                    >
-                      <IcoSend />
-                      {postingReply ? '...' : 'Responder'}
-                    </button>
+  className="wml-btn wml-btn-primary"
+  onClick={handlePostReply}
+  disabled={postingReply || !replyBody.trim() || isOverLimit}
+  style={{
+    padding: '6px 14px',
+    fontSize: '12px',
+    fontWeight: 600,
+    gap: 5,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: 'none',
+    borderRadius: '6px',
+    transition: 'all 0.2s ease',
+    // Mismo tratamiento de color que el botón "Pulsar"
+    backgroundColor: (postingReply || !replyBody.trim() || isOverLimit) ? '#27272a' : '#ffffff',
+    color: (postingReply || !replyBody.trim() || isOverLimit) ? '#71717a' : '#000000',
+    cursor: (postingReply || !replyBody.trim() || isOverLimit) ? 'not-allowed' : 'pointer',
+  }}
+>
+  <IcoSend />
+  {postingReply ? '...' : 'Responder'}
+</button>
                   </div>
                 </div>
               </div>
