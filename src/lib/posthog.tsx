@@ -10,7 +10,7 @@ import { useAuth } from '@/lib/authcontext'
 const hasAnalyticsConsent = (): boolean => {
   if (typeof window === 'undefined') return false
   const consentRaw = localStorage.getItem('wml_cookie_consent')
-  if (!consentRaw) return true // Si aún no ha contestado el banner, permitimos el tracking inicial (o pon false si quieres ser estricto GDPR)
+  if (!consentRaw) return true // Si aún no ha contestado el banner, permitimos el tracking inicial
   try {
     const consent = JSON.parse(consentRaw)
     return consent.analytics !== false
@@ -26,7 +26,8 @@ if (typeof window !== 'undefined') {
 
   if (key && host) {
     posthog.init(key, {
-      api_host: '/ingest',
+      // FIX: Forzamos una URL absoluta para que la Toolbar no la rechace en producción
+      api_host: window.location.origin + '/ingest', 
       ui_host: host,
       capture_pageview: false, // Controlado manualmente abajo
       respect_dnt: true,
