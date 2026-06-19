@@ -120,6 +120,8 @@ export type WMLEvent =
   | 'experiment_started'
   | 'vote_removed'
   | 'quiz_completed'
+  | 'auth_forgot_password'
+  | 'auth_password_reset_success'
 
 // ── AYUDANTE 1: Captura de eventos tipados en cualquier parte ─────────────────
 export function captureEvent(
