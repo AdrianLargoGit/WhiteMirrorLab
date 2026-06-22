@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
-import { useLocale } from '@/lib/i18nutils'
-import { WML_ROUTES } from '@/lib/i18n'
+import { useLocale } from '@/hooks/useLocale'
+import { LOCALE_COOKIE, wmlPath } from '@/lib/i18n'
 import { createClient } from '@/lib/supabase'
 
 // Estructura limpia de Iconos Vectoriales
@@ -61,6 +61,7 @@ export default function ConfigurationPage() {
   // Manejar cambio de idioma con enrutamiento personalizado estricto
   const handleLanguageChange = (newLang: 'es' | 'en') => {
     if (newLang === locale) return
+    document.cookie = `${LOCALE_COOKIE}=${newLang}; path=/; max-age=31536000; samesite=lax`
     
     // Generación de rutas absolutas bajo la nueva estructura especificada
     const destPath = newLang === 'en'
@@ -82,7 +83,7 @@ export default function ConfigurationPage() {
       if (error) throw error
 
       await supabase.auth.signOut()
-      router.push(WML_ROUTES.auth)
+      router.push(wmlPath(locale, '/auth'))
       router.refresh()
     } catch (err: any) {
       console.error(err)
@@ -102,7 +103,7 @@ export default function ConfigurationPage() {
   }
 
   if (!userId) {
-    router.replace(WML_ROUTES.auth)
+    router.replace(wmlPath(locale, '/auth'))
     return null
   }
 

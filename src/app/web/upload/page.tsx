@@ -4,7 +4,9 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { createPost, createStory, fetchUserPosts, MAX_POSTS } from '@/lib/queries'
-import { WML_ROUTES } from '@/lib/i18n'
+import { useLocale } from '@/hooks/useLocale'
+import { wmlPath } from '@/lib/i18n'
+import { captureEvent } from '@/lib/posthog'
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 const IcoImage  = () => <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
@@ -28,6 +30,8 @@ function formatSize(bytes: number) {
 }
 
 export default function UploadPage() {
+  const locale = useLocale()
+  const isEnglish = locale === 'en'
   const { userId, profile, loading: authLoading } = useCurrentUser()
   const router   = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -81,15 +85,15 @@ export default function UploadPage() {
     const isImg = f.type.startsWith('image/')
 
     if (mode === 'post' && !isImg) {
-      setErrorMsg('Solo se permiten imágenes en los posts.')
+      setErrorMsg(isEnglish ? 'Only images are allowed in posts.' : 'Solo se permiten imagenes en los posts.')
       return
     }
     if (mode === 'story' && !isImg && !isVid) {
-      setErrorMsg('Se permiten imágenes o vídeos cortos en las historias.')
+      setErrorMsg(isEnglish ? 'Stories accept images or short videos.' : 'Las historias aceptan imagenes o videos cortos.')
       return
     }
     if (f.size > MAX_SIZE_MB * 1024 * 1024) {
-      setErrorMsg(`El archivo supera el límite de ${MAX_SIZE_MB} MB.`)
+      setErrorMsg(isEnglish ? `The file exceeds the ${MAX_SIZE_MB} MB limit.` : `El archivo supera el limite de ${MAX_SIZE_MB} MB.`)
       return
     }
 
@@ -97,7 +101,7 @@ export default function UploadPage() {
     setFile(f)
     setIsVideo(isVid)
     setPreview(URL.createObjectURL(f))
-  }, [mode, preview])
+  }, [mode, preview, isEnglish])
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
@@ -137,9 +141,11 @@ export default function UploadPage() {
       if (mode === 'post') {
         const { error } = await createPost(userId, file, caption.trim() || null)
         if (error) throw new Error(error)
+        captureEvent('post_upload', { media_type: file.type, file_size_mb: Math.round(file.size / 1048576) })
       } else {
         const { error } = await createStory(userId, file)
         if (error) throw new Error(error)
+        captureEvent('story_upload', { media_type: file.type, file_size_mb: Math.round(file.size / 1048576) })
       }
 
       stopProgress()
@@ -148,13 +154,13 @@ export default function UploadPage() {
 
       // Redirigir al perfil tras 1.2 s
       setTimeout(() => {
-        router.push(profile ? WML_ROUTES.profile(profile.username) : WML_ROUTES.feed)
+        router.push(profile ? wmlPath(locale, `/profile/${profile.username}`) : wmlPath(locale, '/feed'))
       }, 1200)
 
     } catch (e: unknown) {
       stopProgress()
       setStatus('error')
-      setErrorMsg(e instanceof Error ? e.message : 'Error desconocido al subir.')
+      setErrorMsg(e instanceof Error ? e.message : (isEnglish ? 'Unknown upload error.' : 'Error desconocido al subir.'))
       setProgress(0)
     }
   }
@@ -164,14 +170,14 @@ export default function UploadPage() {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60dvh' }}>
         <span style={{ fontFamily: 'var(--w-font-mono)', fontSize: 11, color: 'var(--w-muted)', letterSpacing: '0.12em' }}>
-          CARGANDO...
+          {isEnglish ? 'LOADING...' : 'CARGANDO...'}
         </span>
       </div>
     )
   }
 
   if (!userId) {
-    router.replace(WML_ROUTES.auth)
+    router.replace(wmlPath(locale, '/auth'))
     return null
   }
 
@@ -184,11 +190,11 @@ export default function UploadPage() {
     <div className="wml-upload">
 
       {/* ── Header ── */}
-      <div className="wml-upload-title">Publicar</div>
+      <div className="wml-upload-title">{isEnglish ? 'Publish' : 'Publicar'}</div>
       <div className="wml-upload-subtitle">
         {mode === 'post'
-          ? `Foto · ${postCount ?? '…'}/${MAX_POSTS} publicaciones`
-          : 'Historia · desaparece en 24 h'}
+          ? `${isEnglish ? 'Photo' : 'Foto'} / ${postCount ?? '...'}/${MAX_POSTS} ${isEnglish ? 'posts' : 'publicaciones'}`
+          : (isEnglish ? 'Story / disappears after 24h' : 'Historia / desaparece en 24 h')}
       </div>
 
       {/* ── Mode tabs ── */}
@@ -226,7 +232,7 @@ export default function UploadPage() {
               }}
             >
               {m === 'post' ? <IcoImage /> : <IcoStory />}
-              {m === 'post' ? 'Foto' : 'Historia'}
+              {m === 'post' ? (isEnglish ? 'Photo' : 'Foto') : (isEnglish ? 'Story' : 'Historia')}
             </button>
           )
         })}
@@ -250,8 +256,8 @@ export default function UploadPage() {
         }}>
           <span style={{ flexShrink: 0, marginTop: 1 }}><IcoInfo /></span>
           {atLimit
-            ? `Tienes ${MAX_POSTS}/${MAX_POSTS} fotos. Al publicar esta, se eliminará automáticamente la más antigua.`
-            : `Puedes tener hasta ${MAX_POSTS} fotos. Tienes ${postCount}.`}
+            ? (isEnglish ? `You have ${MAX_POSTS}/${MAX_POSTS} photos. Publishing this one will automatically delete the oldest.` : `Tienes ${MAX_POSTS}/${MAX_POSTS} fotos. Al publicar esta, se eliminara automaticamente la mas antigua.`)
+            : (isEnglish ? `You can have up to ${MAX_POSTS} photos. You currently have ${postCount}.` : `Puedes tener hasta ${MAX_POSTS} fotos. Tienes ${postCount}.`)}
         </div>
       )}
 
@@ -263,7 +269,7 @@ export default function UploadPage() {
           fontFamily: 'var(--w-font-mono)', fontSize: 10, letterSpacing: '0.08em', color: 'var(--w-muted)',
         }}>
           <IcoInfo />
-          Imágenes o vídeos cortos (MP4, MOV, WEBM) · Máx {MAX_SIZE_MB} MB · Duración máx 60 s recomendada
+          {isEnglish ? `Images or short videos (MP4, MOV, WEBM) / Max ${MAX_SIZE_MB} MB / Recommended max duration: 60s` : `Imagenes o videos cortos (MP4, MOV, WEBM) / Max. ${MAX_SIZE_MB} MB / Duracion recomendada: 60 s`}
         </div>
       )}
 
@@ -318,13 +324,13 @@ export default function UploadPage() {
               {mode === 'post' ? <IcoImage /> : <IcoStory />}
             </span>
             <div style={{ textAlign: 'center', fontFamily: 'var(--w-font-mono)', fontSize: 11, color: 'var(--w-muted)', letterSpacing: '0.1em', lineHeight: 1.7 }}>
-              {dragging ? 'SUELTA AQUÍ' : 'ARRASTRA O TOCA PARA SELECCIONAR'}
+              {dragging ? (isEnglish ? 'DROP HERE' : 'SUELTA AQUI') : (isEnglish ? 'DRAG OR TAP TO SELECT' : 'ARRASTRA O TOCA PARA SELECCIONAR')}
               <br />
               <span style={{ fontSize: 9, opacity: 0.55 }}>
                 {mode === 'post'
                   ? 'JPG · PNG · WEBP · GIF'
                   : 'JPG · PNG · WEBP · MP4 · MOV · WEBM'}
-                {' '} · Máx {MAX_SIZE_MB} MB
+                {' '} / {isEnglish ? 'Max' : 'Max.'} {MAX_SIZE_MB} MB
               </span>
             </div>
           </>
@@ -390,7 +396,7 @@ export default function UploadPage() {
                   }} />
                 </div>
                 <span style={{ fontFamily: 'var(--w-font-mono)', fontSize: 10, color: 'var(--w-accent)', letterSpacing: '0.12em' }}>
-                  {progress < 100 ? `SUBIENDO ${progress}%` : 'PROCESANDO…'}
+                  {progress < 100 ? `${isEnglish ? 'UPLOADING' : 'SUBIENDO'} ${progress}%` : (isEnglish ? 'PROCESSING...' : 'PROCESANDO...')}
                 </span>
               </div>
             )}
@@ -407,10 +413,10 @@ export default function UploadPage() {
               <IcoCheck />
             </div>
             <div style={{ fontFamily: 'var(--w-font-mono)', fontSize: 11, color: 'var(--w-accent)', letterSpacing: '0.12em' }}>
-              ¡PUBLICADO!
+              {isEnglish ? 'PUBLISHED' : 'PUBLICADO'}
             </div>
             <div style={{ fontFamily: 'var(--w-font-mono)', fontSize: 9, color: 'var(--w-muted)', letterSpacing: '0.08em' }}>
-              REDIRIGIENDO A TU PERFIL...
+              {isEnglish ? 'REDIRECTING TO YOUR PROFILE...' : 'REDIRIGIENDO A TU PERFIL...'}
             </div>
           </div>
         )}
@@ -421,7 +427,7 @@ export default function UploadPage() {
         <textarea
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
-          placeholder="Añade un pie de foto (opcional)"
+          placeholder={isEnglish ? 'Add a caption (optional)' : 'Anade un pie de foto (opcional)'}
           maxLength={300}
           rows={3}
           disabled={isUploading}
@@ -450,7 +456,7 @@ export default function UploadPage() {
           fontFamily: 'var(--w-font-mono)', fontSize: 9, letterSpacing: '0.06em',
           color: caption.length > 280 ? 'var(--w-accent-neg)' : 'var(--w-muted)',
         }}>
-          {300 - caption.length} caracteres restantes
+          {300 - caption.length} {isEnglish ? 'characters remaining' : 'caracteres restantes'}
         </div>
       )}
 
@@ -478,16 +484,16 @@ export default function UploadPage() {
           }}
         >
           {isUploading ? (
-            <>Subiendo {progress}%…</>
+            <>{isEnglish ? 'Uploading' : 'Subiendo'} {progress}%...</>
           ) : !file ? (
             <>
               <IcoUpload />
-              Selecciona {mode === 'post' ? 'una foto' : 'un archivo'}
+              {isEnglish ? 'Select' : 'Selecciona'} {mode === 'post' ? (isEnglish ? 'a photo' : 'una foto') : (isEnglish ? 'a file' : 'un archivo')}
             </>
           ) : (
             <>
               <IcoUpload />
-              {mode === 'post' ? 'Publicar foto' : 'Publicar historia'}
+              {mode === 'post' ? (isEnglish ? 'Publish photo' : 'Publicar foto') : (isEnglish ? 'Publish story' : 'Publicar historia')}
             </>
           )}
         </button>
@@ -500,8 +506,9 @@ export default function UploadPage() {
           fontFamily: 'var(--w-font-mono)', fontSize: 9,
           color: 'var(--w-muted)', letterSpacing: '0.08em', lineHeight: 1.7,
         }}>
-          Las historias desaparecen automáticamente a las 24 horas.
-          Los vídeos se reproducen en bucle en el visor.
+          {isEnglish
+            ? 'Stories disappear automatically after 24 hours. Videos loop in the viewer.'
+            : 'Las historias desaparecen automaticamente a las 24 horas. Los videos se reproducen en bucle en el visor.'}
         </div>
       )}
 

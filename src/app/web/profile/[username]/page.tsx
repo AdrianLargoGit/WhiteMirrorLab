@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/authcontext'
-import { useLocale } from '@/lib/i18nutils'
+import { useLocale } from '@/hooks/useLocale'
 import { wmlCopy } from '@/lib/copy'
 import {
   fetchProfileByUsername,
@@ -18,6 +18,7 @@ import { castVote, getMyVote } from '@/lib/votes'
 import { AvatarMini } from '@/components/wml/AppShell'
 import ShareProfileButton from '@/components/wml/ShareProfile'
 import type { Profile, Post, PulseWithProfile } from '@/lib/database.types'
+import { captureEvent } from '@/lib/posthog'
 
 // Debajo de const ICO_EDIT = () => ...
 const ICO_SETTINGS = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -81,6 +82,7 @@ export default function ProfilePage() {
 
       setProfile(prof)
       setEditName(prof.display_name)
+      captureEvent('profile_view', { is_own_profile: user?.id === prof.id })
 
       const [pRes, pulsesRes] = await Promise.all([
         fetchUserPosts(prof.id),
@@ -140,6 +142,7 @@ export default function ProfilePage() {
     if (!user || !editName.trim()) return
     setSaving(true)
     await updateProfile(user.id, { display_name: editName.trim() })
+    captureEvent('profile_edit', { field: 'display_name' })
     await refreshProfile()
     setProfile((p) => p ? { ...p, display_name: editName.trim() } : p)
     setEditing(false)
@@ -205,16 +208,40 @@ export default function ProfilePage() {
           {editing ? (
             <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
               <input
-                className="wml-input"
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                style={{ flex: 1, minWidth: 150, padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--w-border)', background: 'var(--w-bg)' }}
-                maxLength={40}
-                autoFocus
-              />
-              <button className="wml-btn wml-btn-primary" onClick={handleSaveEdit} disabled={saving} style={{ padding: '8px 16px', borderRadius: '6px' }}>
-                {saving ? '...' : (locale === 'es' ? 'Guardar' : 'Save')}
-              </button>
+  className="wml-input"
+  value={editName}
+  onChange={(e) => setEditName(e.target.value)}
+  style={{ 
+    flex: 1, 
+    minWidth: 150, 
+    padding: '8px 12px', 
+    borderRadius: '6px', 
+    border: '1px solid #444444', // Borde gris oscuro para que se note el límite
+    
+    // Cambios clave para fondo negro y letras visibles:
+    backgroundColor: '#000000',   // Fuerza el fondo negro
+    color: '#ffffff',             // Fuerza el texto blanco al escribir
+    fontSize: '16px',             // ¡Truco para móvil! Evita que iOS haga zoom automático al enfocar
+    WebkitAppearance: 'none',     // Elimina estilos por defecto de iOS/Safari
+  }}
+  maxLength={40}
+  autoFocus
+/>
+              <button 
+  className="wml-btn wml-btn-primary" 
+  onClick={handleSaveEdit} 
+  disabled={saving} 
+  style={{ 
+    padding: '8px 16px', 
+    borderRadius: '6px',
+    backgroundColor: saving ? '#333333' : '#ffffff', // Fondo blanco (o gris si está guardando)
+    color: saving ? '#888888' : '#000000',         // Texto negro (o gris si está guardando)
+    border: '1px solid #ffffff',
+    cursor: saving ? 'not-allowed' : 'pointer'
+  }}
+>
+  {saving ? '...' : (locale === 'es' ? 'Guardar' : 'Save')}
+</button>
               <button className="wml-btn wml-btn-ghost" onClick={() => setEditing(false)} style={{ padding: '8px 16px', borderRadius: '6px' }}>
                 {locale === 'es' ? 'Cancelar' : 'Cancel'}
               </button>

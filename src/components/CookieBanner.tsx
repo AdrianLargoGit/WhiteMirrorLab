@@ -1,218 +1,105 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocale } from '@/hooks/useLocale'
+import { ANALYTICS_CONSENT_EVENT, ANALYTICS_CONSENT_KEY } from '@/lib/posthog'
 
-// Diccionario de textos en Español e Inglés
-const translations = {
+const copy = {
   es: {
-    title: 'Aviso de Cookies',
-    description: 'Utilizamos cookies para garantizar el funcionamiento básico de la plataforma y mejorar tu experiencia de simulación. Puedes personalizar tus opciones en cualquier momento.',
-    essentialTitle: 'Esenciales y Seguridad',
-    essentialDesc: 'Necesarias para iniciar sesión y proteger tu cuenta.',
+    title: 'Preferencias de privacidad',
+    description: 'Usamos almacenamiento esencial para que la plataforma funcione. La analitica opcional mide el uso de forma agregada y solo se activa con tu permiso.',
+    essentialTitle: 'Esenciales y seguridad',
+    essentialDesc: 'Necesarias para iniciar sesion y proteger tu cuenta.',
     required: 'Obligatorias',
-    analyticsTitle: 'Métricas y Rendimiento',
-    analyticsDesc: 'Nos ayudan de forma anónima a saber qué funciones usas más.',
+    analyticsTitle: 'Analitica de uso',
+    analyticsDesc: 'Pageviews, funciones usadas, dispositivo aproximado e idioma. No incluye textos, contrasenas ni contenido de formularios.',
     acceptAll: 'Aceptar todas',
     configure: 'Configurar',
-    saveSettings: 'Guardar configuración',
-    onlyEssential: 'Solo esenciales'
+    saveSettings: 'Guardar seleccion',
+    onlyEssential: 'Solo esenciales',
   },
   en: {
-    title: 'Cookie Notice',
-    description: 'We use cookies to ensure the basic functionality of the platform and improve your simulation experience. You can customize your choices at any time.',
-    essentialTitle: 'Essential & Security',
-    essentialDesc: 'Required to log in and secure your account.',
+    title: 'Privacy preferences',
+    description: 'We use essential storage to keep the platform working. Optional analytics measures aggregated usage and is enabled only with your permission.',
+    essentialTitle: 'Essential and security',
+    essentialDesc: 'Required to sign in and protect your account.',
     required: 'Required',
-    analyticsTitle: 'Metrics & Performance',
-    analyticsDesc: 'They anonymously help us know which features you use the most.',
+    analyticsTitle: 'Usage analytics',
+    analyticsDesc: 'Pageviews, features used, approximate device class, and language. It excludes text, passwords, and form content.',
     acceptAll: 'Accept all',
     configure: 'Configure',
-    saveSettings: 'Save settings',
-    onlyEssential: 'Only essential'
-  }
-}
+    saveSettings: 'Save selection',
+    onlyEssential: 'Essential only',
+  },
+} as const
 
 export default function CookieBanner() {
+  const locale = useLocale()
+  const t = copy[locale]
   const [isVisible, setIsVisible] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
-  const [analyticsConsent, setAnalyticsConsent] = useState(true)
-
-  // Detectamos el idioma actual ('en', o por defecto 'es')
-  const locale = useLocale()
-  const t = translations[locale as keyof typeof translations] || translations.es
+  const [analyticsConsent, setAnalyticsConsent] = useState(false)
 
   useEffect(() => {
-    const hasConsent = localStorage.getItem('wml_cookie_consent')
-    if (!hasConsent) {
-      setIsVisible(true)
-    }
+    setIsVisible(!localStorage.getItem(ANALYTICS_CONSENT_KEY))
   }, [])
 
-  const saveConsent = (allAccepted: boolean) => {
-    const consentObj = {
+  const saveConsent = (analytics: boolean) => {
+    localStorage.setItem(ANALYTICS_CONSENT_KEY, JSON.stringify({
       essential: true,
-      analytics: allAccepted ? true : analyticsConsent,
-      timestamp: new Date().toISOString()
-    }
-    
-    localStorage.setItem('wml_cookie_consent', JSON.stringify(consentObj))
+      analytics,
+      timestamp: new Date().toISOString(),
+    }))
+    window.dispatchEvent(new CustomEvent(ANALYTICS_CONSENT_EVENT, {
+      detail: { analytics },
+    }))
     setIsVisible(false)
   }
 
   if (!isVisible) return null
 
   return (
-    <div style={{
-      position: 'fixed',
-      bottom: '24px',
-      right: '24px',
-      left: '24px',
-      maxWidth: '420px',
-      backgroundColor: '#121214',
-      border: '1px solid #27272a',
-      borderRadius: '16px',
-      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4)',
-      padding: '20px',
-      zIndex: 999999,
-      margin: '0 auto',
-    }}>
-      
-      {/* Título y Texto Principal */}
-      <div style={{ marginBottom: '16px' }}>
-        <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#ffffff', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5" />
-            <path d="M8.5 14.5A1.5 1.5 0 1 1 7 13a1.5 1.5 0 0 1 1.5 1.5Z" />
-            <path d="M16.5 15.5A1.5 1.5 0 1 1 15 14a1.5 1.5 0 0 1 1.5 1.5Z" />
-          </svg>
-          {t.title}
-        </h3>
-        <p style={{ fontSize: '13px', color: '#a1a1aa', lineHeight: '1.5', margin: 0 }}>
-          {t.description}
-        </p>
-      </div>
+    <aside className="cookie-banner" aria-labelledby="cookie-title">
+      <h2 id="cookie-title">{t.title}</h2>
+      <p>{t.description}</p>
 
-      {/* Panel de Configuración Avanzada */}
       {showSettings && (
-        <div style={{ 
-          backgroundColor: '#09090b', 
-          padding: '12px', 
-          borderRadius: '10px', 
-          border: '1px solid #1f2937',
-          display: 'flex', 
-          flexDirection: 'column', 
-          gap: '12px',
-          marginBottom: '16px'
-        }}>
-          {/* Esenciales */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="cookie-settings">
+          <div className="cookie-setting-row">
             <div>
-              <div style={{ fontSize: '13px', fontWeight: 500, color: '#ffffff' }}>{t.essentialTitle}</div>
-              <div style={{ fontSize: '11px', color: '#71717a' }}>{t.essentialDesc}</div>
+              <strong>{t.essentialTitle}</strong>
+              <span>{t.essentialDesc}</span>
             </div>
-            <span style={{ fontSize: '11px', fontWeight: 600, color: '#00f0ff', backgroundColor: 'rgba(0,240,255,0.05)', padding: '2px 6px', borderRadius: '4px' }}>
-              {t.required}
-            </span>
+            <span className="cookie-required">{t.required}</span>
           </div>
-
-          <hr style={{ border: '0', borderTop: '1px solid #1f2937', margin: 0 }} />
-
-          {/* Analíticas */}
-          <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+          <label className="cookie-setting-row">
             <div>
-              <div style={{ fontSize: '13px', fontWeight: 500, color: '#ffffff' }}>{t.analyticsTitle}</div>
-              <div style={{ fontSize: '11px', color: '#71717a' }}>{t.analyticsDesc}</div>
+              <strong>{t.analyticsTitle}</strong>
+              <span>{t.analyticsDesc}</span>
             </div>
-            <input 
-              type="checkbox" 
-              checked={analyticsConsent} 
-              onChange={(e) => setAnalyticsConsent(e.target.checked)}
-              style={{ width: '16px', height: '16px', accentColor: '#00f0ff', cursor: 'pointer' }}
+            <input
+              type="checkbox"
+              checked={analyticsConsent}
+              onChange={(event) => setAnalyticsConsent(event.target.checked)}
             />
           </label>
         </div>
       )}
 
-      {/* Botones de Acción */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        
-        {/* Botón Principal: Aceptar Todas */}
-        <button
-          type="button"
-          onClick={() => saveConsent(true)}
-          style={{
-            width: '100%',
-            padding: '11px',
-            borderRadius: '8px',
-            fontWeight: 700,
-            fontSize: '13px',
-            backgroundColor: '#ffffff',
-            color: '#000000',
-            border: 'none',
-            cursor: 'pointer',
-            transition: 'opacity 0.2s ease',
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
-          onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-        >
+      <div className="cookie-actions">
+        <button type="button" className="cookie-primary" onClick={() => saveConsent(true)}>
           {t.acceptAll}
         </button>
-
-        {/* Fila de acciones secundarias */}
-        <div style={{ display: 'flex', gap: '8px' }}>
-          
-          {/* Botón: Configurar / Guardar Selección */}
-          <button
-            type="button"
-            onClick={() => {
-              if (showSettings) {
-                saveConsent(false)
-              } else {
-                setShowSettings(true)
-              }
-            }}
-            style={{
-              flex: 1,
-              padding: '9px',
-              borderRadius: '8px',
-              fontWeight: 500,
-              fontSize: '12px',
-              backgroundColor: 'transparent',
-              color: showSettings ? '#00f0ff' : '#e4e4e7',
-              border: `1px solid ${showSettings ? '#00f0ff' : '#27272a'}`,
-              cursor: 'pointer',
-            }}
-          >
-            {showSettings ? t.saveSettings : t.configure}
-          </button>
-
-          {/* Botón rápido: Solo esenciales */}
-          {!showSettings && (
-            <button
-              type="button"
-              onClick={() => {
-                setAnalyticsConsent(false)
-                saveConsent(false)
-              }}
-              style={{
-                flex: 1,
-                padding: '9px',
-                borderRadius: '8px',
-                fontWeight: 500,
-                fontSize: '12px',
-                backgroundColor: 'transparent',
-                color: '#a1a1aa',
-                border: '1px solid #27272a',
-                cursor: 'pointer',
-              }}
-            >
-              {t.onlyEssential}
-            </button>
-          )}
-        </div>
-
+        <button
+          type="button"
+          onClick={() => showSettings ? saveConsent(analyticsConsent) : setShowSettings(true)}
+        >
+          {showSettings ? t.saveSettings : t.configure}
+        </button>
+        {!showSettings && (
+          <button type="button" onClick={() => saveConsent(false)}>{t.onlyEssential}</button>
+        )}
       </div>
-    </div>
+    </aside>
   )
 }

@@ -52,6 +52,7 @@ function AuthForm() {
   const paramMode    = searchParams.get('mode')
   const locale       = useLocale()
   const t            = wmlCopy[locale]
+  const bi = (es: string, en: string) => locale === 'es' ? es : en
 
   // Detectar si venimos de un enlace de reset de contraseña.
   // Supabase añade ?type=recovery al redirect URL del email.
@@ -128,7 +129,7 @@ function AuthForm() {
   // LOGIN
   const handleLogin = async () => {
     resetMessages()
-    if (!email || !password) { setError('Rellena email y contraseña.'); return }
+    if (!email || !password) { setError(bi('Rellena email y contrasena.', 'Enter your email and password.')); return }
     setLoading(true)
     try {
       const { error: loginErr } = await supabase.auth.signInWithPassword({ email, password })
@@ -136,7 +137,7 @@ function AuthForm() {
       captureEvent('auth_login', { locale })
       redirectAfterLogin()
     } catch (e: unknown) {
-      setError(mapAuthError(e, locale) || (e instanceof Error ? e.message : 'Error al iniciar sesión'))
+      setError(mapAuthError(e, locale) || (e instanceof Error ? e.message : bi('Error al iniciar sesion.', 'Sign-in failed.')))
     } finally {
       setLoading(false)
     }
@@ -150,9 +151,9 @@ function AuthForm() {
       if (!username.match(/^[a-z0-9_]{3,20}$/)) throw new Error(t.usernameRule)
 
       const ageNum = parseInt(age)
-      if (isNaN(ageNum) || ageNum < 18) throw new Error('Debes ser mayor de 18 años para registrarte.')
-      if (!country)        throw new Error('Por favor, selecciona un país.')
-      if (!termsAccepted)  throw new Error('Debes aceptar los términos y condiciones.')
+      if (isNaN(ageNum) || ageNum < 18) throw new Error(bi('Debes ser mayor de 18 anos para registrarte.', 'You must be 18 or older to register.'))
+      if (!country) throw new Error(bi('Selecciona un pais.', 'Select a country.'))
+      if (!termsAccepted) throw new Error(bi('Debes aceptar los terminos y condiciones.', 'You must accept the terms and conditions.'))
 
       const { data: available } = await supabase.rpc('check_username_available', { p_username: username })
       if (available === false) throw new Error(t.usernameTaken)
@@ -177,20 +178,20 @@ function AuthForm() {
           total_votes_given_negative: 0,
           is_bot: false,
         })
-        if (profileErr) throw new Error(`Error al crear el perfil: ${profileErr.message}`)
-        captureEvent('auth_signup', { username, locale })
+        if (profileErr) throw new Error(`${bi('Error al crear el perfil', 'Profile creation failed')}: ${profileErr.message}`)
+        captureEvent('auth_signup', { locale })
         clearConsentCookie()
       }
 
       if (!data.session) {
-        captureEvent('auth_signup_pending_confirm', { username, locale })
+        captureEvent('auth_signup_pending_confirm', { locale })
         setSuccess(t.confirmEmail)
         setMode('login')
         return
       }
       redirectAfterLogin()
     } catch (e: unknown) {
-      setError(mapAuthError(e, locale) || (e instanceof Error ? e.message : 'Error al crear la cuenta'))
+      setError(mapAuthError(e, locale) || (e instanceof Error ? e.message : bi('Error al crear la cuenta.', 'Account creation failed.')))
     } finally {
       setLoading(false)
     }
@@ -199,20 +200,20 @@ function AuthForm() {
   // FORGOT PASSWORD — envía el email de recuperación
   const handleForgot = async () => {
     resetMessages()
-    if (!email || !email.includes('@')) { setError('Introduce un email válido.'); return }
+    if (!email || !email.includes('@')) { setError(bi('Introduce un email valido.', 'Enter a valid email.')); return }
     setLoading(true)
     try {
       const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
         // ⚠️  Esta URL debe estar en la lista de "Redirect URLs" de Supabase
         // (ver instrucciones al final del archivo)
-        redirectTo: `${window.location.origin}/web/auth?type=recovery`,
+        redirectTo: `${window.location.origin}${wmlPath(locale, '/auth')}?type=recovery`,
       })
       // Supabase siempre devuelve éxito (sin revelar si el email existe)
       if (resetErr) throw resetErr
       setEmailSent(true)
       captureEvent('auth_forgot_password', { locale })
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Error al enviar el email.')
+      setError(e instanceof Error ? e.message : bi('Error al enviar el email.', 'Failed to send the email.'))
     } finally {
       setLoading(false)
     }
@@ -222,11 +223,11 @@ function AuthForm() {
   const handleReset = async () => {
     resetMessages()
     if (newPassword.length < 8) {
-      setError('La contraseña debe tener al menos 8 caracteres.')
+      setError(bi('La contrasena debe tener al menos 8 caracteres.', 'Password must be at least 8 characters.'))
       return
     }
     if (newPassword !== confirmPassword) {
-      setError('Las contraseñas no coinciden.')
+      setError(bi('Las contrasenas no coinciden.', 'Passwords do not match.'))
       return
     }
     setLoading(true)
@@ -238,7 +239,7 @@ function AuthForm() {
       // Cerrar sesión limpia para que el usuario haga login con la nueva contraseña
       await supabase.auth.signOut()
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Error al actualizar la contraseña.')
+      setError(e instanceof Error ? e.message : bi('Error al actualizar la contrasena.', 'Password update failed.'))
     } finally {
       setLoading(false)
     }
@@ -285,7 +286,7 @@ function AuthForm() {
               <div style={{ textAlign: 'right', marginBottom: 4 }}>
                 <button type="button" onClick={() => goTo('forgot')}
                   style={{ background: 'none', border: 'none', color: 'var(--w-muted-2)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--w-font-body)', textDecoration: 'underline' }}>
-                  ¿Olvidaste tu contraseña?
+                  {bi('Olvidaste tu contrasena?', 'Forgot your password?')}
                 </button>
               </div>
 
@@ -334,11 +335,11 @@ function AuthForm() {
               <input className="wml-input" placeholder={t.displayName}
                 value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={40}
               />
-              <input className="wml-input" type="number" placeholder="Edad (+18)"
+              <input className="wml-input" type="number" placeholder={bi('Edad (+18)', 'Age (18+)')}
                 value={age} onChange={(e) => setAge(e.target.value)} min="18"
               />
               <select className="wml-input" value={country} onChange={(e) => setCountry(e.target.value)}>
-                <option value="" disabled>Country / País</option>
+                <option value="" disabled>{bi('Pais', 'Country')}</option>
                 <option value="AF">Afghanistan</option><option value="AL">Albania</option>
                 <option value="DZ">Algeria</option><option value="AD">Andorra</option>
                 <option value="AO">Angola</option><option value="AR">Argentina</option>
@@ -416,7 +417,8 @@ function AuthForm() {
 
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, marginTop: 8, color: 'var(--w-muted-2)', cursor: 'pointer' }}>
                 <input type="checkbox" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} />
-                Confirmo que soy mayor de 18 años y acepto los <a href="/legal/terminos" target="_blank" style={{ color: 'var(--w-accent)' }}>términos</a>.
+                {bi('Confirmo que soy mayor de 18 anos y acepto los', 'I confirm that I am 18 or older and accept the')}{' '}
+                <a href="/legal/terminos" target="_blank" style={{ color: 'var(--w-accent)' }}>{bi('terminos', 'terms')}</a>.
               </label>
 
               <button type="button" className="wml-btn wml-btn-primary" onClick={handleSignup}
@@ -440,14 +442,14 @@ function AuthForm() {
               {/* Back */}
               <button type="button" onClick={() => goTo('login')}
                 style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: 'var(--w-muted-2)', cursor: 'pointer', fontFamily: 'var(--w-font-mono)', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 20, padding: 0 }}>
-                <IcoArrowLeft /> Volver
+                <IcoArrowLeft /> {bi('Volver', 'Back')}
               </button>
 
               {!emailSent ? (
                 <>
-                  <div className="wml-auth-title">Recuperar contraseña</div>
+                  <div className="wml-auth-title">{bi('Recuperar contrasena', 'Reset password')}</div>
                   <div className="wml-auth-sub">
-                    Introduce tu email y te enviaremos un enlace para crear una nueva contraseña.
+                    {bi('Introduce tu email y te enviaremos un enlace para crear una nueva contrasena.', 'Enter your email and we will send you a link to create a new password.')}
                   </div>
 
                   {error && <div className="wml-error-msg">{error}</div>}
@@ -462,7 +464,7 @@ function AuthForm() {
                   <button type="button" className="wml-btn wml-btn-primary" onClick={handleForgot}
                     disabled={loading}
                     style={{ width: '100%', justifyContent: 'center' }}>
-                    {loading ? 'Enviando...' : 'Enviar enlace de recuperación'}
+                    {loading ? bi('Enviando...', 'Sending...') : bi('Enviar enlace de recuperacion', 'Send reset link')}
                   </button>
                 </>
               ) : (
@@ -471,17 +473,16 @@ function AuthForm() {
                   <div style={{ color: 'var(--w-accent)', marginBottom: 20, display: 'flex', justifyContent: 'center' }}>
                     <IcoMail />
                   </div>
-                  <div className="wml-auth-title" style={{ fontSize: 20 }}>Revisa tu email</div>
+                  <div className="wml-auth-title" style={{ fontSize: 20 }}>{bi('Revisa tu email', 'Check your email')}</div>
                   <div className="wml-auth-sub" style={{ marginBottom: 24 }}>
-                    Si <strong>{email}</strong> tiene una cuenta, recibirás un enlace de recuperación
-                    en los próximos minutos. Revisa también la carpeta de spam.
+                    {bi('Si', 'If')} <strong>{email}</strong> {bi('tiene una cuenta, recibiras un enlace de recuperacion en los proximos minutos. Revisa tambien spam.', 'has an account, you will receive a reset link in the next few minutes. Check your spam folder too.')}
                   </div>
                   <div style={{ fontFamily: 'var(--w-font-mono)', fontSize: 10, color: 'var(--w-muted)', letterSpacing: '0.1em', marginBottom: 24 }}>
-                    El enlace expira en 1 hora.
+                    {bi('El enlace expira en 1 hora.', 'The link expires in 1 hour.')}
                   </div>
                   <button type="button" className="wml-btn wml-btn-ghost" onClick={() => { setEmailSent(false); setEmail('') }}
                     style={{ width: '100%', justifyContent: 'center' }}>
-                    Usar otro email
+                    {bi('Usar otro email', 'Use another email')}
                   </button>
                 </div>
               )}
@@ -495,9 +496,9 @@ function AuthForm() {
             <>
               {!passwordChanged ? (
                 <>
-                  <div className="wml-auth-title">Nueva contraseña</div>
+                  <div className="wml-auth-title">{bi('Nueva contrasena', 'New password')}</div>
                   <div className="wml-auth-sub">
-                    Elige una contraseña segura. Mínimo 8 caracteres.
+                    {bi('Elige una contrasena segura. Minimo 8 caracteres.', 'Choose a secure password. Minimum 8 characters.')}
                   </div>
 
                   {error && <div className="wml-error-msg">{error}</div>}
@@ -505,7 +506,7 @@ function AuthForm() {
                   <PasswordField
                     value={newPassword} onChange={setNewPassword}
                     show={showNewPassword} onToggle={() => setShowNewPassword(!showNewPassword)}
-                    placeholder="Nueva contraseña (mín. 8 caracteres)"
+                    placeholder={bi('Nueva contrasena (min. 8 caracteres)', 'New password (min. 8 characters)')}
                     autoComplete="new-password"
                     onEnter={() => {}}
                     autoFocus
@@ -519,7 +520,7 @@ function AuthForm() {
                   <PasswordField
                     value={confirmPassword} onChange={setConfirmPassword}
                     show={showConfirmPassword} onToggle={() => setShowConfirmPassword(!showConfirmPassword)}
-                    placeholder="Repetir contraseña"
+                    placeholder={bi('Repetir contrasena', 'Repeat password')}
                     autoComplete="new-password"
                     onEnter={handleReset}
                   />
@@ -531,14 +532,14 @@ function AuthForm() {
                       letterSpacing: '0.08em', marginBottom: 12,
                       color: newPassword === confirmPassword ? 'var(--w-accent)' : 'var(--w-accent-neg)',
                     }}>
-                      {newPassword === confirmPassword ? '✓ Las contraseñas coinciden' : '✗ No coinciden'}
+                      {newPassword === confirmPassword ? bi('Las contrasenas coinciden', 'Passwords match') : bi('No coinciden', 'Passwords do not match')}
                     </div>
                   )}
 
                   <button type="button" className="wml-btn wml-btn-primary" onClick={handleReset}
                     disabled={loading || newPassword !== confirmPassword || newPassword.length < 8}
                     style={{ width: '100%', justifyContent: 'center' }}>
-                    {loading ? 'Guardando...' : 'Guardar nueva contraseña'}
+                    {loading ? bi('Guardando...', 'Saving...') : bi('Guardar nueva contrasena', 'Save new password')}
                   </button>
                 </>
               ) : (
@@ -551,14 +552,14 @@ function AuthForm() {
                   }}>
                     <IcoCheck />
                   </div>
-                  <div className="wml-auth-title" style={{ fontSize: 20 }}>Contraseña actualizada</div>
+                  <div className="wml-auth-title" style={{ fontSize: 20 }}>{bi('Contrasena actualizada', 'Password updated')}</div>
                   <div className="wml-auth-sub" style={{ marginBottom: 24 }}>
-                    Tu contraseña se ha cambiado correctamente. Ahora puedes acceder con ella.
+                    {bi('Tu contrasena se ha cambiado correctamente. Ahora puedes acceder con ella.', 'Your password was updated. You can now sign in with it.')}
                   </div>
                   <button type="button" className="wml-btn wml-btn-primary"
                     onClick={() => { setMode('login'); setNewPassword(''); setConfirmPassword('') }}
                     style={{ width: '100%', justifyContent: 'center' }}>
-                    Ir a acceder
+                    {bi('Ir a acceder', 'Go to sign in')}
                   </button>
                 </div>
               )}
@@ -584,6 +585,7 @@ function PasswordField({
   onEnter: () => void
   autoFocus?: boolean
 }) {
+  const locale = useLocale()
   return (
     <div style={{ position: 'relative', width: '100%' }}>
       <input
@@ -603,7 +605,7 @@ function PasswordField({
           background: 'none', border: 'none', color: 'var(--w-muted)',
           cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 4, zIndex: 2,
         }}
-        title={show ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+        title={show ? (locale === 'es' ? 'Ocultar contrasena' : 'Hide password') : (locale === 'es' ? 'Mostrar contrasena' : 'Show password')}
       >
         {show ? <IcoEyeOff /> : <IcoEye />}
       </button>
@@ -613,15 +615,18 @@ function PasswordField({
 
 // ── Sub-componente: indicador de fortaleza de contraseña ──────────────────────
 function PasswordStrength({ password }: { password: string }) {
+  const locale = useLocale()
   const checks = [
-    { label: '8+ caracteres',      ok: password.length >= 8 },
-    { label: 'Mayúscula',          ok: /[A-Z]/.test(password) },
-    { label: 'Número',             ok: /[0-9]/.test(password) },
-    { label: 'Símbolo (!@#...)',   ok: /[^A-Za-z0-9]/.test(password) },
+    { label: locale === 'es' ? '8+ caracteres' : '8+ characters', ok: password.length >= 8 },
+    { label: locale === 'es' ? 'Mayuscula' : 'Uppercase', ok: /[A-Z]/.test(password) },
+    { label: locale === 'es' ? 'Numero' : 'Number', ok: /[0-9]/.test(password) },
+    { label: locale === 'es' ? 'Simbolo (!@#...)' : 'Symbol (!@#...)', ok: /[^A-Za-z0-9]/.test(password) },
   ]
   const score  = checks.filter((c) => c.ok).length
   const colors = ['var(--w-accent-neg)', 'var(--w-accent-neg)', '#f59e0b', 'var(--w-accent)', 'var(--w-accent)']
-  const labels = ['', 'Débil', 'Débil', 'Media', 'Fuerte']
+  const labels = locale === 'es'
+    ? ['', 'Debil', 'Debil', 'Media', 'Fuerte']
+    : ['', 'Weak', 'Weak', 'Medium', 'Strong']
 
   return (
     <div style={{ marginBottom: 12 }}>

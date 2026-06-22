@@ -3,11 +3,12 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { fetchRanking } from '@/lib/queries'
-import { useLocale } from '@/lib/i18nutils' // ✅ Solo componentes cliente
+import { useLocale } from '@/hooks/useLocale'
 import { wmlPath } from '@/lib/i18n' 
 import { wmlCopy } from '@/lib/copy'
 import { AvatarMini } from '@/components/wml/AppShell'
 import type { Profile } from '@/lib/database.types'
+import { captureEvent } from '@/lib/posthog'
 
 type RankProfile = Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url' | 'karma_score' | 'country' | 'created_at'>
 
@@ -21,6 +22,10 @@ export default function RankingPage() {
   const copy = wmlCopy[locale]
   const [ranking, setRanking] = useState<RankProfile[]>([])
   const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    captureEvent('ranking_view')
+  }, [])
 
   useEffect(() => {
     let isMounted = true

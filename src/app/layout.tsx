@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Suspense } from 'react'
 import { headers } from 'next/headers'
 import './globals.css'
-import { PHProvider } from './providers'
+import { PostHogProvider } from '@/lib/posthog'
 import { PostHogPageView } from './PostHogPageView'
 import { DEFAULT_LOCALE, isLocale, type Locale } from '@/lib/i18n'
 import CookieBanner from '@/components/CookieBanner'
@@ -31,13 +31,13 @@ export default async function RootLayout({
   return (
     <html lang={lang}>
       <body>
-        <PHProvider>
+        <PostHogProvider>
           <Suspense fallback={null}>
             <PostHogPageView />
           </Suspense>
           {children}
           <CookieBanner />
-        </PHProvider>
+        </PostHogProvider>
       </body>
     </html>
   )

@@ -6,10 +6,10 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/authcontext'
 import { supabase } from '@/lib/supabase'
 import { searchProfiles } from '@/lib/queries'
-import { useLocale } from '@/lib/i18nutils' // ✅ Solo componentes cliente
+import { useLocale } from '@/hooks/useLocale'
 import { wmlPath } from '@/lib/i18n' 
 import { wmlCopy } from '@/lib/copy'
-//import { captureEvent } from '@/lib/posthog'
+import { captureEvent, resetAnalyticsIdentity } from '@/lib/posthog'
 import type { Profile } from '@/lib/database.types'
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
@@ -49,7 +49,7 @@ export default function AppShell({ children }: AppShellProps) {
       const { data } = await searchProfiles(searchQ.trim())
       setSearchResults((data as Profile[]) ?? [])
       setShowResults(true)
-      //captureEvent('search_query', { query_length: searchQ.trim().length })
+      captureEvent('search_query', { query_length: searchQ.trim().length, results: data?.length ?? 0 })
     }, 250)
     return () => clearTimeout(id)
   }, [searchQ])
@@ -86,8 +86,9 @@ export default function AppShell({ children }: AppShellProps) {
   ]
 
   const handleSignOut = async () => {
-    //captureEvent('auth_login', { action: 'logout' })
+    captureEvent('auth_logout')
     await signOut()
+    resetAnalyticsIdentity()
     router.replace(wmlPath(locale, '/auth'))
   }
 

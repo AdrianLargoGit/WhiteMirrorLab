@@ -4,7 +4,9 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/lib/authcontext'
 import { fetchPulsesFeed, createPulse, deletePulse, fetchPulseReplies } from '@/lib/queries'
-//import { captureEvent } from '@/lib/posthog'
+import { captureEvent } from '@/lib/posthog'
+import { useLocale } from '@/hooks/useLocale'
+import { wmlPath } from '@/lib/i18n'
 import { AvatarMini, KarmaBadge } from '@/components/wml/AppShell'
 import type { PulseWithProfile } from '@/lib/database.types'
 
@@ -15,10 +17,10 @@ const IcoSend   = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="no
 
 const MAX_CHARS = 280
 
-function timeAgo(iso: string): string {
+function timeAgo(iso: string, locale: 'es' | 'en'): string {
   const diff = Date.now() - new Date(iso).getTime()
   const m = Math.floor(diff / 60000)
-  if (m < 1) return 'ahora'
+  if (m < 1) return locale === 'es' ? 'ahora' : 'now'
   if (m < 60) return `${m}m`
   const h = Math.floor(m / 60)
   if (h < 24) return `${h}h`
@@ -26,6 +28,7 @@ function timeAgo(iso: string): string {
 }
 
 export default function PulsesPage() {
+  const locale = useLocale()
   const { user, profile } = useAuth()
   const [pulses, setPulses]     = useState<PulseWithProfile[]>([])
   const [page, setPage]         = useState(0)
@@ -82,7 +85,7 @@ export default function PulsesPage() {
     setPosting(true)
     const { data, error } = await createPulse(user.id, body)
     if (error) { setPostError(error); setPosting(false); return }
-    //captureEvent('post_upload', { type: 'pulse' })
+    captureEvent('pulse_upload', { character_count: body.trim().length })
     // Prepend new pulse optimistically with profile data
     if (data && profile) {
       const optimistic: PulseWithProfile = {
@@ -111,7 +114,7 @@ export default function PulsesPage() {
     if (!user) return
     setPulses((prev) => prev.filter((p) => p.id !== pulseId))
     await deletePulse(pulseId, user.id)
-    //captureEvent('post_deleted')
+    captureEvent('pulse_deleted')
   }
 
   const charsLeft = MAX_CHARS - body.length
@@ -141,7 +144,7 @@ export default function PulsesPage() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handlePost()
               }}
-              placeholder="¿Qué está pasando en el experimento?"
+              placeholder={locale === 'es' ? 'Que esta pasando en el experimento?' : 'What is happening in the experiment?'}
               rows={2}
               style={{
                 background: 'none',
@@ -194,7 +197,7 @@ export default function PulsesPage() {
   }}
 >
   <IcoSend />
-  {posting ? 'Publicando...' : 'Pulsar'}
+  {posting ? (locale === 'es' ? 'Publicando...' : 'Posting...') : (locale === 'es' ? 'Pulsar' : 'Post')}
 </button>
             </div>
           </div>
@@ -206,7 +209,7 @@ export default function PulsesPage() {
         <PulsesFeedSkeleton />
       ) : pulses.length === 0 ? (
         <div style={{ padding: '60px 0', textAlign: 'center', fontFamily: 'var(--w-font-mono)', fontSize: 11, color: 'var(--w-muted)', letterSpacing: '0.12em' }}>
-          SIN PULSES AÚN — SÉ EL PRIMERO
+          {locale === 'es' ? 'SIN PULSES AUN - SE EL PRIMERO' : 'NO PULSES YET - BE THE FIRST'}
         </div>
       ) : (
         pulses.map((pulse) => (
@@ -228,7 +231,7 @@ export default function PulsesPage() {
 
       {!hasMore && pulses.length > 0 && (
         <div style={{ padding: '32px 0', textAlign: 'center', fontFamily: 'var(--w-font-mono)', fontSize: 10, color: 'var(--w-muted)', letterSpacing: '0.12em' }}>
-          FIN DEL FEED
+          {locale === 'es' ? 'FIN DEL FEED' : 'END OF FEED'}
         </div>
       )}
     </div>
@@ -249,6 +252,7 @@ function PulseCard({
   onReplyPosted?: (reply: PulseWithProfile) => void
   isReply?: boolean
 }) {
+  const locale = useLocale()
   const { user, profile } = useAuth()
   const [showReplyBox, setShowReplyBox]   = useState(false)
   const [showReplies, setShowReplies]     = useState(false)
@@ -310,7 +314,7 @@ function PulseCard({
     setPostingReply(false)
     setShowReplyBox(false)
     onReplyPosted?.(newReply)
-    //captureEvent('post_upload', { type: 'pulse_reply' })
+    captureEvent('pulse_reply', { character_count: replyBody.trim().length })
   }
 
   const charsLeft  = MAX_CHARS - replyBody.length
@@ -325,7 +329,7 @@ function PulseCard({
     }}>
       <div style={{ display: 'flex', gap: 12 }}>
         {/* Avatar */}
-        <Link href={`/web/profile/${pulse.profile.username}`} style={{ flexShrink: 0 }}>
+        <Link href={wmlPath(locale, `/profile/${pulse.profile.username}`)} style={{ flexShrink: 0 }}>
           <AvatarMini profile={pulse.profile} size={isReply ? 32 : 38} />
         </Link>
 
@@ -333,7 +337,7 @@ function PulseCard({
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
             <Link
-              href={`/web/profile/${pulse.profile.username}`}
+              href={wmlPath(locale, `/profile/${pulse.profile.username}`)}
               style={{ fontFamily: 'var(--w-font-display)', fontWeight: 700, fontSize: 14, letterSpacing: '-0.01em', color: 'var(--w-white)', textDecoration: 'none' }}
             >
               {pulse.profile.display_name}
@@ -343,7 +347,7 @@ function PulseCard({
             </span>
             <span style={{ fontFamily: 'var(--w-font-mono)', fontSize: 10, color: 'var(--w-muted)' }}>·</span>
             <span style={{ fontFamily: 'var(--w-font-mono)', fontSize: 10, color: 'var(--w-muted)' }}>
-              {timeAgo(pulse.created_at)}
+              {timeAgo(pulse.created_at, locale)}
             </span>
             <KarmaBadge score={pulse.profile.karma_score} style={{ marginLeft: 'auto', fontSize: 10 }} />
           </div>
@@ -375,10 +379,10 @@ function PulseCard({
                   borderRadius: 0,
                 }}
                 onClick={() => setShowReplyBox((v) => !v)}
-                title="Responder"
+                title={locale === 'es' ? 'Responder' : 'Reply'}
               >
                 <IcoReply />
-                Responder
+                {locale === 'es' ? 'Responder' : 'Reply'}
               </button>
             )}
 
@@ -395,7 +399,7 @@ function PulseCard({
                 }}
                 onClick={handleToggleReplies}
               >
-                {loadingReplies ? '...' : `${pulse.reply_count} respuesta${pulse.reply_count !== 1 ? 's' : ''}`}
+                {loadingReplies ? '...' : `${pulse.reply_count} ${locale === 'es' ? `respuesta${pulse.reply_count !== 1 ? 's' : ''}` : `repl${pulse.reply_count === 1 ? 'y' : 'ies'}`}`}
               </button>
             )}
 
@@ -413,7 +417,7 @@ function PulseCard({
                 onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--w-accent-neg)')}
                 onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--w-muted)')}
                 onClick={() => onDelete(pulse.id)}
-                title="Eliminar pulse"
+                title={locale === 'es' ? 'Eliminar pulse' : 'Delete pulse'}
               >
                 <IcoTrash />
               </button>
@@ -439,7 +443,7 @@ function PulseCard({
                     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handlePostReply()
                     if (e.key === 'Escape') setShowReplyBox(false)
                   }}
-                  placeholder={`Respondiendo a @${pulse.profile.username}…`}
+                  placeholder={locale === 'es' ? `Respondiendo a @${pulse.profile.username}...` : `Replying to @${pulse.profile.username}...`}
                   rows={2}
                   autoFocus
                   style={{
@@ -474,7 +478,7 @@ function PulseCard({
                       onClick={() => { setShowReplyBox(false); setReplyBody('') }}
                       style={{ padding: '6px 12px', fontSize: 10 }}
                     >
-                      Cancelar
+                      {locale === 'es' ? 'Cancelar' : 'Cancel'}
                     </button>
                     <button
   className="wml-btn wml-btn-primary"
@@ -498,7 +502,7 @@ function PulseCard({
   }}
 >
   <IcoSend />
-  {postingReply ? '...' : 'Responder'}
+  {postingReply ? '...' : (locale === 'es' ? 'Responder' : 'Reply')}
 </button>
                   </div>
                 </div>

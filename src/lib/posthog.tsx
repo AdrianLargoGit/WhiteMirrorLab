@@ -1,148 +1,140 @@
 'use client'
 
 import posthog from 'posthog-js'
-import { PostHogProvider as PHProvider, usePostHog } from 'posthog-js/react'
+import { PostHogProvider as PHProvider } from 'posthog-js/react'
 import { useEffect, type ReactNode } from 'react'
-import { usePathname, useSearchParams } from 'next/navigation'
-import { useAuth } from '@/lib/authcontext'
+import { getLocaleFromPathname } from './i18n'
 
-// Función interna rápida para comprobar si el usuario dio permiso de analíticas
-const hasAnalyticsConsent = (): boolean => {
+export const ANALYTICS_CONSENT_KEY = 'wml_cookie_consent'
+export const ANALYTICS_CONSENT_EVENT = 'wml:analytics-consent'
+
+type ConsentRecord = {
+  essential: true
+  analytics: boolean
+  timestamp: string
+}
+
+export function hasAnalyticsConsent(): boolean {
   if (typeof window === 'undefined') return false
-  const consentRaw = localStorage.getItem('wml_cookie_consent')
-  if (!consentRaw) return true // Si aún no ha contestado el banner, permitimos el tracking inicial
   try {
-    const consent = JSON.parse(consentRaw)
-    return consent.analytics !== false
+    const raw = window.localStorage.getItem(ANALYTICS_CONSENT_KEY)
+    if (!raw) return false
+    return (JSON.parse(raw) as Partial<ConsentRecord>).analytics === true
   } catch {
-    return true
+    return false
   }
 }
 
-// ── Initialise PostHog once ───────────────────────────────────────────────────
-if (typeof window !== 'undefined') {
+function initializePostHog() {
+  if (typeof window === 'undefined' || posthog.__loaded) return
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY_WML_1_0
-  const host = process.env.NEXT_PUBLIC_POSTHOG_HOST_WML_1_0
+  if (!key) return
 
-  if (key && host) {
-    posthog.init(key, {
-      // FIX: Forzamos una URL absoluta para que la Toolbar no la rechace en producción
-      api_host: window.location.origin + '/ingest', 
-      ui_host: host,
-      capture_pageview: false, // Controlado manualmente abajo
-      respect_dnt: true,
-      session_recording: {
-        maskAllInputs: true,
-        maskTextSelector: '[data-ph-mask]',
-      },
-      persistence: 'localStorage+cookie',
-    })
+  posthog.init(key, {
+    api_host: '/ingest',
+    ui_host: process.env.NEXT_PUBLIC_POSTHOG_HOST_WML_1_0,
+    capture_pageview: false,
+    capture_pageleave: true,
+    person_profiles: 'identified_only',
+    respect_dnt: true,
+    persistence: 'localStorage+cookie',
+    disable_session_recording: true,
+  })
+
+  if (hasAnalyticsConsent()) posthog.opt_in_capturing()
+  else posthog.opt_out_capturing()
+}
+
+function analyticsContext() {
+  const path = window.location.pathname
+  return {
+    locale: getLocaleFromPathname(path),
+    path,
+    route_area: path.includes('/wml-1-0') || path.startsWith('/web') ? 'wml_1_0' : 'landing',
+    viewport: window.innerWidth < 768 ? 'mobile' : window.innerWidth < 1120 ? 'tablet' : 'desktop',
   }
 }
 
-// ── Pageview tracker ─────────────────────────────────────────────────────────
-function PageviewTracker() {
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const ph = usePostHog()
-
-  useEffect(() => {
-    if (!ph) return
-    
-    // CANDADO: Si no hay consentimiento de analíticas, bloqueamos el tracking de páginas
-    if (!hasAnalyticsConsent()) return
-
-    ph.capture('$pageview', {
-      $current_url: window.location.href,
-    })
-  }, [pathname, searchParams, ph])
-
-  return null
-}
-
-// ── Identity linker (Supabase UUID ↔ PostHog Anonymous ID) ───────────────────
-function IdentityLinker() {
-  const { profile } = useAuth()
-  const ph = usePostHog()
-
-  useEffect(() => {
-    if (!ph) return
-    
-    // CANDADO: Si no hay consentimiento, no vinculamos identidades
-    if (!hasAnalyticsConsent()) return
-
-    if (profile) {
-      ph.identify(profile.id, {
-        username: profile.username,
-        country: profile.country ?? undefined,
-        preferred_language: profile.preferred_language ?? undefined,
-        created_at: profile.created_at,
-      })
-    } else {
-      ph.reset()
-    }
-  }, [profile, ph])
-
-  return null
-}
-
-// ── Public provider ───────────────────────────────────────────────────────────
 export function PostHogProvider({ children }: { children: ReactNode }) {
-  return (
-    <PHProvider client={posthog}>
-      <PageviewTracker />
-      <IdentityLinker />
-      {children}
-    </PHProvider>
-  )
+  useEffect(() => {
+    initializePostHog()
+
+    const handleConsent = (event: Event) => {
+      const accepted = (event as CustomEvent<{ analytics: boolean }>).detail.analytics
+      if (accepted) {
+        posthog.opt_in_capturing()
+        posthog.capture('analytics_consent_updated', { analytics: true, ...analyticsContext() })
+      } else {
+        posthog.opt_out_capturing()
+        posthog.reset()
+      }
+    }
+
+    window.addEventListener(ANALYTICS_CONSENT_EVENT, handleConsent)
+    return () => window.removeEventListener(ANALYTICS_CONSENT_EVENT, handleConsent)
+  }, [])
+
+  return <PHProvider client={posthog}>{children}</PHProvider>
 }
 
-// ── Tipos de Eventos de la App ───────────────────────────────────────────────
 export type WMLEvent =
+  | '$pageview'
+  | 'analytics_consent_updated'
   | 'post_upload'
+  | 'post_deleted'
+  | 'post_tap'
+  | 'pulse_upload'
+  | 'pulse_reply'
+  | 'pulse_deleted'
   | 'story_upload'
-  | 'vote_cast'
-  | 'vote_flipped'
-  | 'profile_view'
   | 'story_view'
   | 'story_completed'
+  | 'vote_cast'
+  | 'vote_flipped'
+  | 'vote_changed'
+  | 'vote_removed'
+  | 'profile_view'
+  | 'profile_edit'
+  | 'profile_shared'
   | 'search_query'
   | 'ranking_view'
   | 'feed_scroll_depth'
-  | 'post_tap'
   | 'auth_signup'
-  | 'auth_login'
-  | 'terms_accepted'
-  | 'post_deleted'
   | 'auth_signup_pending_confirm'
-  | 'experiment_consent_given'
-  | 'vote_changed'
-  | 'experiment_started'
-  | 'vote_removed'
-  | 'quiz_completed'
+  | 'auth_login'
+  | 'auth_logout'
   | 'auth_forgot_password'
   | 'auth_password_reset_success'
+  | 'terms_accepted'
+  | 'experiment_consent_given'
+  | 'experiment_started'
+  | 'quiz_completed'
 
-// ── AYUDANTE 1: Captura de eventos tipados en cualquier parte ─────────────────
 export function captureEvent(
   event: WMLEvent,
   properties?: Record<string, string | number | boolean | null | undefined>
 ) {
-  if (typeof window === 'undefined') return
-  
-  // CANDADO: Si rechazó las cookies analíticas, salimos en seco sin enviar nada
-  if (!hasAnalyticsConsent()) return
-
-  posthog.capture(event, properties)
+  if (typeof window === 'undefined' || !hasAnalyticsConsent()) return
+  initializePostHog()
+  posthog.capture(event, { ...analyticsContext(), ...properties })
 }
 
-// ── AYUDANTE 2: Identificación manual (Por si acaso la necesitas fuera del Provider) ──
+export function capturePageView() {
+  captureEvent('$pageview', {
+    $current_url: `${window.location.origin}${window.location.pathname}`,
+  })
+}
+
 export function identifyUser(
   userId: string,
   properties?: Record<string, unknown>
 ) {
-  if (typeof window === 'undefined') return
-  if (!hasAnalyticsConsent()) return
-
+  if (typeof window === 'undefined' || !hasAnalyticsConsent()) return
+  initializePostHog()
   posthog.identify(userId, properties)
+}
+
+export function resetAnalyticsIdentity() {
+  if (typeof window === 'undefined') return
+  posthog.reset()
 }

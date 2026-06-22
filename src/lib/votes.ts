@@ -48,7 +48,7 @@ export async function castVote({
       const { error } = await supabase.from('votes').delete().eq('id', existing.id)
       if (error) return { success: false, error: error.message }
       
-      captureEvent('vote_removed', { receiver_id: receiverId, pulse_id: pulseId, posts_id: photoId })
+      captureEvent('vote_removed', { target_type: pulseId ? 'pulse' : photoId ? 'post' : 'profile' })
       return { success: true, action: 'removed' }
     } else {
       // El usuario pulsó el botón contrario => Quiere CAMBIAR su voto
@@ -58,7 +58,7 @@ export async function castVote({
         .eq('id', existing.id)
       if (error) return { success: false, error: error.message }
       
-      captureEvent('vote_changed', { receiver_id: receiverId, vote_type: voteType, pulse_id: pulseId, posts_id: photoId })
+      captureEvent('vote_changed', { vote_type: voteType, target_type: pulseId ? 'pulse' : photoId ? 'post' : 'profile' })
       return { success: true, action: 'changed' }
     }
   }
@@ -74,7 +74,7 @@ export async function castVote({
 
   if (error) return { success: false, error: error.message }
   
-  captureEvent('vote_cast', { receiver_id: receiverId, vote_type: voteType, pulse_id: pulseId, posts_id: photoId })
+  captureEvent('vote_cast', { vote_type: voteType, target_type: pulseId ? 'pulse' : photoId ? 'post' : 'profile' })
   return { success: true, action: 'cast' }
 }
 

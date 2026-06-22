@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/authcontext'
 import { fetchFeedPosts, fetchActiveStories } from '@/lib/queries'
 import { castVote, getMyVote } from '@/lib/votes'
 import { captureEvent } from '@/lib/posthog'
-import { useLocale } from '@/lib/i18nutils' // ✅ Solo componentes cliente
+import { useLocale } from '@/hooks/useLocale'
 import { wmlPath } from '@/lib/i18n'   // ✅ Puedes usar las funciones puras también
 import { wmlCopy } from '@/lib/copy'
 import { AvatarMini, KarmaBadge } from '@/components/wml/AppShell'
@@ -62,7 +62,7 @@ export default function FeedPage() {
       setPosts(postsData)
       setStories((storiesRes.data ?? []) as StoryWithProfile[])
       setLoading(false)
-      captureEvent('ranking_view')
+      captureEvent('experiment_started', { surface: 'feed' })
 
       // Pre-load my votes for visible profiles
       if (user) {
@@ -149,7 +149,7 @@ export default function FeedPage() {
               onClick={() => {
                 setViewingStory(s)
                 setSeenStories((prev) => new Set([...prev, s.id]))
-                captureEvent('story_view', { story_user: s.profile.username })
+                captureEvent('story_view')
               }}
             >
               <div className={`wml-story-ring ${seenStories.has(s.id) ? 'seen' : ''}`}>
