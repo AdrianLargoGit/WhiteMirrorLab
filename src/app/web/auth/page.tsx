@@ -147,54 +147,77 @@ function AuthForm() {
     resetMessages()
     setLoading(true)
     try {
-      if (!username.match(/^[a-z0-9_]{3,20}$/)) throw new Error(t.usernameRule)
+      if (mode === 'login') {
+        const { error: loginErr } = await supabase.auth.signInWithPassword({ email, password })
+        if (loginErr) throw loginErr
+        captureEvent('auth_login', { locale })
+        redirectAfterLogin()
+      } else {
+        // Validaciones Front-end
+        if (!username.match(/^[a-z0-9_]{3,20}$/)) {
+          throw new Error(t.usernameRule)
+        }
+        
+        // Validación estricta de edad +18
+        const ageNum = parseInt(age)
+        if (isNaN(ageNum) || ageNum < 18) {
+          throw new Error("Debes ser mayor de 18 años para registrarte.")
+        }
+        if (!country) {
+          throw new Error("Por favor, selecciona un país.")
+        }
+        if (!termsAccepted) {
+          throw new Error("Debes aceptar los términos y condiciones.")
+        }
 
-      const ageNum = parseInt(age)
-      if (isNaN(ageNum) || ageNum < 18) throw new Error('Debes ser mayor de 18 años para registrarte.')
-      if (!country)        throw new Error('Por favor, selecciona un país.')
-      if (!termsAccepted)  throw new Error('Debes aceptar los términos y condiciones.')
+        const { data: available } = await supabase
+          .rpc('check_username_available', { p_username: username })
+        if (available === false) throw new Error(t.usernameTaken)
 
-      const { data: available } = await supabase.rpc('check_username_available', { p_username: username })
-      if (available === false) throw new Error(t.usernameTaken)
-
-      const { data, error: signUpErr } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { age: ageNum } },
-      })
-      if (signUpErr) throw signUpErr
-
-      if (data.user) {
-        const { error: profileErr } = await supabase.from('profiles').insert({
-          id: data.user.id,
-          username,
-          display_name: displayName || username,
-          country,
-          accepted_terms_version: '1.0',
-          accepted_at: new Date().toISOString(),
-          karma_score: 0,
-          total_votes_given_positive: 0,
-          total_votes_given_negative: 0,
-          is_bot: false,
+        const { data, error: signUpErr } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: { data: { age: ageNum } } 
         })
-        if (profileErr) throw new Error(`Error al crear el perfil: ${profileErr.message}`)
-        captureEvent('auth_signup', { username, locale })
-        clearConsentCookie()
-      }
+        if (signUpErr) throw signUpErr
 
-      if (!data.session) {
-        captureEvent('auth_signup_pending_confirm', { username, locale })
-        setSuccess(t.confirmEmail)
-        setMode('login')
-        return
+        if (data.user) {
+          const { error: profileErr } = await supabase.from('profiles').insert({
+            id: data.user.id,
+            username,
+            display_name: displayName || username,
+            country: country, 
+            accepted_terms_version: '1.0', 
+            accepted_at: new Date().toISOString(), 
+            karma_score: 0,
+            votes_received_positive: 0,
+            votes_received_negative: 0,
+            is_bot: false,
+          })
+          
+          if (profileErr) {
+             throw new Error(`Error al crear el perfil: ${profileErr.message || 'Faltan campos obligatorios en la BD'}`)
+          }
+          captureEvent('auth_signup', { username, locale })
+          clearConsentCookie()
+        }
+
+        if (!data.session) {
+          captureEvent('auth_signup_pending_confirm', { username, locale })
+          setSuccess(t.confirmEmail)
+          setMode('login')
+          return
+        }
+
+        redirectAfterLogin()
       }
-      redirectAfterLogin()
-    } catch (e: unknown) {
-      setError(mapAuthError(e, locale) || (e instanceof Error ? e.message : 'Error al crear la cuenta'))
+    } catch (e: any) {
+      setError(mapAuthError(e, locale) || e.message || 'Ha ocurrido un error')
     } finally {
       setLoading(false)
     }
   }
+
 
   // FORGOT PASSWORD — envía el email de recuperación
   const handleForgot = async () => {
