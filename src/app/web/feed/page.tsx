@@ -12,6 +12,7 @@ import { wmlCopy } from '@/lib/copy'
 import { AvatarMini, KarmaBadge } from '@/components/wml/AppShell'
 import type { Post, Profile, Story, VoteType } from '@/lib/database.types'
 import StoryViewer from '@/components/wml/StoryViewer'
+import PWAInstallBanner from '@/components/wml/PWABanner'
 
 type FeedPost        = Post & { profile: Profile }
 type StoryWithProfile = Story & { profile: Pick<Profile, 'id' | 'username' | 'avatar_url' | 'display_name'> }
@@ -130,6 +131,7 @@ export default function FeedPage() {
 
   return (
     <>
+    <PWAInstallBanner />
       {viewingStory && (
         <StoryViewer
           story={viewingStory}
