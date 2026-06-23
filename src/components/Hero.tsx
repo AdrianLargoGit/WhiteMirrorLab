@@ -98,9 +98,12 @@ export default function Hero({ lang }: HeroProps) {
       </p>
 
       <div className={`${styles.heroActions} ${styles.animate4}`}>
-        <Link href={localizedHashPath(lang, '#experiments')} className="btn-primary">
-          <span>{t.ctaPrimary}</span>
-        </Link>
+        <Link 
+  href={lang === 'en' ? '/en/wml-1-0/auth' : `/web/auth`} 
+  className="btn-primary"
+>
+  <span>{t.ctaPrimary}</span>
+</Link>
         <Link href={localizedHashPath(lang, '#manifesto')} className="btn-ghost">
           <span className="btn-ghost-arrow" aria-hidden="true" />
           <span>{t.ctaGhost}</span>
