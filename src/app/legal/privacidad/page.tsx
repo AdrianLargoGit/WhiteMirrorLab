@@ -30,7 +30,7 @@ export default function PrivacidadPage() {
         <li><strong>Responsable:</strong> White Mirror Lab</li>
         <li><strong>Correo electrónico:</strong> whitemirrorlab.info@gmail.com</li>
         <li><strong>Domicilio:</strong> España (Unión Europea)</li>
-        <li><strong>Sitio web:</strong> whitemirror.lab</li>
+        <li><strong>Sitio web:</strong> whitemirrorlab.com</li>
       </ul>
       <p>
         No estamos obligados a designar Delegado de Protección de Datos (DPD) según el art. 37

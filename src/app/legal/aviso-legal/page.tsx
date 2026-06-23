@@ -25,7 +25,7 @@ export default function AvisoLegalPage() {
         <li><strong>Actividad:</strong> Laboratorio de experimentación social digital sin ánimo de lucro</li>
         <li><strong>Domicilio social:</strong> España (Unión Europea)</li>
         <li><strong>Correo electrónico de contacto:</strong> whitemirrorlab.info@gmail.com</li>
-        <li><strong>Sitio web:</strong> whitemirror.lab</li>
+        <li><strong>Sitio web:</strong> whitemirrorlab.com</li>
         <li>
           <strong>Nota sobre NIF/CIF:</strong> White Mirror Lab opera como proyecto de investigación
           no mercantil. En caso de requerir datos registrales adicionales para fines legales, diríjase
