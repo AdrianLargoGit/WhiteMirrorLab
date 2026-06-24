@@ -30,9 +30,13 @@ function initializePostHog() {
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY_WML_1_0
   if (!key) return
 
+  // 🛠️ SOLUCIÓN TOOLBAR: Convertimos el proxy relativo en una URL absoluta dinámicamente
+  const absoluteApiHost = `${window.location.origin}/ingest`
+
   posthog.init(key, {
-    api_host: '/ingest',
-    ui_host: process.env.NEXT_PUBLIC_POSTHOG_HOST_WML_1_0,
+    api_host: absoluteApiHost,
+    // 🛠️ SOLUCIÓN 401 EUROPA: Forzamos el host de la interfaz a los servidores de la UE por defecto
+    ui_host: process.env.NEXT_PUBLIC_POSTHOG_HOST_WML_1_0 || 'https://eu.posthog.com',
     capture_pageview: false,
     capture_pageleave: true,
     person_profiles: 'identified_only',
