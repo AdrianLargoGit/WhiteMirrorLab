@@ -1,13 +1,15 @@
 import { LegalShell } from '@/components/legal/LegalShell'
+import { LocalizedLegalContent } from '@/components/legal/LocalizedLegalContent'
 
 export const metadata = {
-  title: 'Política de privacidad — White Mirror Lab',
-  description: 'Política de privacidad de White Mirror Lab conforme al RGPD (UE) 2016/679 y la LOPDGDD 3/2018.',
+  title: 'Privacy policy / Politica de privacidad - White Mirror Lab',
+  description: 'Privacy policy for White Mirror Lab under GDPR and applicable Spanish data protection law.',
 }
 
 export default function PrivacidadPage() {
   return (
     <LegalShell currentPath="/legal/privacidad">
+      <LocalizedLegalContent page="privacy">
       <h1>Política de privacidad</h1>
       <p className="legal-updated">
         Última actualización: 10 de junio de 2026 · RGPD (UE) 2016/679 · LOPDGDD 3/2018 ·
@@ -230,6 +232,7 @@ export default function PrivacidadPage() {
           Plazo de respuesta: máximo 30 días naturales
         </p>
       </div>
+      </LocalizedLegalContent>
     </LegalShell>
   )
 }

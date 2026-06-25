@@ -7,7 +7,7 @@ import { setConsentCookie } from '@/lib/consent'
 import { captureEvent } from '@/lib/posthog'
 import { wmlCopy } from '@/lib/copy'
 import { useLocale } from '@/hooks/useLocale'
-import { wmlPath } from '@/lib/i18n'
+import { legalPath, wmlPath } from '@/lib/i18n'
 
 const IcoBulletCheck = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--w-accent, #00f0ff)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -131,9 +131,9 @@ function ConsentForm() {
             <input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: '#00f0ff', flexShrink: 0 }} />
             <span style={{ fontSize: '13px', color: '#ffffff', lineHeight: 1.4 }} onClick={(e) => (e.target as HTMLElement).tagName === 'A' && e.stopPropagation()}>
               {t.consentTermsPrefix}{' '}
-              <Link href="/legal/terminos" target="_blank" style={{ color: '#00f0ff', textDecoration: 'underline' }}>{t.terms}</Link>
+              <Link href={legalPath(locale, 'terms')} target="_blank" style={{ color: '#00f0ff', textDecoration: 'underline' }}>{t.terms}</Link>
               {' '}/{' '}
-              <Link href="/legal/etica" target="_blank" style={{ color: '#00f0ff', textDecoration: 'underline' }}>{t.ethicsFramework}</Link>.
+              <Link href={legalPath(locale, 'ethics')} target="_blank" style={{ color: '#00f0ff', textDecoration: 'underline' }}>{t.ethicsFramework}</Link>.
             </span>
           </label>
 
@@ -141,9 +141,9 @@ function ConsentForm() {
             <input type="checkbox" checked={privacy} onChange={(e) => setPrivacy(e.target.checked)} style={{ width: '18px', height: '18px', accentColor: '#00f0ff', flexShrink: 0 }} />
             <span style={{ fontSize: '13px', color: '#ffffff', lineHeight: 1.4 }} onClick={(e) => (e.target as HTMLElement).tagName === 'A' && e.stopPropagation()}>
               {t.consentPrivacyPrefix}{' '}
-              <Link href="/legal/privacidad" target="_blank" style={{ color: '#00f0ff', textDecoration: 'underline' }}>{t.privacyPolicy}</Link>
+              <Link href={legalPath(locale, 'privacy')} target="_blank" style={{ color: '#00f0ff', textDecoration: 'underline' }}>{t.privacyPolicy}</Link>
               {' '}/{' '}
-              <Link href="/legal/cookies" target="_blank" style={{ color: '#00f0ff', textDecoration: 'underline' }}>{t.cookiesPolicy}</Link>.
+              <Link href={legalPath(locale, 'cookies')} target="_blank" style={{ color: '#00f0ff', textDecoration: 'underline' }}>{t.cookiesPolicy}</Link>.
             </span>
           </label>
         </div>
@@ -183,7 +183,7 @@ function ConsentForm() {
         </button>
 
         <p style={{ textAlign: 'center', fontSize: '11px', color: '#6b7280', lineHeight: 1.4 }}>
-          {t.dataController} / <Link href="/legal/aviso-legal" style={{ textDecoration: 'underline', color: '#9ca3af' }}>{t.legalNotice}</Link>
+          {t.dataController} / <Link href={legalPath(locale, 'legalNotice')} style={{ textDecoration: 'underline', color: '#9ca3af' }}>{t.legalNotice}</Link>
         </p>
       </div>
     </div>

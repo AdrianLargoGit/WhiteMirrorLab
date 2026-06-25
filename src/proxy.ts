@@ -5,6 +5,7 @@ import {
   DEFAULT_LOCALE,
   LOCALE_COOKIE,
   ROUTES,
+  alternateLocalePath,
   getLocaleFromAcceptLanguage,
   isLocale,
   toInternalPath,
@@ -48,6 +49,10 @@ export async function proxy(request: NextRequest) {
     }
     if (originalPathname.startsWith(`${ROUTES.es.publicProfile}/`)) {
       url.pathname = originalPathname.replace(ROUTES.es.publicProfile, ROUTES.en.publicProfile)
+      return NextResponse.redirect(url)
+    }
+    if (originalPathname === ROUTES.es.legal || originalPathname.startsWith(`${ROUTES.es.legal}/`)) {
+      url.pathname = alternateLocalePath(originalPathname, 'en')
       return NextResponse.redirect(url)
     }
   }

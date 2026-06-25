@@ -1,13 +1,15 @@
 import { LegalShell } from '@/components/legal/LegalShell'
+import { LocalizedLegalContent } from '@/components/legal/LocalizedLegalContent'
 
 export const metadata = {
-  title: 'Aviso legal — White Mirror Lab',
-  description: 'Información legal obligatoria del titular del sitio web White Mirror Lab conforme a la LSSI-CE.',
+  title: 'Legal notice / Aviso legal - White Mirror Lab',
+  description: 'Legal owner information and website terms for White Mirror Lab.',
 }
 
 export default function AvisoLegalPage() {
   return (
     <LegalShell currentPath="/legal/aviso-legal">
+      <LocalizedLegalContent page="legalNotice">
       <h1>Aviso legal</h1>
       <p className="legal-updated">
         Última actualización: 10 de junio de 2026 · En cumplimiento del art. 10 LSSI-CE (Ley 34/2002)
@@ -155,6 +157,7 @@ export default function AvisoLegalPage() {
           <a href="/legal/etica">Marco ético</a>
         </p>
       </div>
+      </LocalizedLegalContent>
     </LegalShell>
   )
 }

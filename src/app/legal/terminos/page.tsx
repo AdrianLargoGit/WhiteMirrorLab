@@ -1,13 +1,15 @@
 import { LegalShell } from '@/components/legal/LegalShell'
+import { LocalizedLegalContent } from '@/components/legal/LocalizedLegalContent'
 
 export const metadata = {
-  title: 'Términos de participación — WML 1.0 «Karma Score»',
-  description: 'Términos y condiciones de participación en el experimento social WML 1.0 de White Mirror Lab.',
+  title: 'Terms of participation / Terminos - WML 1.0 Karma Score',
+  description: 'Terms and conditions for participating in White Mirror Lab WML 1.0.',
 }
 
 export default function TerminosPage() {
   return (
     <LegalShell currentPath="/legal/terminos">
+      <LocalizedLegalContent page="terms">
       <h1>Términos de participación</h1>
       <p className="legal-updated">
         Experimento WML 1.0 «Karma Score» · Versión 1.0 · Vigentes desde: 10 de junio de 2026
@@ -224,6 +226,7 @@ export default function TerminosPage() {
           <a href="/legal/aviso-legal">Aviso legal</a>
         </p>
       </div>
+      </LocalizedLegalContent>
     </LegalShell>
   )
 }

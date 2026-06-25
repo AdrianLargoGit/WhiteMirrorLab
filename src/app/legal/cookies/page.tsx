@@ -1,13 +1,15 @@
 import { LegalShell } from '@/components/legal/LegalShell'
+import { LocalizedLegalContent } from '@/components/legal/LocalizedLegalContent'
 
 export const metadata = {
-  title: 'Política de cookies — White Mirror Lab',
-  description: 'Política de cookies de White Mirror Lab conforme a la Directiva ePrivacy y la guía de la AEPD.',
+  title: 'Cookie policy / Politica de cookies - White Mirror Lab',
+  description: 'Cookie policy for White Mirror Lab, including technical and analytics cookies.',
 }
 
 export default function CookiesPage() {
   return (
     <LegalShell currentPath="/legal/cookies">
+      <LocalizedLegalContent page="cookies">
       <h1>Política de cookies</h1>
       <p className="legal-updated">
         Última actualización: 10 de junio de 2026 · Directiva 2009/136/CE (ePrivacy) ·
@@ -181,6 +183,7 @@ export default function CookiesPage() {
         ante la Agencia Española de Protección de Datos:{' '}
         <a href="https://www.aepd.es" target="_blank" rel="noopener noreferrer">www.aepd.es</a>.
       </p>
+      </LocalizedLegalContent>
     </LegalShell>
   )
 }

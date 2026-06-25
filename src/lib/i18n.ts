@@ -23,6 +23,39 @@ export const ROUTES = {
   },
 } as const
 
+export type LegalPage = 'legalNotice' | 'privacy' | 'cookies' | 'terms' | 'ethics'
+
+export const LEGAL_SLUGS: Record<Locale, Record<LegalPage, string>> = {
+  es: {
+    legalNotice: 'aviso-legal',
+    privacy: 'privacidad',
+    cookies: 'cookies',
+    terms: 'terminos',
+    ethics: 'etica',
+  },
+  en: {
+    legalNotice: 'legal-notice',
+    privacy: 'privacy',
+    cookies: 'cookies',
+    terms: 'terms',
+    ethics: 'ethics',
+  },
+}
+
+const EN_TO_ES_LEGAL_SLUG = new Map(
+  Object.entries(LEGAL_SLUGS.en).map(([page, slug]) => [
+    slug,
+    LEGAL_SLUGS.es[page as LegalPage],
+  ])
+)
+
+const ES_TO_EN_LEGAL_SLUG = new Map(
+  Object.entries(LEGAL_SLUGS.es).map(([page, slug]) => [
+    slug,
+    LEGAL_SLUGS.en[page as LegalPage],
+  ])
+)
+
 const WML_ROUTE_ALIASES = new Map([
   ['/', '/'],
   ['/consent', '/consent'],
@@ -86,6 +119,10 @@ export function publicProfilePath(locale: Locale, username: string): string {
   return `${ROUTES[locale].publicProfile}/${username}`
 }
 
+export function legalPath(locale: Locale, page: LegalPage): string {
+  return `${ROUTES[locale].legal}/${LEGAL_SLUGS[locale][page]}`
+}
+
 export function localizedHashPath(locale: Locale, hash: string): string {
   return `${homePath(locale)}${hash}`
 }
@@ -95,7 +132,10 @@ export function toInternalPath(pathname: string): string {
   if (pathname === ROUTES.en.questionnaire) return ROUTES.es.questionnaire
   if (pathname === ROUTES.en.legal) return ROUTES.es.legal
   if (pathname.startsWith(`${ROUTES.en.legal}/`)) {
-    return pathname.replace(ROUTES.en.legal, ROUTES.es.legal)
+    const suffix = pathname.slice(ROUTES.en.legal.length + 1)
+    const [slug, ...rest] = suffix.split('/')
+    const spanishSlug = EN_TO_ES_LEGAL_SLUG.get(slug) ?? slug
+    return `${ROUTES.es.legal}/${spanishSlug}${rest.length ? `/${rest.join('/')}` : ''}`
   }
   if (pathname.startsWith(`${ROUTES.en.publicProfile}/`)) {
     return pathname.replace(ROUTES.en.publicProfile, ROUTES.es.publicProfile)
@@ -118,7 +158,10 @@ export function alternateLocalePath(pathname: string, nextLocale: Locale): strin
   if (internal === ROUTES.es.questionnaire) return ROUTES.en.questionnaire
   if (internal === ROUTES.es.legal) return ROUTES.en.legal
   if (internal.startsWith(`${ROUTES.es.legal}/`)) {
-    return internal.replace(ROUTES.es.legal, ROUTES.en.legal)
+    const suffix = internal.slice(ROUTES.es.legal.length + 1)
+    const [slug, ...rest] = suffix.split('/')
+    const englishSlug = ES_TO_EN_LEGAL_SLUG.get(slug) ?? slug
+    return `${ROUTES.en.legal}/${englishSlug}${rest.length ? `/${rest.join('/')}` : ''}`
   }
   if (internal.startsWith(`${ROUTES.es.publicProfile}/`)) {
     return internal.replace(ROUTES.es.publicProfile, ROUTES.en.publicProfile)

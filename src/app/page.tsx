@@ -9,6 +9,7 @@ import { useLocale } from '@/hooks/useLocale'
 import { landingCopy } from '@/lib/copy'
 import {
   localizedHashPath,
+  legalPath,
   questionnairePath,
   wmlPath,
   type Locale,
@@ -334,11 +335,11 @@ export default function Home() {
         <div className={styles.footerBottom}>
           <p>{t.footerCopy}</p>
           <div className={styles.footerLegal}>
-            <a href="/legal/privacidad">{t.footerPrivacy}</a>
-            <a href="/legal/etica">{t.footerEthics}</a>
-            <a href="/legal/aviso-legal">{t.footerLegalNotice}</a>
-            <a href="/legal/cookies">Cookies</a>
-            <a href="/legal/terminos">{t.footerTerms}</a>
+            <a href={legalPath(lang, 'privacy')}>{t.footerPrivacy}</a>
+            <a href={legalPath(lang, 'ethics')}>{t.footerEthics}</a>
+            <a href={legalPath(lang, 'legalNotice')}>{t.footerLegalNotice}</a>
+            <a href={legalPath(lang, 'cookies')}>Cookies</a>
+            <a href={legalPath(lang, 'terms')}>{t.footerTerms}</a>
           </div>
         </div>
       </footer>

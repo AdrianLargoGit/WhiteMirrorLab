@@ -8,7 +8,7 @@ import { captureEvent } from '@/lib/posthog'
 import { mapAuthError } from '@/lib/auth-errors'
 import { wmlCopy } from '@/lib/copy'
 import { useLocale } from '@/hooks/useLocale'
-import { wmlPath } from '@/lib/i18n'
+import { legalPath, wmlPath } from '@/lib/i18n'
 import './auth.css'
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
@@ -74,6 +74,7 @@ function AuthForm() {
   const [age, setAge]               = useState('')
   const [country, setCountry]       = useState('')
   const [termsAccepted, setTermsAccepted] = useState(false)
+  const [newsletterAccepted, setNewsletterAccepted] = useState(true)
 
   // ── Campos reset ────────────────────────────────────────────────────────────
   const [newPassword, setNewPassword]           = useState('')
@@ -122,6 +123,20 @@ function AuthForm() {
     resetMessages()
     setShowPassword(false)
     setMode(m)
+  }
+
+  const subscribeToNewsletter = async () => {
+    if (!newsletterAccepted) return
+
+    try {
+      await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+    } catch {
+      // Newsletter subscription must never block account creation.
+    }
   }
 
   // ── HANDLERS ─────────────────────────────────────────────────────────────────
@@ -199,6 +214,7 @@ function AuthForm() {
           if (profileErr) {
              throw new Error(`Error al crear el perfil: ${profileErr.message || 'Faltan campos obligatorios en la BD'}`)
           }
+          await subscribeToNewsletter()
           captureEvent('auth_signup', { username, locale })
           clearConsentCookie()
         }
@@ -440,7 +456,12 @@ function AuthForm() {
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, marginTop: 8, color: 'var(--w-muted-2)', cursor: 'pointer' }}>
                 <input type="checkbox" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} />
                 {bi('Confirmo que soy mayor de 18 anos y acepto los', 'I confirm that I am 18 or older and accept the')}{' '}
-                <a href="/legal/terminos" target="_blank" style={{ color: 'var(--w-accent)' }}>{bi('terminos', 'terms')}</a>.
+                <a href={legalPath(locale, 'terms')} target="_blank" style={{ color: 'var(--w-accent)' }}>{bi('terminos', 'terms')}</a>.
+              </label>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, marginTop: 8, color: 'var(--w-muted-2)', cursor: 'pointer' }}>
+                <input type="checkbox" checked={newsletterAccepted} onChange={(e) => setNewsletterAccepted(e.target.checked)} />
+                {bi('Quiero recibir novedades de White Mirror Lab por email.', 'I want to receive White Mirror Lab updates by email.')}
               </label>
 
               <button type="button" className="wml-btn wml-btn-primary" onClick={handleSignup}

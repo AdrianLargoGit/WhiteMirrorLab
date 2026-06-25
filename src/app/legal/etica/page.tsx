@@ -1,13 +1,15 @@
 import { LegalShell } from '@/components/legal/LegalShell'
+import { LocalizedLegalContent } from '@/components/legal/LocalizedLegalContent'
 
 export const metadata = {
-  title: 'Marco ético — White Mirror Lab',
-  description: 'Marco ético del experimento WML 1.0 «Karma Score» de White Mirror Lab.',
+  title: 'Ethical framework / Marco etico - White Mirror Lab',
+  description: 'Ethical framework for the White Mirror Lab WML 1.0 Karma Score experiment.',
 }
 
 export default function EticaPage() {
   return (
     <LegalShell currentPath="/legal/etica">
+      <LocalizedLegalContent page="ethics">
       <h1>Marco ético del experimento</h1>
       <p className="legal-updated">
         WML 1.0 «Karma Score» · Versión 1.0 · Última actualización: 10 de junio de 2026
@@ -234,6 +236,7 @@ export default function EticaPage() {
           <a href="/legal/aviso-legal">Aviso legal</a>
         </p>
       </div>
+      </LocalizedLegalContent>
     </LegalShell>
   )
 }
