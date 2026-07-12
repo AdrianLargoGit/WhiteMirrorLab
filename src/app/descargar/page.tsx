@@ -72,12 +72,12 @@ export default function DownloadPage() {
                 <dd>{t.version}</dd>
               </div>
               <div>
-                <dt>{t.platformLabel}</dt>
-                <dd>{t.platform}</dd>
+                <dt>{t.petLabel}</dt>
+                <dd>{t.pet}</dd>
               </div>
               <div>
-                <dt>{t.fileLabel}</dt>
-                <dd>{t.fileName}</dd>
+                <dt>{t.pointsLabel}</dt>
+                <dd>{t.points}</dd>
               </div>
             </dl>
             <ul className={styles.checks}>
