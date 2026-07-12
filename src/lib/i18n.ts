@@ -10,6 +10,7 @@ export const ROUTES = {
   es: {
     home: '/',
     questionnaire: '/cuestionario',
+    download: '/descargar',
     wml: '/web',
     publicProfile: '/p',
     legal: '/legal',
@@ -17,6 +18,7 @@ export const ROUTES = {
   en: {
     home: '/en',
     questionnaire: '/en/questionnaire',
+    download: '/en/download',
     wml: '/en/wml-1-0',
     publicProfile: '/en/p',
     legal: '/en/legal',
@@ -106,6 +108,10 @@ export function questionnairePath(locale: Locale): string {
   return ROUTES[locale].questionnaire
 }
 
+export function downloadPath(locale: Locale): string {
+  return ROUTES[locale].download
+}
+
 export function wmlPath(locale: Locale, path = ''): string {
   const suffix = path.startsWith('/') ? path : `/${path}`
   return suffix === '/' ? ROUTES[locale].wml : `${ROUTES[locale].wml}${suffix}`
@@ -130,6 +136,7 @@ export function localizedHashPath(locale: Locale, hash: string): string {
 export function toInternalPath(pathname: string): string {
   if (pathname === '/en') return '/'
   if (pathname === ROUTES.en.questionnaire) return ROUTES.es.questionnaire
+  if (pathname === ROUTES.en.download) return ROUTES.es.download
   if (pathname === ROUTES.en.legal) return ROUTES.es.legal
   if (pathname.startsWith(`${ROUTES.en.legal}/`)) {
     const suffix = pathname.slice(ROUTES.en.legal.length + 1)
@@ -156,6 +163,7 @@ export function alternateLocalePath(pathname: string, nextLocale: Locale): strin
   if (nextLocale === 'es') return internal
   if (internal === '/') return ROUTES.en.home
   if (internal === ROUTES.es.questionnaire) return ROUTES.en.questionnaire
+  if (internal === ROUTES.es.download) return ROUTES.en.download
   if (internal === ROUTES.es.legal) return ROUTES.en.legal
   if (internal.startsWith(`${ROUTES.es.legal}/`)) {
     const suffix = internal.slice(ROUTES.es.legal.length + 1)

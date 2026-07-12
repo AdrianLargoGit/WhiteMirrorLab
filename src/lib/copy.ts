@@ -88,6 +88,7 @@ export const landingCopy = {
     navManifesto: 'Manifiesto',
     navJoin: 'Participar',
     navQuestionnaire: 'Cuestionario',
+    navDownload: 'WML-X.X.0',
     navWml: 'WML-1.0',
   },
   en: {
@@ -177,7 +178,53 @@ export const landingCopy = {
     navManifesto: 'Manifesto',
     navJoin: 'Join',
     navQuestionnaire: 'Questionnaire',
+    navDownload: 'WML-X.X.0',
     navWml: 'WML-1.0',
+  },
+} as const
+
+export const downloadCopy = {
+  es: {
+    eyebrow: 'WML X.X.0 para Windows',
+    title: 'Descarga la app de escritorio.',
+    lead: 'Una version empaquetada de WML X.X.0 para ordenador Windows. El experimento vive en la web; esta descarga deja el acceso listo desde tu escritorio.',
+    fileLabel: 'Archivo',
+    fileName: 'wml-x-x-0-win32-x64.zip',
+    platformLabel: 'Plataforma',
+    platform: 'Windows x64',
+    versionLabel: 'Version',
+    version: 'WML X.X.0',
+    desktopCta: 'Descargar ZIP',
+    desktopHint: 'Disponible solo desde ordenador. La descarga se sirve desde la release oficial de GitHub.',
+    mobileTitle: 'Descarga disponible solo en ordenador',
+    mobileText: 'Abre esta pagina desde un ordenador Windows para descargar el ZIP de WML X.X.0.',
+    backHome: 'Volver al inicio',
+    checks: [
+      'Paquete ZIP listo para Windows x64.',
+      'Descarga alojada en GitHub Releases.',
+      'Sin instalador adicional desde esta pagina.',
+    ],
+  },
+  en: {
+    eyebrow: 'WML X.X.0 for Windows',
+    title: 'Download the desktop app.',
+    lead: 'A packaged build of WML X.X.0 for Windows desktop. The experiment lives on the web; this download keeps access ready from your computer.',
+    fileLabel: 'File',
+    fileName: 'wml-x-x-0-win32-x64.zip',
+    platformLabel: 'Platform',
+    platform: 'Windows x64',
+    versionLabel: 'Version',
+    version: 'WML X.X.0',
+    desktopCta: 'Download ZIP',
+    desktopHint: 'Available only from desktop. The download is served from the official GitHub release.',
+    mobileTitle: 'Download available on desktop only',
+    mobileText: 'Open this page from a Windows computer to download the WML X.X.0 ZIP.',
+    backHome: 'Back home',
+    checks: [
+      'ZIP package ready for Windows x64.',
+      'Download hosted on GitHub Releases.',
+      'No extra installer from this page.',
+    ],
   },
 } as const
 

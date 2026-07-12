@@ -7,6 +7,7 @@ import { landingCopy } from '@/lib/copy'
 import {
   LOCALE_COOKIE,
   alternateLocalePath,
+  downloadPath,
   localizedHashPath,
   questionnairePath,
   wmlPath,
@@ -48,6 +49,7 @@ export default function Navbar({ lang, onLangChange }: NavbarProps) {
     { href: localizedHashPath(lang, '#apps'), label: t.navAreas },
     { href: localizedHashPath(lang, '#ethics'), label: t.navEthics },
     { href: questionnairePath(lang), label: t.navQuestionnaire },
+    { href: downloadPath(lang), label: t.navDownload },
     { href: wmlPath(lang, '/consent'), label: t.navWml },
   ]
 

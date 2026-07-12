@@ -43,6 +43,10 @@ export async function proxy(request: NextRequest) {
       url.pathname = ROUTES.en.questionnaire
       return NextResponse.redirect(url)
     }
+    if (originalPathname === ROUTES.es.download) {
+      url.pathname = ROUTES.en.download
+      return NextResponse.redirect(url)
+    }
     if (originalPathname === ROUTES.es.wml || originalPathname.startsWith(`${ROUTES.es.wml}/`)) {
       url.pathname = originalPathname.replace(ROUTES.es.wml, ROUTES.en.wml)
       return NextResponse.redirect(url)
