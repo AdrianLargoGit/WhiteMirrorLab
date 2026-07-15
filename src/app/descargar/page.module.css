@@ -42,7 +42,39 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 24px;
+  margin-top: 24px;
+}
+
+.downloadForm {
+  display: grid;
+  grid-template-columns: minmax(220px, 320px) auto;
+  align-items: stretch;
+  gap: 0;
   margin-top: 42px;
+  max-width: 680px;
+}
+
+.downloadForm input {
+  min-height: 54px;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-right: none;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 0 18px;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.downloadForm input::placeholder {
+  color: var(--muted);
+}
+
+.downloadForm input:focus {
+  border-color: var(--accent);
 }
 
 .downloadButton {
@@ -63,6 +95,11 @@
   transition: background 0.2s, color 0.2s, transform 0.1s;
 }
 
+.downloadButton:disabled {
+  cursor: wait;
+  opacity: 0.75;
+}
+
 .downloadButton:hover {
   background: var(--white);
   border-color: var(--white);
@@ -70,6 +107,24 @@
 
 .downloadButton:active {
   transform: scale(0.98);
+}
+
+.formMessage {
+  max-width: 520px;
+  margin-top: 14px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  line-height: 1.7;
+  text-transform: uppercase;
+}
+
+.formMessageSuccess {
+  color: var(--accent);
+}
+
+.formMessageError {
+  color: #ff5c35;
 }
 
 .hint {
@@ -215,6 +270,15 @@
   .actions {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .downloadForm {
+    grid-template-columns: 1fr;
+  }
+
+  .downloadForm input {
+    border-right: 1px solid var(--border);
+    border-bottom: none;
   }
 
   .specs div {

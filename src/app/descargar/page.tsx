@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import CustomCursor from '@/components/CustomCursor'
 import Navbar from '@/components/Navbar'
@@ -27,6 +28,38 @@ const IconCheck = () => (
 export default function DownloadPage() {
   const lang = useLocale()
   const t = downloadCopy[lang]
+  const [email, setEmail] = useState('')
+  const [submitState, setSubmitState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [message, setMessage] = useState('')
+
+  const handleDownload = async () => {
+    const normalizedEmail = email.trim().toLowerCase()
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      setSubmitState('error')
+      setMessage(t.invalidEmail)
+      return
+    }
+
+    setSubmitState('loading')
+    setMessage('')
+
+    try {
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: normalizedEmail }),
+      })
+
+      if (!res.ok) throw new Error('Subscribe failed')
+
+      setSubmitState('success')
+      setMessage(t.subscribeSuccess)
+      window.location.assign(DOWNLOAD_URL)
+    } catch {
+      setSubmitState('error')
+      setMessage(t.subscribeError)
+    }
+  }
 
   return (
     <div className="landing-page">
@@ -40,14 +73,35 @@ export default function DownloadPage() {
             <h1>{t.title}</h1>
             <p className={styles.lead}>{t.lead}</p>
 
-            <div className={styles.actions}>
-              <a
-                className={`${styles.downloadButton} ${styles.desktopOnly}`}
-                href={DOWNLOAD_URL}
+            <div className={`${styles.downloadForm} ${styles.desktopOnly}`}>
+              <input
+                type="email"
+                placeholder={t.emailPlaceholder}
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                onKeyDown={(event) => event.key === 'Enter' && handleDownload()}
+                disabled={submitState === 'loading'}
+                aria-label={t.emailPlaceholder}
+              />
+              <button
+                type="button"
+                className={styles.downloadButton}
+                onClick={handleDownload}
+                disabled={submitState === 'loading'}
+                aria-busy={submitState === 'loading'}
               >
                 <IconDownload />
-                <span>{t.desktopCta}</span>
-              </a>
+                <span>{submitState === 'loading' ? '...' : t.desktopCta}</span>
+              </button>
+            </div>
+
+            {message && (
+              <p className={`${styles.formMessage} ${submitState === 'success' ? styles.formMessageSuccess : styles.formMessageError}`}>
+                {message}
+              </p>
+            )}
+
+            <div className={styles.actions}>
               <Link className="btn-ghost" href={homePath(lang)}>
                 <span className="btn-ghost-arrow" aria-hidden="true" />
                 {t.backHome}
