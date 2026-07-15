@@ -9,7 +9,7 @@ import { homePath } from '@/lib/i18n'
 import { useLocale } from '@/hooks/useLocale'
 import styles from './page.module.css'
 
-const DOWNLOAD_URL = 'https://github.com/AdrianLargoGit/WhiteMirrorLab/releases/download/v1.0.1/wml-x-x-0-win32-x64.zip'
+const DOWNLOAD_URL = 'https://github.com/AdrianLargoGit/WhiteMirrorLab/releases/download/v1.0.1/wml-xx0-1.0.0-setup.exe'
 
 const IconDownload = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
