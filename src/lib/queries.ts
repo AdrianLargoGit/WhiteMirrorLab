@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import type { VoteType, Post, Profile } from './database.types'
+import type { Post, Profile } from './database.types'
 
 export const MAX_POSTS = 5
 
@@ -117,15 +117,6 @@ export async function fetchProfileByUsername(username: string) {
     .single()
 }
 
-/** Fetch profile by id */
-export async function fetchProfileById(id: string) {
-  return supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', id)
-    .single()
-}
-
 /** Search profiles by username prefix */
 export async function searchProfiles(query: string) {
   return supabase
@@ -143,34 +134,6 @@ export async function fetchRanking(limit = 50) {
     .select('id, username, display_name, avatar_url, karma_score, country, created_at')
     .order('karma_score', { ascending: false })
     .limit(limit)
-}
-
-/** Fetch vote totals (positive and negative) for a profile — Actualizado a receiver_id */
-export async function fetchVoteSummary(receiverId: string) {
-  const { data } = await supabase
-    .from('votes')
-    .select('vote_type')
-    .eq('receiver_id', receiverId)
-
-  if (!data) return { positive: 0, negative: 0 }
-  const positive = data.filter((v) => v.vote_type === 1).length
-  const negative = data.filter((v) => v.vote_type === -1).length
-  return { positive, negative }
-}
-
-/** Track behavioral event (fire-and-forget) */
-export async function trackEvent(
-  sessionHashId: string,
-  eventType: string,
-  opts: { country?: string; targetPostId?: string; metadata?: Record<string, unknown> } = {}
-) {
-  await supabase.from('behavioral_analytics').insert({
-    session_hash_id: sessionHashId,
-    event_type: eventType,
-    country: opts.country ?? null,
-    target_post_id: opts.targetPostId ?? null,
-    metadata: opts.metadata ?? null,
-  })
 }
 
 /** Update user profile fields */
@@ -233,24 +196,6 @@ export async function fetchUserPulses(userId: string, page = 0, pageSize = 20) {
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .range(page * pageSize, (page + 1) * pageSize - 1)
-}
-
-/**
- * Un pulse concreto con su autor y el pulse al que responde (si existe).
- */
-export async function fetchPulseById(pulseId: string) {
-  return supabase
-    .from('pulses')
-    .select(`
-      *,
-      profile:profiles(id, username, display_name, avatar_url, karma_score),
-      reply_to:pulses!reply_to_id(
-        id, body, created_at, reply_count,
-        profile:profiles(id, username, display_name, avatar_url, karma_score)
-      )
-    `)
-    .eq('id', pulseId)
-    .single()
 }
 
 /**

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 
 // Icono de Compartir de iOS (Caja con flecha hacia arriba)
 const IcoShareiOS = () => (
@@ -23,32 +23,35 @@ const IcoMenuAndroid = () => (
 export default function PWAInstallBanner() {
   const [visible, setVisible] = useState(false)
   const [device, setDevice] = useState<'ios' | 'android' | null>(null)
-  const [lang, setLang] = useState<'es' | 'en'>('es')
+  const [lang] = useState<'es' | 'en'>(() =>
+    typeof window !== 'undefined' && window.location.href.includes('/en/wml-1-0/')
+      ? 'en'
+      : 'es'
+  )
 
   useEffect(() => {
-    // 1. Detectar idioma por URL exacta
-    if (window.location.href.includes('/en/wml-1-0/')) {
-      setLang('en')
-    }
-
-    // 2. Comprobar si ya se cerró anteriormente
     const hasSeenPrompt = localStorage.getItem('wml_pwa_dismissed')
     
-    // 3. Detectar si ya está ejecutándose como app instalada
+    // Detectar si ya está ejecutándose como app instalada
+    const navigatorWithStandalone = window.navigator as Navigator & { standalone?: boolean }
     const isStandalone = 
       window.matchMedia('(display-mode: standalone)').matches || 
-      (window.navigator as any).standalone === true
+      navigatorWithStandalone.standalone === true
 
     if (!hasSeenPrompt && !isStandalone) {
       const ua = navigator.userAgent.toLowerCase()
       
       // Filtro estricto solo para móviles
       if (/iphone|ipad|ipod/.test(ua)) {
-        setDevice('ios')
-        setVisible(true)
+        setTimeout(() => {
+          setDevice('ios')
+          setVisible(true)
+        }, 0)
       } else if (/android/.test(ua)) {
-        setDevice('android')
-        setVisible(true)
+        setTimeout(() => {
+          setDevice('android')
+          setVisible(true)
+        }, 0)
       }
     }
   }, [])
@@ -61,7 +64,14 @@ export default function PWAInstallBanner() {
   if (!visible || !device) return null
 
   // Textos e instrucciones según el idioma detectado
-  const content = {
+  const contentByLang: Record<'es' | 'en', {
+    header: string
+    title: string
+    desc: string
+    btn: string
+    iosSteps: ReactNode[]
+    androidSteps: ReactNode[]
+  }> = {
     es: {
       header: 'WML 1.0 // Acceso rápido',
       title: 'Instalar en tu pantalla de inicio',
@@ -69,11 +79,11 @@ export default function PWAInstallBanner() {
       btn: 'Entendido, continuar en navegador',
       iosSteps: [
         <>Toca el botón de abajo de <strong>Compartir</strong> <IcoShareiOS />.</>,
-        <>Selecciona la opción <strong style={{ color: '#fff' }}>"Añadir a la pantalla de inicio"</strong>.</>
+        <>Selecciona la opción <strong style={{ color: '#fff' }}>&quot;Añadir a la pantalla de inicio&quot;</strong>.</>
       ],
       androidSteps: [
         <>Toca los tres puntos de arriba <IcoMenuAndroid />.</>,
-        <>Selecciona la opción <strong style={{ color: '#fff' }}>"Añadir a la pantalla de inicio"</strong> o "Instalar app".</>
+        <>Selecciona la opción <strong style={{ color: '#fff' }}>&quot;Añadir a la pantalla de inicio&quot;</strong> o &quot;Instalar app&quot;.</>
       ]
     },
     en: {
@@ -83,14 +93,15 @@ export default function PWAInstallBanner() {
       btn: 'Understood, continue in browser',
       iosSteps: [
         <>Tap the <strong>Share</strong> button below <IcoShareiOS />.</>,
-        <>Select the <strong style={{ color: '#fff' }}>"Add to Home Screen"</strong> option.</>
+        <>Select the <strong style={{ color: '#fff' }}>&quot;Add to Home Screen&quot;</strong> option.</>
       ],
       androidSteps: [
         <>Tap the three dots above <IcoMenuAndroid />.</>,
-        <>Select <strong style={{ color: '#fff' }}>"Add to Home Screen"</strong> or "Install app".</>
+        <>Select <strong style={{ color: '#fff' }}>&quot;Add to Home Screen&quot;</strong> or &quot;Install app&quot;.</>
       ]
     }
-  }[lang]
+  }
+  const content = contentByLang[lang]
 
   return (
     <div 

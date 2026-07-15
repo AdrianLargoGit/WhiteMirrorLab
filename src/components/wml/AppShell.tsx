@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef, type ReactNode } from 'react'
+import { memo, useEffect, useMemo, useState, useRef, type ReactNode } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/authcontext'
@@ -34,6 +34,13 @@ export default function AppShell({ children }: AppShellProps) {
   const [searchResults, setSearchResults] = useState<Profile[]>([])
   const [showResults, setShowResults]   = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
+  const navLinks = useMemo(() => [
+    { href: wmlPath(locale, '/feed'),    label: copy.feed,                                   icon: <IcoHome /> },
+    { href: wmlPath(locale, '/me'),      label: copy.profile,                                icon: <IcoUser /> },
+    { href: wmlPath(locale, '/pulses'),  label: 'Pulses',                                    icon: <IcoPulse /> },
+    { href: wmlPath(locale, '/ranking'), label: copy.ranking,                                icon: <IcoTrophy /> },
+    { href: wmlPath(locale, '/upload'),  label: locale === 'es' ? 'Publicar' : 'Publish',    icon: <IcoPlus /> },
+  ], [copy.feed, copy.profile, copy.ranking, locale])
 
   // Redirección al auth si no hay sesión iniciada (sensible al idioma)
   useEffect(() => {
@@ -44,7 +51,10 @@ export default function AppShell({ children }: AppShellProps) {
 
   // Debounce de búsqueda de perfiles
   useEffect(() => {
-    if (searchQ.trim().length < 2) { setSearchResults([]); return }
+    if (searchQ.trim().length < 2) {
+      const id = setTimeout(() => setSearchResults([]), 0)
+      return () => clearTimeout(id)
+    }
     const id = setTimeout(async () => {
       const { data } = await searchProfiles(searchQ.trim())
       setSearchResults((data as Profile[]) ?? [])
@@ -77,14 +87,6 @@ export default function AppShell({ children }: AppShellProps) {
   }
 
   // Enlaces de navegación estructurados dinámicamente
-  const navLinks = [
-    { href: wmlPath(locale, '/feed'),    label: copy.feed,                                   icon: <IcoHome /> },
-    { href: wmlPath(locale, '/me'),      label: copy.profile,                                icon: <IcoUser /> },
-    { href: wmlPath(locale, '/pulses'),  label: 'Pulses',                                    icon: <IcoPulse /> },
-    { href: wmlPath(locale, '/ranking'), label: copy.ranking,                                icon: <IcoTrophy /> },
-    { href: wmlPath(locale, '/upload'),  label: locale === 'es' ? 'Publicar' : 'Publish',    icon: <IcoPlus /> },
-  ]
-
   const handleSignOut = async () => {
     captureEvent('auth_logout')
     await signOut()
@@ -190,39 +192,34 @@ export default function AppShell({ children }: AppShellProps) {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-export function AvatarMini({ profile, size = 36 }: { profile: Pick<Profile, 'avatar_url' | 'display_name'>; size?: number }) {
+export const AvatarMini = memo(function AvatarMini({ profile, size = 36 }: { profile: Pick<Profile, 'avatar_url' | 'display_name'>; size?: number }) {
   if (profile.avatar_url) {
-    return <img src={profile.avatar_url} alt={profile.display_name} width={size} height={size} className="wml-avatar" style={{ width: size, height: size }} />
+    return <img src={profile.avatar_url} alt={profile.display_name} width={size} height={size} className="wml-avatar" loading="lazy" decoding="async" style={{ width: size, height: size }} />
   }
   return (
     <div className="wml-avatar-placeholder" style={{ width: size, height: size, fontSize: size * 0.38 }}>
       {profile.display_name?.[0]?.toUpperCase() ?? '?'}
     </div>
   )
-}
+})
 
-export function KarmaBadge({ score, style }: { score: number; style?: React.CSSProperties }) {
+export const KarmaBadge = memo(function KarmaBadge({ score, style }: { score: number; style?: React.CSSProperties }) {
   const cls = score > 0 ? 'pos' : score < 0 ? 'neg' : ''
   return (
     <span className={`wml-karma-badge ${cls}`} style={style}>
       {score > 0 ? '+' : ''}{score}
     </span>
   )
-}
+})
 
 // ── Terms gate ────────────────────────────────────────────────────────────────
 function TermsGate() {
   const { profile, refreshProfile, loading } = useAuth()
   const [accepting, setAccepting] = useState(false)
-  const [isClient, setIsClient] = useState(false)
   const locale = useLocale()
   const copy = wmlCopy[locale]
 
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
-
-  if (!isClient || loading || !profile) return null
+  if (loading || !profile) return null
   if (profile.accepted_terms_version === '1.0') return null
 
   const accept = async () => {

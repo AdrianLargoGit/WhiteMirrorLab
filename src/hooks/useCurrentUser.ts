@@ -4,12 +4,12 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { identifyUser } from '@/lib/posthog'
 import { useLocale } from './useLocale'
-import type { PublicProfile } from '@/lib/types'
+import type { Profile } from '@/lib/database.types'
 
 export function useCurrentUser() {
   const locale = useLocale()
   const [userId, setUserId] = useState<string | null>(null)
-  const [profile, setProfile] = useState<PublicProfile | null>(null)
+  const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export function useCurrentUser() {
 
       if (mounted) {
         if(data) {
-          setProfile(data as PublicProfile)
+          setProfile(data)
           identifyUser(user.id, {
             preferred_language: data.preferred_language ?? locale,
             country: data.country ?? undefined,

@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { memo, useEffect, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { useAuth } from '@/lib/authcontext'
 import { fetchFeedPosts, fetchActiveStories } from '@/lib/queries'
 import { castVote, getMyVote } from '@/lib/votes'
@@ -12,7 +13,10 @@ import { wmlCopy } from '@/lib/copy'
 import { AvatarMini, KarmaBadge } from '@/components/wml/AppShell'
 import type { Post, Profile, Story, VoteType } from '@/lib/database.types'
 import StoryViewer from '@/components/wml/StoryViewer'
-import PWAInstallBanner from '@/components/wml/PWABanner'
+
+const PWAInstallBanner = dynamic(() => import('@/components/wml/PWABanner'), {
+  ssr: false,
+})
 
 type FeedPost        = Post & { profile: Profile }
 type StoryWithProfile = Story & { profile: Pick<Profile, 'id' | 'username' | 'avatar_url' | 'display_name'> }
@@ -34,7 +38,6 @@ function timeAgo(iso: string, locale: 'es' | 'en'): string {
 export default function FeedPage() {
   const { user } = useAuth()
   const locale = useLocale()
-  const copy = wmlCopy[locale]
 
   const [posts, setPosts]               = useState<FeedPost[]>([])
   const [stories, setStories]           = useState<StoryWithProfile[]>([])
@@ -45,6 +48,7 @@ export default function FeedPage() {
   const [viewingStory, setViewingStory] = useState<StoryWithProfile | null>(null)
   const [seenStories, setSeenStories]   = useState<Set<string>>(new Set())
   const sentinelRef                     = useRef<HTMLDivElement>(null)
+  const loadingMoreRef                  = useRef(false)
 
   const loadPosts = useCallback(async (p: number) => {
     const { data } = await fetchFeedPosts(p)
@@ -69,13 +73,18 @@ export default function FeedPage() {
       if (user) {
         const seen = new Set<string>()
         const votes: Record<string, VoteType | null> = {}
-        for (const post of postsData) {
-          if (!seen.has(post.user_id) && post.user_id !== user.id) {
-            seen.add(post.user_id)
-            const isPositive = await getMyVote(user.id, post.user_id)
-            votes[post.user_id] = isPositive === null ? null : (isPositive ? 1 : -1)
-          }
-        }
+        const voteTargets = postsData
+          .map((post) => post.user_id)
+          .filter((targetId) => {
+            if (targetId === user.id || seen.has(targetId)) return false
+            seen.add(targetId)
+            return true
+          })
+
+        await Promise.all(voteTargets.map(async (targetId) => {
+          const isPositive = await getMyVote(user.id, targetId)
+          votes[targetId] = isPositive === null ? null : (isPositive ? 1 : -1)
+        }))
         setMyVotes(votes)
       }
     }
@@ -87,12 +96,17 @@ export default function FeedPage() {
     if (!sentinelRef.current || !hasMore) return
     const observer = new IntersectionObserver(
       async ([entry]) => {
-        if (entry.isIntersecting && !loading) {
-          const next = page + 1
-          const more = await loadPosts(next)
-          setPosts((prev) => [...prev, ...more])
-          setPage(next)
-          captureEvent('feed_scroll_depth', { page: next })
+        if (entry.isIntersecting && !loading && !loadingMoreRef.current) {
+          loadingMoreRef.current = true
+          try {
+            const next = page + 1
+            const more = await loadPosts(next)
+            setPosts((prev) => [...prev, ...more])
+            setPage(next)
+            captureEvent('feed_scroll_depth', { page: next })
+          } finally {
+            loadingMoreRef.current = false
+          }
         }
       },
       { threshold: 0.1 }
@@ -101,7 +115,7 @@ export default function FeedPage() {
     return () => observer.disconnect()
   }, [hasMore, loading, page, loadPosts])
 
-  const handleVote = async (targetId: string, type: VoteType) => {
+  const handleVote = useCallback(async (targetId: string, type: VoteType) => {
     if (!user) return
     
     const current = myVotes[targetId]
@@ -125,7 +139,7 @@ export default function FeedPage() {
       setMyVotes((prev) => ({ ...prev, [targetId]: current }))
       console.error("No se pudo procesar el voto:", result.error)
     }
-  }
+  }, [myVotes, user])
 
   if (loading) return <FeedSkeleton />
 
@@ -157,7 +171,7 @@ export default function FeedPage() {
               <div className={`wml-story-ring ${seenStories.has(s.id) ? 'seen' : ''}`}>
                 <div className="wml-story-ring-inner">
                   {s.profile.avatar_url
-                    ? <img src={s.profile.avatar_url} alt={s.profile.username} />
+                    ? <img src={s.profile.avatar_url} alt={s.profile.username} loading="lazy" decoding="async" />
                     : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--w-font-display)', fontWeight: 700, fontSize: 18, color: 'var(--w-muted-2)' }}>
                         {s.profile.display_name?.[0]?.toUpperCase()}
                       </div>
@@ -196,7 +210,7 @@ export default function FeedPage() {
 }
 
 // ── Post card ─────────────────────────────────────────────────────────────────
-function PostCard({ post, isOwnPost, myVote, onVote }: {
+const PostCard = memo(function PostCard({ post, isOwnPost, myVote, onVote }: {
   post: FeedPost
   isOwnPost: boolean
   myVote: VoteType | null
@@ -223,6 +237,7 @@ function PostCard({ post, isOwnPost, myVote, onVote }: {
         alt={post.caption ?? (locale === 'es' ? 'Publicación' : 'Post')}
         className="wml-post-image"
         loading="lazy"
+        decoding="async"
       />
 
       {!isOwnPost && (
@@ -252,7 +267,7 @@ function PostCard({ post, isOwnPost, myVote, onVote }: {
       )}
     </article>
   )
-}
+})
 
 function FeedSkeleton() {
   return (

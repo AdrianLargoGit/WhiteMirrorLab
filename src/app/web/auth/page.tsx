@@ -228,8 +228,8 @@ function AuthForm() {
 
         redirectAfterLogin()
       }
-    } catch (e: any) {
-      setError(mapAuthError(e, locale) || e.message || 'Ha ocurrido un error')
+    } catch (e: unknown) {
+      setError(mapAuthError(e, locale) || (e instanceof Error ? e.message : 'Ha ocurrido un error'))
     } finally {
       setLoading(false)
     }

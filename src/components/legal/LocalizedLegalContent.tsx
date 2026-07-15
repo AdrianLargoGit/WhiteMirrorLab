@@ -80,7 +80,7 @@ function PrivacyEn() {
       </ul>
 
       <h3>2.3. Product analytics</h3>
-      <p>PostHog may process page views and interaction events only according to the user's analytics consent. Analytics are used to improve the experiment and publish aggregated results. White Mirror Lab does not sell, rent or transfer personal data to third parties for commercial purposes.</p>
+      <p>PostHog may process page views and interaction events only according to the user&apos;s analytics consent. Analytics are used to improve the experiment and publish aggregated results. White Mirror Lab does not sell, rent or transfer personal data to third parties for commercial purposes.</p>
 
       <h2>3. Recipients and international transfers</h2>
       <p>We use processors such as Supabase, PostHog, Loops.so and Vercel. Where data is transferred outside the European Economic Area, appropriate safeguards such as Standard Contractual Clauses or EU-hosted services are used.</p>
@@ -128,7 +128,7 @@ function CookiesEn() {
       <p>You can block or delete cookies in Chrome, Firefox, Safari, Edge and other browsers. Blocking technical cookies may prevent login or core WML 1.0 functionality.</p>
 
       <h2>5. PostHog opt-out</h2>
-      <p>You can reject analytics in the cookie panel or use PostHog's opt-out mechanism described in its official documentation at <a href="https://posthog.com/docs/libraries/js#opt-out" target="_blank" rel="noopener noreferrer">posthog.com</a>.</p>
+      <p>You can reject analytics in the cookie panel or use PostHog&apos;s opt-out mechanism described in its official documentation at <a href="https://posthog.com/docs/libraries/js#opt-out" target="_blank" rel="noopener noreferrer">posthog.com</a>.</p>
 
       <div className="legal-contact-box">
         <p><strong>Cookie questions:</strong> {contact}</p>

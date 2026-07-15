@@ -107,7 +107,7 @@ export default function PrivacidadPage() {
             <li>Interés legítimo (art. 6.1.f RGPD) para analítica agregada y anonimizada</li>
           </ul>
         </li>
-        <li><strong>Configuración de privacidad:</strong> PostHog se configura con <code>person_profiles: 'identified_only'</code> — solo crea perfiles de persona para usuarios que han iniciado sesión. Antes del login, los datos son anónimos.</li>
+        <li><strong>Configuración de privacidad:</strong> PostHog se configura con <code>{"person_profiles: 'identified_only'"}</code> — solo crea perfiles de persona para usuarios que han iniciado sesión. Antes del login, los datos son anónimos.</li>
         <li><strong>Plazo:</strong> Según configuración de retención del panel PostHog (máximo 1 año para datos identificados)</li>
       </ul>
 

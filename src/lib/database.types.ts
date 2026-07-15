@@ -120,13 +120,8 @@ export interface Database {
 export type Profile     = Database['public']['Tables']['profiles']['Row']
 export type Post        = Database['public']['Tables']['posts']['Row']
 export type Story       = Database['public']['Tables']['stories']['Row']
-export type Vote        = Database['public']['Tables']['votes']['Row']
 export type Pulse       = Database['public']['Tables']['pulses']['Row']
-export type BehavioralEvent = Database['public']['Tables']['behavioral_analytics']['Row']
 
-export type ProfileWithPosts  = Profile & { posts: Post[] }
-export type PostWithProfile   = Post & { profile: Profile }
 export type PulseWithProfile  = Pulse & { profile: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url' | 'karma_score'> }
-export type PulseWithReply    = PulseWithProfile & { reply_to?: PulseWithProfile | null }
 
 export type VoteType = 1 | -1

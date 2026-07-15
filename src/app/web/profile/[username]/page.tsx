@@ -281,6 +281,46 @@ export default function ProfilePage() {
             @{profile.username}
           </div>
 
+          {isOwn && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 10,
+              padding: '12px 14px',
+              marginBottom: 20,
+              background: 'rgba(200, 255, 0, 0.045)',
+              border: '1px solid rgba(200, 255, 0, 0.2)',
+              borderRadius: 6,
+              color: 'var(--w-muted-2)',
+              fontSize: 12,
+              lineHeight: 1.6,
+              maxWidth: 560,
+            }}>
+              <span style={{
+                width: 12,
+                height: 12,
+                borderRadius: '50%',
+                border: '1px solid var(--w-accent)',
+                color: 'var(--w-accent)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                marginTop: 3,
+                fontFamily: 'var(--w-font-mono)',
+                fontSize: 8,
+                lineHeight: 1,
+              }}>
+                i
+              </span>
+              <span>
+                {locale === 'es'
+                  ? 'Aviso de visibilidad: tu foto de perfil y el contenido que subas pueden ser vistos por cualquier persona a traves de tu perfil publico y enlaces compartidos del experimento.'
+                  : 'Visibility notice: your profile picture and anything you upload may be visible to anyone through your public profile and shared experiment links.'}
+              </span>
+            </div>
+          )}
+
           <div className="wml-profile-stats" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             {[
               { label: 'Karma', val: `${netKarma > 0 ? '+' : ''}${netKarma}`, cls: karmaClass },

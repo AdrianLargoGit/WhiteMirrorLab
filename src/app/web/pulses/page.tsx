@@ -39,6 +39,7 @@ export default function PulsesPage() {
   const [postError, setPostError] = useState('')
   const textareaRef             = useRef<HTMLTextAreaElement>(null)
   const sentinelRef             = useRef<HTMLDivElement>(null)
+  const loadingMoreRef          = useRef(false)
 
   const PAGE_SIZE = 20
 
@@ -48,24 +49,33 @@ export default function PulsesPage() {
     return (data ?? []) as PulseWithProfile[]
   }, [])
 
-  // Initial load
-  useEffect(() => {
-    setLoading(true)
-    loadPulses(0).then((data) => {
-      setPulses(data)
-      setLoading(false)
-    })
+  const refreshPulses = useCallback(async () => {
+    const data = await loadPulses(0)
+    setPulses(data)
+    setLoading(false)
   }, [loadPulses])
+
+  useEffect(() => {
+    const id = setTimeout(() => {
+      refreshPulses()
+    }, 0)
+    return () => clearTimeout(id)
+  }, [refreshPulses])
 
   // Infinite scroll
   useEffect(() => {
     if (!sentinelRef.current || !hasMore || loading) return
     const obs = new IntersectionObserver(async ([entry]) => {
-      if (entry.isIntersecting) {
-        const next = page + 1
-        const more = await loadPulses(next)
-        setPulses((prev) => [...prev, ...more])
-        setPage(next)
+      if (entry.isIntersecting && !loadingMoreRef.current) {
+        loadingMoreRef.current = true
+        try {
+          const next = page + 1
+          const more = await loadPulses(next)
+          setPulses((prev) => [...prev, ...more])
+          setPage(next)
+        } finally {
+          loadingMoreRef.current = false
+        }
       }
     }, { threshold: 0.1 })
     obs.observe(sentinelRef.current)
@@ -218,7 +228,7 @@ export default function PulsesPage() {
             pulse={pulse}
             currentUserId={user?.id ?? null}
             onDelete={handleDelete}
-            onReplyPosted={(reply) =>
+            onReplyPosted={() =>
               setPulses((prev) =>
                 prev.map((p) => p.id === pulse.id ? { ...p, reply_count: p.reply_count + 1 } : p)
               )

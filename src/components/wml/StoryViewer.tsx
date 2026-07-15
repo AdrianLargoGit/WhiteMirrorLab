@@ -18,7 +18,7 @@ interface Props {
 
 export default function StoryViewer({ story, onClose, onCompleted }: Props) {
   const [progress, setProgress] = useState(0)
-  const startRef = useRef<number>(Date.now())
+  const startRef = useRef<number>(0)
   const rafRef   = useRef<number>(0)
 
   useEffect(() => {
@@ -133,6 +133,7 @@ export default function StoryViewer({ story, onClose, onCompleted }: Props) {
           src={story.media_url} 
           alt="Historia" 
           className="wml-story-media" 
+          decoding="async"
           style={{
             width: '100%',
             height: '100%',

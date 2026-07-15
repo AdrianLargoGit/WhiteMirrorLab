@@ -197,6 +197,27 @@ export default function UploadPage() {
           : (isEnglish ? 'Story / disappears after 24h' : 'Historia / desaparece en 24 h')}
       </div>
 
+      <div style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 10,
+        padding: '12px 14px',
+        marginBottom: 18,
+        background: 'rgba(200, 255, 0, 0.045)',
+        border: '1px solid rgba(200, 255, 0, 0.2)',
+        borderRadius: 6,
+        color: 'var(--w-muted-2)',
+        fontSize: 12,
+        lineHeight: 1.6,
+      }}>
+        <span style={{ color: 'var(--w-accent)', flexShrink: 0, marginTop: 2 }}><IcoInfo /></span>
+        <span>
+          {isEnglish
+            ? 'Visibility notice: anything you publish here may be visible to anyone through your public profile and shared experiment links.'
+            : 'Aviso de visibilidad: cualquier contenido que publiques aqui puede ser visto por cualquier persona a traves de tu perfil publico y enlaces compartidos del experimento.'}
+        </span>
+      </div>
+
       {/* ── Mode tabs ── */}
       <div style={{
         display: 'grid',

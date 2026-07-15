@@ -85,9 +85,9 @@ export default function ConfigurationPage() {
       await supabase.auth.signOut()
       router.push(wmlPath(locale, '/auth'))
       router.refresh()
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err)
-      setErrorMsg(err?.message || 'Error processing request.')
+      setErrorMsg(err instanceof Error ? err.message : 'Error processing request.')
       setIsDeleting(false)
     }
   }
@@ -266,6 +266,7 @@ export default function ConfigurationPage() {
               </button>
               <button
                 disabled={isDeleting || confirmText !== (locale === 'es' ? 'ELIMINAR' : 'DELETE')}
+                onClick={handleDeleteAccount}
                 className="wml-btn"
                 style={{
                   height: 38, border: 'none',
