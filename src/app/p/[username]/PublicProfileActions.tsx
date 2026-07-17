@@ -20,6 +20,69 @@ type PublicProfile = {
 type VoteChoice = true | false
 type Mode = 'login' | 'signup'
 
+const COUNTRIES = [
+  { code: 'AF', name: 'Afghanistan' }, { code: 'AL', name: 'Albania' },
+  { code: 'DZ', name: 'Algeria' }, { code: 'AD', name: 'Andorra' },
+  { code: 'AO', name: 'Angola' }, { code: 'AR', name: 'Argentina' },
+  { code: 'AM', name: 'Armenia' }, { code: 'AU', name: 'Australia' },
+  { code: 'AT', name: 'Austria' }, { code: 'AZ', name: 'Azerbaijan' },
+  { code: 'BS', name: 'Bahamas' }, { code: 'BH', name: 'Bahrain' },
+  { code: 'BD', name: 'Bangladesh' }, { code: 'BB', name: 'Barbados' },
+  { code: 'BY', name: 'Belarus' }, { code: 'BE', name: 'Belgium' },
+  { code: 'BZ', name: 'Belize' }, { code: 'BO', name: 'Bolivia' },
+  { code: 'BA', name: 'Bosnia and Herzegovina' }, { code: 'BW', name: 'Botswana' },
+  { code: 'BR', name: 'Brazil' }, { code: 'BN', name: 'Brunei' },
+  { code: 'BG', name: 'Bulgaria' }, { code: 'KH', name: 'Cambodia' },
+  { code: 'CM', name: 'Cameroon' }, { code: 'CA', name: 'Canada' },
+  { code: 'CL', name: 'Chile' }, { code: 'CN', name: 'China' },
+  { code: 'CO', name: 'Colombia' }, { code: 'CR', name: 'Costa Rica' },
+  { code: 'HR', name: 'Croatia' }, { code: 'CU', name: 'Cuba' },
+  { code: 'CY', name: 'Cyprus' }, { code: 'CZ', name: 'Czechia' },
+  { code: 'DK', name: 'Denmark' }, { code: 'DO', name: 'Dominican Republic' },
+  { code: 'EC', name: 'Ecuador' }, { code: 'EG', name: 'Egypt' },
+  { code: 'SV', name: 'El Salvador' }, { code: 'EE', name: 'Estonia' },
+  { code: 'ET', name: 'Ethiopia' }, { code: 'FJ', name: 'Fiji' },
+  { code: 'FI', name: 'Finland' }, { code: 'FR', name: 'France' },
+  { code: 'GE', name: 'Georgia' }, { code: 'DE', name: 'Germany' },
+  { code: 'GH', name: 'Ghana' }, { code: 'GR', name: 'Greece' },
+  { code: 'GT', name: 'Guatemala' }, { code: 'HN', name: 'Honduras' },
+  { code: 'HU', name: 'Hungary' }, { code: 'IS', name: 'Iceland' },
+  { code: 'IN', name: 'India' }, { code: 'ID', name: 'Indonesia' },
+  { code: 'IR', name: 'Iran' }, { code: 'IQ', name: 'Iraq' },
+  { code: 'IE', name: 'Ireland' }, { code: 'IL', name: 'Israel' },
+  { code: 'IT', name: 'Italy' }, { code: 'JM', name: 'Jamaica' },
+  { code: 'JP', name: 'Japan' }, { code: 'JO', name: 'Jordan' },
+  { code: 'KZ', name: 'Kazakhstan' }, { code: 'KE', name: 'Kenya' },
+  { code: 'KW', name: 'Kuwait' }, { code: 'LV', name: 'Latvia' },
+  { code: 'LB', name: 'Lebanon' }, { code: 'LT', name: 'Lithuania' },
+  { code: 'LU', name: 'Luxembourg' }, { code: 'MY', name: 'Malaysia' },
+  { code: 'MV', name: 'Maldives' }, { code: 'MT', name: 'Malta' },
+  { code: 'MX', name: 'Mexico' }, { code: 'MC', name: 'Monaco' },
+  { code: 'MA', name: 'Morocco' }, { code: 'NP', name: 'Nepal' },
+  { code: 'NL', name: 'Netherlands' }, { code: 'NZ', name: 'New Zealand' },
+  { code: 'NI', name: 'Nicaragua' }, { code: 'NG', name: 'Nigeria' },
+  { code: 'NO', name: 'Norway' }, { code: 'OM', name: 'Oman' },
+  { code: 'PK', name: 'Pakistan' }, { code: 'PA', name: 'Panama' },
+  { code: 'PY', name: 'Paraguay' }, { code: 'PE', name: 'Peru' },
+  { code: 'PH', name: 'Philippines' }, { code: 'PL', name: 'Poland' },
+  { code: 'PT', name: 'Portugal' }, { code: 'QA', name: 'Qatar' },
+  { code: 'RO', name: 'Romania' }, { code: 'RU', name: 'Russia' },
+  { code: 'SA', name: 'Saudi Arabia' }, { code: 'SN', name: 'Senegal' },
+  { code: 'RS', name: 'Serbia' }, { code: 'SG', name: 'Singapore' },
+  { code: 'SK', name: 'Slovakia' }, { code: 'SI', name: 'Slovenia' },
+  { code: 'ZA', name: 'South Africa' }, { code: 'KR', name: 'South Korea' },
+  { code: 'ES', name: 'Spain' }, { code: 'LK', name: 'Sri Lanka' },
+  { code: 'SE', name: 'Sweden' }, { code: 'CH', name: 'Switzerland' },
+  { code: 'SY', name: 'Syria' }, { code: 'TW', name: 'Taiwan' },
+  { code: 'TH', name: 'Thailand' }, { code: 'TN', name: 'Tunisia' },
+  { code: 'TR', name: 'Turkey' }, { code: 'UA', name: 'Ukraine' },
+  { code: 'AE', name: 'United Arab Emirates' }, { code: 'GB', name: 'United Kingdom' },
+  { code: 'US', name: 'United States' }, { code: 'UY', name: 'Uruguay' },
+  { code: 'VE', name: 'Venezuela' }, { code: 'VN', name: 'Vietnam' },
+  { code: 'YE', name: 'Yemen' }, { code: 'ZM', name: 'Zambia' },
+  { code: 'ZW', name: 'Zimbabwe' },
+]
+
 export default function PublicProfileActions({
   profile,
   locale,
@@ -109,35 +172,18 @@ export default function PublicProfileActions({
   }
 
   const karma = stats.karma_score > 0 ? `+${stats.karma_score}` : `${stats.karma_score}`
-  const karmaColor = stats.karma_score > 0 ? '#4ade80' : stats.karma_score < 0 ? '#f87171' : '#f5f2ee'
 
   return (
     <>
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-        gap: 8,
-        marginBottom: 16,
-      }}>
+      <div className={styles.statsGrid}>
         {[
-          { label: 'Karma', value: karma, color: karmaColor },
-          { label: isEnglish ? 'Positive' : 'Positivos', value: stats.votes_received_positive, color: '#4ade80' },
-          { label: isEnglish ? 'Negative' : 'Negativos', value: stats.votes_received_negative, color: '#f87171' },
+          { label: 'Karma', value: karma },
+          { label: isEnglish ? 'Positive' : 'Positivos', value: stats.votes_received_positive },
+          { label: isEnglish ? 'Negative' : 'Negativos', value: stats.votes_received_negative },
         ].map((stat) => (
-          <div key={stat.label} style={{
-            background: 'linear-gradient(180deg, rgba(255,255,255,0.035), #080808)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            padding: '14px 10px',
-            borderRadius: 6,
-            textAlign: 'center',
-            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
-          }}>
-            <div style={{ color: stat.color, fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 24, lineHeight: 1 }}>
-              {stat.value}
-            </div>
-            <div style={{ color: '#6a6a6a', fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 6 }}>
-              {stat.label}
-            </div>
+          <div key={stat.label} className={styles.statCard}>
+            <div className={styles.statValue}>{stat.value}</div>
+            <div className={styles.statLabel}>{stat.label}</div>
           </div>
         ))}
       </div>
@@ -159,7 +205,6 @@ export default function PublicProfileActions({
             onClick={() => handleVote(true)}
             disabled={loadingVote}
             className={`${styles.voteButton} ${myVote === true ? styles.voteButtonActive : ''}`}
-            style={{ '--vote-color': '#4ade80' } as React.CSSProperties}
           >
             <span className={styles.voteIcon}>+</span>
             <span className={styles.voteCopy}>
@@ -172,7 +217,6 @@ export default function PublicProfileActions({
             onClick={() => handleVote(false)}
             disabled={loadingVote}
             className={`${styles.voteButton} ${myVote === false ? styles.voteButtonActive : ''}`}
-            style={{ '--vote-color': '#f87171' } as React.CSSProperties}
           >
             <span className={styles.voteIcon}>-</span>
             <span className={styles.voteCopy}>
@@ -183,11 +227,7 @@ export default function PublicProfileActions({
         </div>
       </div>
 
-      {message && (
-        <p style={{ color: message.includes('guardado') || message.includes('saved') ? '#c8ff00' : '#f87171', fontSize: 12, marginTop: 12, fontFamily: 'var(--font-mono)' }}>
-          {message}
-        </p>
-      )}
+      {message && <p className={styles.voteMessage}>{message}</p>}
 
       {showAuth && (
         <AuthModal
@@ -298,106 +338,75 @@ function AuthModal({
   }
 
   return (
-    <div role="dialog" aria-modal="true" style={{
-      position: 'fixed',
-      inset: 0,
-      background: 'rgba(0,0,0,0.82)',
-      backdropFilter: 'blur(10px)',
-      zIndex: 10000,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 20,
-    }}>
-      <div style={{
-        width: 'min(420px, 100%)',
-        maxHeight: 'min(720px, calc(100dvh - 40px))',
-        overflowY: 'auto',
-        background: '#111111',
-        border: '1px solid rgba(255,255,255,0.1)',
-        borderRadius: 8,
-        padding: 22,
-        boxShadow: '0 30px 80px rgba(0,0,0,0.5)',
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 18 }}>
-          <div>
-            <div style={{ fontFamily: 'var(--font-mono)', color: '#c8ff00', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 6 }}>
-              WML 1.0
+    <div role="dialog" aria-modal="true" className={styles.authOverlay}>
+      <div className={styles.authShell}>
+        <div className={styles.authCard}>
+          <div className={styles.authHeader}>
+            <div>
+              <div className={styles.authLogo}>
+                <span className={styles.authLogoDot} />
+                WML 1.0
+              </div>
+              <h2 className={styles.authTitle}>
+                {mode === 'login'
+                  ? (isEnglish ? 'Sign in to vote' : 'Accede para votar')
+                  : (isEnglish ? 'Create account' : 'Crear cuenta')}
+              </h2>
+              <p className={styles.authSub}>
+                {mode === 'login'
+                  ? (isEnglish ? 'Your pending vote will be applied automatically.' : 'Tu voto pendiente se aplicara automaticamente.')
+                  : (isEnglish ? 'Create your WML profile to finish voting.' : 'Crea tu perfil WML para terminar de votar.')}
+              </p>
             </div>
-            <h2 style={{ margin: 0, fontSize: 22 }}>
-              {mode === 'login'
-                ? (isEnglish ? 'Sign in to vote' : 'Accede para votar')
-                : (isEnglish ? 'Create account' : 'Crear cuenta')}
-            </h2>
+            <button type="button" onClick={onClose} className={styles.authClose} aria-label={isEnglish ? 'Close' : 'Cerrar'}>
+              x
+            </button>
           </div>
-          <button type="button" onClick={onClose} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: '#f5f2ee', borderRadius: 6, width: 36, height: 36, cursor: 'pointer' }}>
-            x
+
+          {error && <p className={`${styles.authNotice} ${styles.authError}`}>{error}</p>}
+          {success && <p className={`${styles.authNotice} ${styles.authSuccess}`}>{success}</p>}
+
+          {mode === 'signup' && (
+            <>
+              <input className={styles.authInput} placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value.toLowerCase())} />
+              <input className={styles.authInput} placeholder={isEnglish ? 'Display name' : 'Nombre visible'} value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+              <div className={styles.authSplit}>
+                <input className={styles.authInput} type="number" placeholder={isEnglish ? 'Age' : 'Edad'} value={age} onChange={(e) => setAge(e.target.value)} />
+                <select className={styles.authInput} value={country} onChange={(e) => setCountry(e.target.value)}>
+                  <option value="" disabled>{isEnglish ? 'Country' : 'Pais'}</option>
+                  {COUNTRIES.map((item) => (
+                    <option key={item.code} value={item.code}>{item.name}</option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
+
+          <input className={styles.authInput} type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input className={styles.authInput} type="password" placeholder={isEnglish ? 'Password' : 'Contrasena'} value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && submit()} />
+
+          {mode === 'signup' && (
+            <label className={styles.authCheck}>
+              <input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} />
+              <span>
+                {isEnglish ? 'I confirm that I am 18 or older and accept the ' : 'Confirmo que soy mayor de 18 anos y acepto los '}
+                <a href={legalPath(locale, 'terms')} target="_blank">{isEnglish ? 'terms' : 'terminos'}</a>.
+              </span>
+            </label>
+          )}
+
+          <button type="button" onClick={submit} disabled={loading} className={styles.authPrimary}>
+            <span>{loading ? '...' : mode === 'login' ? (isEnglish ? 'Sign in and vote' : 'Acceder y votar') : (isEnglish ? 'Create account' : 'Crear cuenta')}</span>
           </button>
-        </div>
 
-        {error && <p style={noticeStyle('#f87171')}>{error}</p>}
-        {success && <p style={noticeStyle('#c8ff00')}>{success}</p>}
-
-        {mode === 'signup' && (
-          <>
-            <input style={inputStyle} placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value.toLowerCase())} />
-            <input style={inputStyle} placeholder={isEnglish ? 'Display name' : 'Nombre visible'} value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              <input style={inputStyle} type="number" placeholder={isEnglish ? 'Age' : 'Edad'} value={age} onChange={(e) => setAge(e.target.value)} />
-              <input style={inputStyle} placeholder={isEnglish ? 'Country code' : 'Pais'} value={country} onChange={(e) => setCountry(e.target.value)} maxLength={2} />
-            </div>
-          </>
-        )}
-
-        <input style={inputStyle} type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input style={inputStyle} type="password" placeholder={isEnglish ? 'Password' : 'Contrasena'} value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && submit()} />
-
-        {mode === 'signup' && (
-          <label style={{ display: 'flex', gap: 9, color: '#b8b8b8', fontSize: 12, lineHeight: 1.5, marginBottom: 14 }}>
-            <input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} style={{ accentColor: '#c8ff00', flexShrink: 0, marginTop: 2 }} />
-            <span>
-              {isEnglish ? 'I confirm that I am 18 or older and accept the ' : 'Confirmo que soy mayor de 18 anos y acepto los '}
-              <a href={legalPath(locale, 'terms')} target="_blank" style={{ color: '#c8ff00' }}>{isEnglish ? 'terms' : 'terminos'}</a>.
-            </span>
-          </label>
-        )}
-
-        <button type="button" onClick={submit} disabled={loading} className="btn-primary" style={{ width: '100%', borderRadius: 4, justifyContent: 'center' }}>
-          <span>{loading ? '...' : mode === 'login' ? (isEnglish ? 'Sign in and vote' : 'Acceder y votar') : (isEnglish ? 'Create account' : 'Crear cuenta')}</span>
-        </button>
-
-        <div style={{ textAlign: 'center', color: '#6a6a6a', fontSize: 13, marginTop: 16 }}>
-          {mode === 'login' ? (isEnglish ? 'No account?' : 'No tienes cuenta?') : (isEnglish ? 'Already have an account?' : 'Ya tienes cuenta?')}{' '}
-          <button type="button" onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); setSuccess('') }} style={{ background: 'transparent', border: 'none', color: '#c8ff00', cursor: 'pointer', textDecoration: 'underline' }}>
-            {mode === 'login' ? (isEnglish ? 'Create one' : 'Crear una') : (isEnglish ? 'Sign in' : 'Acceder')}
-          </button>
+          <div className={styles.authSwitch}>
+            {mode === 'login' ? (isEnglish ? 'No account?' : 'No tienes cuenta?') : (isEnglish ? 'Already have an account?' : 'Ya tienes cuenta?')}{' '}
+            <button type="button" onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); setSuccess('') }}>
+              {mode === 'login' ? (isEnglish ? 'Create one' : 'Crear una') : (isEnglish ? 'Sign in' : 'Acceder')}
+            </button>
+          </div>
         </div>
       </div>
     </div>
   )
-}
-
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  background: '#080808',
-  border: '1px solid rgba(255,255,255,0.1)',
-  color: '#f5f2ee',
-  padding: '12px 14px',
-  borderRadius: 4,
-  marginBottom: 10,
-  fontSize: 14,
-  outline: 'none',
-}
-
-function noticeStyle(color: string): React.CSSProperties {
-  return {
-    border: `1px solid ${color}55`,
-    background: `${color}18`,
-    color,
-    padding: '10px 12px',
-    borderRadius: 4,
-    fontSize: 13,
-    lineHeight: 1.5,
-    marginBottom: 12,
-  }
 }
