@@ -9,6 +9,7 @@ import { mapAuthError } from '@/lib/auth-errors'
 import { wmlCopy } from '@/lib/copy'
 import { useLocale } from '@/hooks/useLocale'
 import { legalPath, wmlPath } from '@/lib/i18n'
+import PostSignupSharePopup from '@/components/wml/PostSignupSharePopup'
 import './auth.css'
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
@@ -88,6 +89,7 @@ function AuthForm() {
   const [success, setSuccess] = useState('')
   const [emailSent, setEmailSent] = useState(false)      // forgot: email enviado
   const [passwordChanged, setPasswordChanged] = useState(false) // reset: éxito
+  const [postSignupShare, setPostSignupShare] = useState<{ username: string; redirectOnClose: boolean } | null>(null)
 
   // Redirigir a consentimiento si intenta signup sin cookie
   useEffect(() => {
@@ -223,10 +225,11 @@ function AuthForm() {
           captureEvent('auth_signup_pending_confirm', { username, locale })
           setSuccess(t.confirmEmail)
           setMode('login')
+          setPostSignupShare({ username, redirectOnClose: false })
           return
         }
 
-        redirectAfterLogin()
+        setPostSignupShare({ username, redirectOnClose: true })
       }
     } catch (e: unknown) {
       setError(mapAuthError(e, locale) || (e instanceof Error ? e.message : 'Ha ocurrido un error'))
@@ -611,6 +614,17 @@ function AuthForm() {
 
         </div>
       </div>
+      {postSignupShare && (
+        <PostSignupSharePopup
+          username={postSignupShare.username}
+          locale={locale}
+          onClose={() => {
+            const shouldRedirect = postSignupShare.redirectOnClose
+            setPostSignupShare(null)
+            if (shouldRedirect) redirectAfterLogin()
+          }}
+        />
+      )}
     </div>
   )
 }

@@ -31,8 +31,10 @@ export default function DownloadPage() {
   const [email, setEmail] = useState('')
   const [submitState, setSubmitState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [message, setMessage] = useState('')
+  const [hasSubscribed, setHasSubscribed] = useState(false)
+  const [acceptedWidgetTerms, setAcceptedWidgetTerms] = useState(false)
 
-  const handleDownload = async () => {
+  const handleSubscribe = async () => {
     const normalizedEmail = email.trim().toLowerCase()
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
       setSubmitState('error')
@@ -53,12 +55,22 @@ export default function DownloadPage() {
       if (!res.ok) throw new Error('Subscribe failed')
 
       setSubmitState('success')
+      setHasSubscribed(true)
       setMessage(t.subscribeSuccess)
-      window.location.assign(DOWNLOAD_URL)
     } catch {
       setSubmitState('error')
       setMessage(t.subscribeError)
     }
+  }
+
+  const handleAcceptAndDownload = () => {
+    if (!acceptedWidgetTerms) {
+      setSubmitState('error')
+      setMessage(t.consentRequired)
+      return
+    }
+
+    window.location.assign(DOWNLOAD_URL)
   }
 
   return (
@@ -79,15 +91,15 @@ export default function DownloadPage() {
                 placeholder={t.emailPlaceholder}
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                onKeyDown={(event) => event.key === 'Enter' && handleDownload()}
-                disabled={submitState === 'loading'}
+                onKeyDown={(event) => event.key === 'Enter' && !hasSubscribed && handleSubscribe()}
+                disabled={submitState === 'loading' || hasSubscribed}
                 aria-label={t.emailPlaceholder}
               />
               <button
                 type="button"
                 className={styles.downloadButton}
-                onClick={handleDownload}
-                disabled={submitState === 'loading'}
+                onClick={handleSubscribe}
+                disabled={submitState === 'loading' || hasSubscribed}
                 aria-busy={submitState === 'loading'}
               >
                 <IconDownload />
@@ -99,6 +111,43 @@ export default function DownloadPage() {
               <p className={`${styles.formMessage} ${submitState === 'success' ? styles.formMessageSuccess : styles.formMessageError}`}>
                 {message}
               </p>
+            )}
+
+            {hasSubscribed && (
+              <div className={`${styles.consentBox} ${styles.desktopOnly}`}>
+                <h2>{t.consentTitle}</h2>
+                <p>{t.consentLead}</p>
+                <ul>
+                  {t.consentItems.map((item) => (
+                    <li key={item}>
+                      <IconCheck />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <label className={styles.consentCheck}>
+                  <input
+                    type="checkbox"
+                    checked={acceptedWidgetTerms}
+                    onChange={(event) => {
+                      setAcceptedWidgetTerms(event.target.checked)
+                      if (event.target.checked && submitState === 'error') {
+                        setSubmitState('success')
+                        setMessage(t.subscribeSuccess)
+                      }
+                    }}
+                  />
+                  <span>{t.consentCheckbox}</span>
+                </label>
+                <button
+                  type="button"
+                  className={styles.downloadButton}
+                  onClick={handleAcceptAndDownload}
+                >
+                  <IconDownload />
+                  <span>{t.consentCta}</span>
+                </button>
+              </div>
             )}
 
             <div className={styles.actions}>

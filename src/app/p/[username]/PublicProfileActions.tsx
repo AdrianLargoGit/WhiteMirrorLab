@@ -5,6 +5,7 @@ import { legalPath, type Locale } from '@/lib/i18n'
 import { supabase } from '@/lib/supabase'
 import { castVote, getMyVote } from '@/lib/votes'
 import { captureEvent } from '@/lib/posthog'
+import PostSignupSharePopup from '@/components/wml/PostSignupSharePopup'
 import styles from './PublicProfileActions.module.css'
 
 type PublicProfile = {
@@ -99,6 +100,7 @@ export default function PublicProfileActions({
   const [mode, setMode] = useState<Mode>('login')
   const [loadingVote, setLoadingVote] = useState(false)
   const [message, setMessage] = useState('')
+  const [postSignupUsername, setPostSignupUsername] = useState<string | null>(null)
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
@@ -236,6 +238,14 @@ export default function PublicProfileActions({
           locale={locale}
           onClose={() => setShowAuth(false)}
           onAuthenticated={onAuthenticated}
+          onSignupCreated={setPostSignupUsername}
+        />
+      )}
+      {postSignupUsername && (
+        <PostSignupSharePopup
+          username={postSignupUsername}
+          locale={locale}
+          onClose={() => setPostSignupUsername(null)}
         />
       )}
     </>
@@ -248,12 +258,14 @@ function AuthModal({
   locale,
   onClose,
   onAuthenticated,
+  onSignupCreated,
 }: {
   mode: Mode
   setMode: (mode: Mode) => void
   locale: Locale
   onClose: () => void
   onAuthenticated: (userId: string) => void
+  onSignupCreated: (username: string) => void
 }) {
   const isEnglish = locale === 'en'
   const [email, setEmail] = useState('')
@@ -322,6 +334,7 @@ function AuthModal({
         })
         if (profileError) throw profileError
         captureEvent('auth_signup', { username, locale })
+        onSignupCreated(username)
       }
 
       if (data.session && data.user) {
