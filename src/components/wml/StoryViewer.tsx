@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Story, Profile } from '@/lib/database.types'
 import { AvatarMini } from './AppShell'
+import SpainWorldCupBadge from './SpainWorldCupBadge'
 
 type StoryWithProfile = Story & {
-  profile: Pick<Profile, 'id' | 'username' | 'avatar_url' | 'display_name'>
+  profile: Pick<Profile, 'id' | 'username' | 'avatar_url' | 'display_name' | 'country'>
 }
 
 const DURATION_MS = 5000
@@ -162,6 +163,7 @@ export default function StoryViewer({ story, onClose, onCompleted }: Props) {
           <div>
             <div style={{ fontFamily: 'var(--w-font-display)', fontWeight: 700, fontSize: 13, color: 'var(--w-white)' }}>
               {story.profile.display_name}
+              <SpainWorldCupBadge country={story.profile.country} />
             </div>
             <div style={{ fontFamily: 'var(--w-font-mono)', fontSize: 9, color: 'rgba(240,237,232,0.5)', letterSpacing: '0.06em' }}>
               @{story.profile.username}

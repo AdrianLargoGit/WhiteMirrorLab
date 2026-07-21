@@ -10,6 +10,7 @@ import { useLocale } from '@/hooks/useLocale'
 import { wmlPath } from '@/lib/i18n' 
 import { wmlCopy } from '@/lib/copy'
 import { captureEvent, resetAnalyticsIdentity } from '@/lib/posthog'
+import SpainWorldCupBadge from '@/components/wml/SpainWorldCupBadge'
 import type { Profile } from '@/lib/database.types'
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
@@ -126,7 +127,10 @@ export default function AppShell({ children }: AppShellProps) {
                   >
                     <AvatarMini profile={p} size={28} />
                     <div>
-                      <div className="wml-search-result-name">{p.display_name}</div>
+                      <div className="wml-search-result-name">
+                        {p.display_name}
+                        <SpainWorldCupBadge country={p.country} />
+                      </div>
                       <div className="wml-search-result-handle">@{p.username}</div>
                     </div>
                     <KarmaBadge score={p.karma_score} style={{ marginLeft: 'auto', fontSize: 10 }} />
@@ -165,6 +169,7 @@ export default function AppShell({ children }: AppShellProps) {
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontFamily: 'var(--w-font-display)', fontWeight: 700, fontSize: 12, letterSpacing: '-0.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {profile.display_name}
+                  <SpainWorldCupBadge country={profile.country} />
                 </div>
                 <div style={{ fontFamily: 'var(--w-font-mono)', fontSize: 9, color: 'var(--w-muted)', letterSpacing: '0.06em' }}>
                   @{profile.username}

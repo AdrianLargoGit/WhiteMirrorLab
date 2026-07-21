@@ -17,6 +17,7 @@ import {
 import { castVote, getMyVote } from '@/lib/votes'
 import { AvatarMini } from '@/components/wml/AppShell'
 import ShareProfileButton from '@/components/wml/ShareProfile'
+import SpainWorldCupBadge from '@/components/wml/SpainWorldCupBadge'
 import type { Profile, Post, PulseWithProfile } from '@/lib/database.types'
 import { captureEvent } from '@/lib/posthog'
 
@@ -250,6 +251,7 @@ export default function ProfilePage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4, flexWrap: 'wrap' }}>
               <h1 className="wml-profile-display-name" style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600 }}>
                 {profile.display_name}
+                <SpainWorldCupBadge country={profile.country} />
               </h1>
               
               {isOwn && (

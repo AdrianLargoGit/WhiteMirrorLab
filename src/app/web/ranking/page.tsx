@@ -7,6 +7,7 @@ import { useLocale } from '@/hooks/useLocale'
 import { wmlPath } from '@/lib/i18n' 
 import { wmlCopy } from '@/lib/copy'
 import { AvatarMini } from '@/components/wml/AppShell'
+import SpainWorldCupBadge from '@/components/wml/SpainWorldCupBadge'
 import type { Profile } from '@/lib/database.types'
 import { captureEvent } from '@/lib/posthog'
 
@@ -108,6 +109,7 @@ export default function RankingPage() {
                 <div className="wml-rank-info" style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                   <div className="wml-rank-name" style={{ fontSize: 15, fontWeight: 500 }}>
                     {p.display_name}
+                    <SpainWorldCupBadge country={p.country} />
                   </div>
                   <div className="wml-rank-handle" style={{ fontFamily: 'var(--w-font-mono)', fontSize: 11, color: 'var(--w-muted)' }}>
                     @{p.username}{p.country ? ` · ${p.country}` : ''}

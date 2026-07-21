@@ -122,6 +122,6 @@ export type Post        = Database['public']['Tables']['posts']['Row']
 export type Story       = Database['public']['Tables']['stories']['Row']
 export type Pulse       = Database['public']['Tables']['pulses']['Row']
 
-export type PulseWithProfile  = Pulse & { profile: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url' | 'karma_score'> }
+export type PulseWithProfile  = Pulse & { profile: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url' | 'country' | 'karma_score'> }
 
 export type VoteType = 1 | -1

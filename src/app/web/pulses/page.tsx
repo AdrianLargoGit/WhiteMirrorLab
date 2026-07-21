@@ -8,6 +8,7 @@ import { captureEvent } from '@/lib/posthog'
 import { useLocale } from '@/hooks/useLocale'
 import { wmlPath } from '@/lib/i18n'
 import { AvatarMini, KarmaBadge } from '@/components/wml/AppShell'
+import SpainWorldCupBadge from '@/components/wml/SpainWorldCupBadge'
 import type { PulseWithProfile } from '@/lib/database.types'
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
@@ -110,6 +111,7 @@ export default function PulsesPage() {
           username: profile.username,
           display_name: profile.display_name,
           avatar_url: profile.avatar_url,
+          country: profile.country,
           karma_score: profile.karma_score,
         },
       }
@@ -313,6 +315,7 @@ function PulseCard({
         username: profile.username,
         display_name: profile.display_name,
         avatar_url: profile.avatar_url,
+        country: profile.country,
         karma_score: profile.karma_score,
       },
     }
@@ -351,6 +354,7 @@ function PulseCard({
               style={{ fontFamily: 'var(--w-font-display)', fontWeight: 700, fontSize: 14, letterSpacing: '-0.01em', color: 'var(--w-white)', textDecoration: 'none' }}
             >
               {pulse.profile.display_name}
+              <SpainWorldCupBadge country={pulse.profile.country} />
             </Link>
             <span style={{ fontFamily: 'var(--w-font-mono)', fontSize: 10, color: 'var(--w-muted)', letterSpacing: '0.04em' }}>
               @{pulse.profile.username}

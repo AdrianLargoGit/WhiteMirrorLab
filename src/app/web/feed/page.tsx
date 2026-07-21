@@ -13,13 +13,14 @@ import { wmlCopy } from '@/lib/copy'
 import { AvatarMini, KarmaBadge } from '@/components/wml/AppShell'
 import type { Post, Profile, Story, VoteType } from '@/lib/database.types'
 import StoryViewer from '@/components/wml/StoryViewer'
+import SpainWorldCupBadge from '@/components/wml/SpainWorldCupBadge'
 
 const PWAInstallBanner = dynamic(() => import('@/components/wml/PWABanner'), {
   ssr: false,
 })
 
 type FeedPost        = Post & { profile: Profile }
-type StoryWithProfile = Story & { profile: Pick<Profile, 'id' | 'username' | 'avatar_url' | 'display_name'> }
+type StoryWithProfile = Story & { profile: Pick<Profile, 'id' | 'username' | 'avatar_url' | 'display_name' | 'country'> }
 
 const ICO_UP   = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
 const ICO_DOWN = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
@@ -178,7 +179,10 @@ export default function FeedPage() {
                   }
                 </div>
               </div>
-              <span className="wml-story-username">@{s.profile.username}</span>
+              <span className="wml-story-username">
+                @{s.profile.username}
+                <SpainWorldCupBadge country={s.profile.country} />
+              </span>
             </button>
           ))}
         </div>
@@ -226,6 +230,7 @@ const PostCard = memo(function PostCard({ post, isOwnPost, myVote, onVote }: {
         <div style={{ flex: 1, minWidth: 0 }}>
           <Link href={wmlPath(locale, `/profile/${post.profile.username}`)} className="wml-post-username">
             {post.profile.display_name}
+            <SpainWorldCupBadge country={post.profile.country} />
           </Link>
           <div className="wml-post-time">@{post.profile.username} · {timeAgo(post.created_at, locale)}</div>
         </div>
@@ -261,7 +266,10 @@ const PostCard = memo(function PostCard({ post, isOwnPost, myVote, onVote }: {
 
       {post.caption && (
         <p className="wml-post-caption">
-          <strong style={{ color: 'var(--w-white)', marginRight: 6 }}>{post.profile.username}</strong>
+          <strong style={{ color: 'var(--w-white)', marginRight: 6 }}>
+            {post.profile.username}
+            <SpainWorldCupBadge country={post.profile.country} />
+          </strong>
           {post.caption}
         </p>
       )}

@@ -85,7 +85,7 @@ export async function fetchActiveStories() {
   const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
   return supabase
     .from('stories')
-    .select('*, profile:profiles(id, username, avatar_url, display_name)')
+    .select('*, profile:profiles(id, username, avatar_url, display_name, country)')
     .gt('created_at', cutoff)
     .order('created_at', { ascending: false })
 }
@@ -94,7 +94,7 @@ export async function fetchActiveStories() {
 export async function fetchFeedPosts(page = 0, pageSize = 12) {
   return supabase
     .from('posts')
-    .select('*, profile:profiles(id, username, avatar_url, display_name, karma_score)')
+    .select('*, profile:profiles(id, username, avatar_url, display_name, country, karma_score)')
     .order('created_at', { ascending: false })
     .range(page * pageSize, (page + 1) * pageSize - 1)
 }
@@ -121,7 +121,7 @@ export async function fetchProfileByUsername(username: string) {
 export async function searchProfiles(query: string) {
   return supabase
     .from('profiles')
-    .select('id, username, display_name, avatar_url, karma_score')
+    .select('id, username, display_name, avatar_url, country, karma_score')
     .ilike('username', `%${query}%`)
     .order('karma_score', { ascending: false })
     .limit(20)
@@ -179,7 +179,7 @@ export async function deletePost(postId: string, imageUrl: string, userId: strin
 export async function fetchPulsesFeed(page = 0, pageSize = 20) {
   return supabase
     .from('pulses')
-    .select('*, profile:profiles(id, username, display_name, avatar_url, karma_score)')
+    .select('*, profile:profiles(id, username, display_name, avatar_url, country, karma_score)')
     .is('reply_to_id', null)               // solo pulses raíz, no replies
     .order('created_at', { ascending: false })
     .range(page * pageSize, (page + 1) * pageSize - 1)
@@ -192,7 +192,7 @@ export async function fetchPulsesFeed(page = 0, pageSize = 20) {
 export async function fetchUserPulses(userId: string, page = 0, pageSize = 20) {
   return supabase
     .from('pulses')
-    .select('*, profile:profiles(id, username, display_name, avatar_url, karma_score)')
+    .select('*, profile:profiles(id, username, display_name, avatar_url, country, karma_score)')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .range(page * pageSize, (page + 1) * pageSize - 1)
@@ -204,7 +204,7 @@ export async function fetchUserPulses(userId: string, page = 0, pageSize = 20) {
 export async function fetchPulseReplies(pulseId: string, page = 0, pageSize = 20) {
   return supabase
     .from('pulses')
-    .select('*, profile:profiles(id, username, display_name, avatar_url, karma_score)')
+    .select('*, profile:profiles(id, username, display_name, avatar_url, country, karma_score)')
     .eq('reply_to_id', pulseId)
     .order('created_at', { ascending: true })
     .range(page * pageSize, (page + 1) * pageSize - 1)

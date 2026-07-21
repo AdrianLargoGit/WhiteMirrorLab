@@ -4,6 +4,7 @@ import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { DEFAULT_LOCALE, isLocale, wmlPath, type Locale } from '@/lib/i18n'
+import SpainWorldCupBadge from '@/components/wml/SpainWorldCupBadge'
 import PublicProfileActions from './PublicProfileActions'
 import styles from './PublicProfile.module.css'
 
@@ -12,6 +13,7 @@ type PublicProfile = {
   username: string
   display_name: string
   avatar_url: string | null
+  country: string | null
   karma_score: number
   votes_received_positive: number
   votes_received_negative: number
@@ -45,13 +47,13 @@ async function getPublicProfile(username: string) {
   const supabase = createClient()
   const publicProfileQuery = await supabase
     .from('public_profiles')
-    .select('id, username, display_name, avatar_url, karma_score, votes_received_positive, votes_received_negative')
+    .select('id, username, display_name, avatar_url, country, karma_score, votes_received_positive, votes_received_negative')
     .eq('username', username)
     .single()
 
   const profile = publicProfileQuery.data ?? (await supabase
     .from('profiles')
-    .select('id, username, display_name, avatar_url, karma_score, votes_received_positive, votes_received_negative')
+    .select('id, username, display_name, avatar_url, country, karma_score, votes_received_positive, votes_received_negative')
     .eq('username', username)
     .single()
   ).data
@@ -145,7 +147,10 @@ export default async function PublicProfilePage({ params }: PageProps) {
             </div>
 
             <div className={styles.identity}>
-              <h1 className={styles.name}>{profile.display_name}</h1>
+              <h1 className={styles.name}>
+                {profile.display_name}
+                <SpainWorldCupBadge country={profile.country} />
+              </h1>
               <div className={styles.meta}>
                 <span className={styles.handle}>@{profile.username}</span>
                 <span className={styles.divider}>/</span>
