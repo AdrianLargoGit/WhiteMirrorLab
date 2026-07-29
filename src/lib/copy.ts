@@ -187,7 +187,7 @@ export const downloadCopy = {
   es: {
     eyebrow: 'Widget de mascota para Windows',
     title: 'Tu escritorio tambien puede mirarte.',
-    lead: 'WML X.X.0 es un widget de escritorio hecho con Electron, React y TypeScript. Una mascota flotante vive sobre tu escritorio, gana puntos con tu actividad local y te ayuda con sugerencias puntuales sin leer lo que escribes.',
+    lead: 'WML X.X.0 es un widget de escritorio hecho con Electron, React y TypeScript. Una mascota flotante vive sobre tu escritorio, gana puntos con tu actividad local y te ayuda con sugerencias practicas, acciones confirmadas e IA local de WML sin leer lo que escribes.',
     petLabel: 'Mascota actual',
     pet: 'Erizo',
     pointsLabel: 'Puntos',
@@ -205,9 +205,9 @@ export const downloadCopy = {
     consentItems: [
       'La mascota reacciona a senales locales de actividad como clics y escritura, pero no lee el contenido que escribes.',
       'Puede observar estado de bateria, estado de la mascota, puntos, procesos habituales y algunas senales basicas de seguridad.',
-      'La IA local funciona dentro de la aplicacion. El modelo de OpenAI es opcional y solo se usa si introduces tu API key y lo activas.',
-      'Si activas OpenAI, se envia un estado resumido y anonimizado, no archivos personales, texto escrito en otras apps ni contenido de ventanas.',
-      'Las sugerencias son limitadas y las acciones que puedan afectar al usuario requieren confirmacion antes de ejecutarse.',
+      'La IA local de WML funciona dentro de la aplicacion, no necesita API externa y puede seguir funcionando sin conexion.',
+      'El modelo local avanzado es opcional. Si lo activas, solo usa estado local resumido y anonimizado, no archivos personales, texto escrito en otras apps ni contenido de ventanas.',
+      'Las sugerencias son limitadas: una a la vez, con frecuencia reducida, y las acciones que puedan afectar al usuario requieren confirmacion antes de ejecutarse.',
       'No sustituye a Microsoft Defender, un EDR ni un antivirus profesional.',
     ],
     consentCheckbox: 'Entiendo y acepto el funcionamiento descrito de WML X.X.0.',
@@ -219,14 +219,14 @@ export const downloadCopy = {
     checks: [
       'Mascota flotante siempre visible, discreta y configurable.',
       'Tienda visual para comprar especies, colores y accesorios con puntos.',
-      'IA local por defecto y asistente de OpenAI opcional desde ajustes.',
-      'Sugerencias practicas con frecuencia limitada y confirmacion antes de actuar.',
+      'IA local de WML por defecto y modelo local avanzado opcional desde ajustes.',
+      'Sugerencias practicas para bateria, actividad, procesos y seguridad con confirmacion antes de actuar.',
     ],
   },
   en: {
     eyebrow: 'Desktop pet widget for Windows',
     title: 'Your desktop can watch back.',
-    lead: 'WML X.X.0 is a desktop widget built with Electron, React, and TypeScript. A floating pet lives above your desktop, earns points from local activity, and offers occasional practical suggestions without reading what you type.',
+    lead: 'WML X.X.0 is a desktop widget built with Electron, React, and TypeScript. A floating pet lives above your desktop, earns points from local activity, and offers practical suggestions, confirmed actions, and WML local AI without reading what you type.',
     petLabel: 'Current pet',
     pet: 'Hedgehog',
     pointsLabel: 'Points',
@@ -244,9 +244,9 @@ export const downloadCopy = {
     consentItems: [
       'The pet reacts to local activity signals such as clicks and typing, but it does not read what you type.',
       'It may observe battery state, pet state, points, common processes, and some basic security signals.',
-      'Local AI runs inside the app. The OpenAI model is optional and is used only if you add your API key and enable it.',
-      'If you enable OpenAI, the app sends summarized and anonymized state, not personal files, text typed in other apps, or window contents.',
-      'Suggestions are limited, and actions that may affect you require confirmation before running.',
+      'WML local AI runs inside the app, does not need an external API, and can keep working without a connection.',
+      'The advanced local model is optional. If enabled, it only uses summarized and anonymized local state, not personal files, text typed in other apps, or window contents.',
+      'Suggestions are limited: one at a time, with reduced frequency, and actions that may affect you require confirmation before running.',
       'It does not replace Microsoft Defender, an EDR, or professional antivirus software.',
     ],
     consentCheckbox: 'I understand and accept the described behavior of WML X.X.0.',
@@ -258,8 +258,8 @@ export const downloadCopy = {
     checks: [
       'Floating pet that stays visible, discreet, and configurable.',
       'Visual shop for species, colors, and accessories bought with points.',
-      'Local AI by default and optional OpenAI assistant from settings.',
-      'Practical suggestions with limited frequency and confirmation before action.',
+      'WML local AI by default and optional advanced local model from settings.',
+      'Practical suggestions for battery, activity, processes, and security with confirmation before action.',
     ],
   },
 } as const

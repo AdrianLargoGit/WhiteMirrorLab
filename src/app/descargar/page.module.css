@@ -284,10 +284,6 @@
   margin-top: 3px;
 }
 
-.mobileOnly {
-  display: none;
-}
-
 .mobileNotice {
   margin-top: 32px;
   border: 1px solid var(--border);
@@ -320,13 +316,6 @@
     font-size: clamp(42px, 13vw, 72px);
   }
 
-  .desktopOnly {
-    display: none;
-  }
-
-  .mobileOnly {
-    display: block;
-  }
 }
 
 @media (max-width: 560px) {

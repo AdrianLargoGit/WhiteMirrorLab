@@ -9,7 +9,7 @@ El widget esta pensado para ser discreto: no debe saturar al usuario con recomen
 ## Elementos principales
 
 - Mascota flotante: aparece en una ventana transparente y siempre visible.
-- Panel de ajustes: permite cambiar idioma, apariencia, mascota, colores, accesorios, IA local, sugerencias y modelo de OpenAI.
+- Panel de ajustes: permite cambiar idioma, apariencia, mascota, colores, accesorios, IA local, sugerencias y modelo local avanzado.
 - Asistente de chat: permite hablar con una IA para pedir acciones practicas o recomendaciones.
 - Sistema de sugerencias: muestra una unica recomendacion cuando hay una accion util que proponer.
 - Tienda visual: el usuario gana puntos usando el ordenador y puede comprar especies, colores y accesorios.
@@ -30,7 +30,7 @@ La mascota no puede ocultarse desde el widget ni desde el menu contextual. Si se
 
 ## IA local
 
-La IA local funciona con reglas dentro de la aplicacion. No necesita API externa y esta preparada para seguir funcionando aunque no haya conexion, no haya API key o falle el modelo de OpenAI.
+La IA local funciona con reglas dentro de la aplicacion. No necesita API externa y esta preparada para seguir funcionando aunque no haya conexion o falle el modelo local avanzado.
 
 La IA local puede:
 
@@ -43,27 +43,27 @@ La IA local puede:
 
 La IA local no es un antivirus completo. Solo anade una capa de aviso y respuesta prudente dentro del widget.
 
-## Modelo de OpenAI
+## Modelo local avanzado
 
-El widget puede conectarse a un modelo de OpenAI desde el panel de IA. El usuario solo tiene que introducir su API key y activar el uso del modelo.
+El widget puede conectarse a un modelo gratuito que se ejecuta en el propio ordenador. Desde el panel de IA el usuario solo activa el modelo local avanzado y escribe el nombre del modelo instalado.
 
-Por defecto se configura un modelo oficial documentado (`gpt-5-nano`). En la interfaz se recomienda Luna si el usuario lo tiene disponible, por su baja latencia.
+Por defecto se configura `llama3.2:3b`, un modelo ligero pensado para responder rapido en ordenadores normales. El usuario puede cambiar el nombre si instala otro modelo compatible.
 
-La llamada al modelo esta optimizada para gastar pocos tokens:
+La llamada al modelo esta optimizada para ser privada y predecible:
 
 - Envia solo estado local resumido y anonimizado.
-- Limita la respuesta con `max_output_tokens`.
-- Usa `store: false`.
+- Usa un servidor local en el propio dispositivo.
+- Limita la longitud de la respuesta.
 - Pide una salida JSON estricta.
 - Solo permite que el modelo proponga acciones de un catalogo cerrado.
 
-Si la API no esta configurada, si el modelo no existe para esa cuenta, si no hay red o si OpenAI devuelve error, el widget cae automaticamente a la IA local.
+Si el modelo local no esta instalado, no esta arrancado o no responde, el widget cae automaticamente a la IA local basada en reglas.
 
 ## Privacidad
 
 El widget evita enviar datos innecesarios fuera del dispositivo.
 
-El estado enviado al modelo externo, si se activa, se reduce a datos como:
+El estado enviado al modelo local avanzado, si se activa, se reduce a datos como:
 
 - Idioma.
 - Bateria aproximada.
@@ -153,4 +153,4 @@ Nota: el build de macOS debe ejecutarse en macOS para generar correctamente los 
 
 ## Resumen rapido
 
-WML X.X.0 es una mascota de escritorio con IA local y asistente opcional de OpenAI. Observa senales basicas del dispositivo, protege la privacidad por defecto, sugiere pocas acciones y siempre pide confirmacion antes de actuar. Su objetivo es ahorrar tiempo, cuidar la bateria, ayudar con pequenas optimizaciones y alertar ante posibles riesgos de seguridad sin convertirse en una herramienta invasiva.
+WML X.X.0 es una mascota de escritorio con IA local y asistente opcional mediante modelo local avanzado. Observa senales basicas del dispositivo, protege la privacidad por defecto, sugiere pocas acciones y siempre pide confirmacion antes de actuar. Su objetivo es ahorrar tiempo, cuidar la bateria, ayudar con pequenas optimizaciones y alertar ante posibles riesgos de seguridad sin convertirse en una herramienta invasiva.

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import CustomCursor from '@/components/CustomCursor'
 import Navbar from '@/components/Navbar'
@@ -10,6 +10,37 @@ import { useLocale } from '@/hooks/useLocale'
 import styles from './page.module.css'
 
 const DOWNLOAD_URL = 'https://github.com/AdrianLargoGit/WhiteMirrorLab/releases/download/v1.0.1/wml-xx0-1.0.0-setup.exe'
+
+type DeviceType = 'computer' | 'mobile' | 'tv' | 'unknown'
+type NavigatorWithUserAgentData = Navigator & {
+  userAgentData?: {
+    platform?: string
+  }
+}
+
+const getDeviceType = (): DeviceType => {
+  const ua = navigator.userAgent.toLowerCase()
+  const userAgentData = (navigator as NavigatorWithUserAgentData).userAgentData
+  const platform = userAgentData?.platform?.toLowerCase() || navigator.platform.toLowerCase()
+
+  if (/smart-tv|smarttv|hbbtv|appletv|google tv|googletv|tizen|webos|netcast|viera|aquos|bravia|roku|aftt|aftm|fire tv/.test(ua)) {
+    return 'tv'
+  }
+
+  if (/mobi|android|iphone|ipad|ipod|tablet|kindle|silk/.test(ua) || (platform === 'macintel' && navigator.maxTouchPoints > 1)) {
+    return 'mobile'
+  }
+
+  if (/win|mac|linux|cros|x11/.test(platform)) {
+    return 'computer'
+  }
+
+  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    return 'computer'
+  }
+
+  return 'unknown'
+}
 
 const IconDownload = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
@@ -33,6 +64,16 @@ export default function DownloadPage() {
   const [message, setMessage] = useState('')
   const [hasSubscribed, setHasSubscribed] = useState(false)
   const [acceptedWidgetTerms, setAcceptedWidgetTerms] = useState(false)
+  const [deviceType, setDeviceType] = useState<DeviceType>('unknown')
+  const canDownload = deviceType === 'computer'
+
+  useEffect(() => {
+    const detectDevice = window.setTimeout(() => {
+      setDeviceType(getDeviceType())
+    }, 0)
+
+    return () => window.clearTimeout(detectDevice)
+  }, [])
 
   const handleSubscribe = async () => {
     const normalizedEmail = email.trim().toLowerCase()
@@ -85,27 +126,29 @@ export default function DownloadPage() {
             <h1>{t.title}</h1>
             <p className={styles.lead}>{t.lead}</p>
 
-            <div className={`${styles.downloadForm} ${styles.desktopOnly}`}>
-              <input
-                type="email"
-                placeholder={t.emailPlaceholder}
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                onKeyDown={(event) => event.key === 'Enter' && !hasSubscribed && handleSubscribe()}
-                disabled={submitState === 'loading' || hasSubscribed}
-                aria-label={t.emailPlaceholder}
-              />
-              <button
-                type="button"
-                className={styles.downloadButton}
-                onClick={handleSubscribe}
-                disabled={submitState === 'loading' || hasSubscribed}
-                aria-busy={submitState === 'loading'}
-              >
-                <IconDownload />
-                <span>{submitState === 'loading' ? '...' : t.desktopCta}</span>
-              </button>
-            </div>
+            {canDownload && (
+              <div className={styles.downloadForm}>
+                <input
+                  type="email"
+                  placeholder={t.emailPlaceholder}
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  onKeyDown={(event) => event.key === 'Enter' && !hasSubscribed && handleSubscribe()}
+                  disabled={submitState === 'loading' || hasSubscribed}
+                  aria-label={t.emailPlaceholder}
+                />
+                <button
+                  type="button"
+                  className={styles.downloadButton}
+                  onClick={handleSubscribe}
+                  disabled={submitState === 'loading' || hasSubscribed}
+                  aria-busy={submitState === 'loading'}
+                >
+                  <IconDownload />
+                  <span>{submitState === 'loading' ? '...' : t.desktopCta}</span>
+                </button>
+              </div>
+            )}
 
             {message && (
               <p className={`${styles.formMessage} ${submitState === 'success' ? styles.formMessageSuccess : styles.formMessageError}`}>
@@ -113,8 +156,8 @@ export default function DownloadPage() {
               </p>
             )}
 
-            {hasSubscribed && (
-              <div className={`${styles.consentBox} ${styles.desktopOnly}`}>
+            {canDownload && hasSubscribed && (
+              <div className={styles.consentBox}>
                 <h2>{t.consentTitle}</h2>
                 <p>{t.consentLead}</p>
                 <ul>
@@ -157,11 +200,14 @@ export default function DownloadPage() {
               </Link>
             </div>
 
-            <p className={`${styles.hint} ${styles.desktopOnly}`}>{t.desktopHint}</p>
-            <div className={`${styles.mobileNotice} ${styles.mobileOnly}`} role="status">
-              <h2>{t.mobileTitle}</h2>
-              <p>{t.mobileText}</p>
-            </div>
+            {canDownload ? (
+              <p className={styles.hint}>{t.desktopHint}</p>
+            ) : deviceType !== 'unknown' ? (
+              <div className={styles.mobileNotice} role="status">
+                <h2>{t.mobileTitle}</h2>
+                <p>{t.mobileText}</p>
+              </div>
+            ) : null}
           </div>
 
           <aside className={styles.panel} aria-label={t.version}>

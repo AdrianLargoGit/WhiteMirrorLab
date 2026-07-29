@@ -22,9 +22,12 @@ const IcoUser    = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="n
 const IcoLogout  = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
 const IcoPulse   = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
 
-interface AppShellProps { children: ReactNode }
+interface AppShellProps {
+  children: ReactNode
+  requireAuth?: boolean
+}
 
-export default function AppShell({ children }: AppShellProps) {
+export default function AppShell({ children, requireAuth = true }: AppShellProps) {
   const { user, profile, loading, signOut } = useAuth()
   const pathname  = usePathname()
   const router    = useRouter()
@@ -45,10 +48,10 @@ export default function AppShell({ children }: AppShellProps) {
 
   // Redirección al auth si no hay sesión iniciada (sensible al idioma)
   useEffect(() => {
-    if (!loading && !user && !pathname.endsWith('/auth')) {
+    if (requireAuth && !loading && !user && !pathname.endsWith('/auth')) {
       router.replace(wmlPath(locale, '/auth'))
     }
-  }, [loading, user, pathname, router, locale])
+  }, [requireAuth, loading, user, pathname, router, locale])
 
   // Debounce de búsqueda de perfiles
   useEffect(() => {
@@ -76,6 +79,8 @@ export default function AppShell({ children }: AppShellProps) {
 
   // Vista limpia para la página de autenticación
   if (pathname.endsWith('/auth')) return <div className="wml-app">{children}</div>
+
+  if (!requireAuth && (!user || loading)) return <>{children}</>
 
   if (loading) {
     return (

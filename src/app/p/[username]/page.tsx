@@ -4,8 +4,8 @@ import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { DEFAULT_LOCALE, isLocale, wmlPath, type Locale } from '@/lib/i18n'
-import SpainWorldCupBadge from '@/components/wml/SpainWorldCupBadge'
 import PublicProfileActions from './PublicProfileActions'
+import PublicProfileIdentity from './PublicProfileIdentity'
 import styles from './PublicProfile.module.css'
 
 type PublicProfile = {
@@ -137,27 +137,17 @@ export default async function PublicProfilePage({ params }: PageProps) {
             </div>
           </div>
 
-          <div className={styles.hero}>
-            <div className={styles.avatar}>
-              {profile.avatar_url ? (
-                <img src={profile.avatar_url} alt={profile.display_name} />
-              ) : (
-                profile.display_name?.[0]?.toUpperCase() ?? '?'
-              )}
-            </div>
-
-            <div className={styles.identity}>
-              <h1 className={styles.name}>
-                {profile.display_name}
-                <SpainWorldCupBadge country={profile.country} />
-              </h1>
-              <div className={styles.meta}>
+          <PublicProfileIdentity
+            profile={profile}
+            locale={locale}
+            meta={
+              <>
                 <span className={styles.handle}>@{profile.username}</span>
                 <span className={styles.divider}>/</span>
                 <span>{posts.length} {isEnglish ? 'photos' : 'fotos'} / {pulses.length} pulses</span>
-              </div>
-            </div>
-          </div>
+              </>
+            }
+          />
 
           <p className={styles.description}>
             {isEnglish
