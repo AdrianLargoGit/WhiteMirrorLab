@@ -134,7 +134,7 @@ function AuthForm() {
       await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, source: 'social' }),
       })
     } catch {
       // Newsletter subscription must never block account creation.

@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { heroCopy } from '@/lib/copy'
-import { localizedHashPath, type Locale } from '@/lib/i18n'
+import { type Locale } from '@/lib/i18n'
+import { BUY_ME_A_COFFEE_URL } from '@/lib/links'
 import { createClient } from '@/lib/supabase'
 import styles from './Hero.module.css'
 
@@ -104,10 +105,10 @@ export default function Hero({ lang }: HeroProps) {
 >
   <span>{t.ctaPrimary}</span>
 </Link>
-        <Link href={localizedHashPath(lang, '#manifesto')} className="btn-ghost">
+        <a href={BUY_ME_A_COFFEE_URL} className="btn-ghost" target="_blank" rel="noopener noreferrer">
           <span className="btn-ghost-arrow" aria-hidden="true" />
           <span>{t.ctaGhost}</span>
-        </Link>
+        </a>
       </div>
 
       <div

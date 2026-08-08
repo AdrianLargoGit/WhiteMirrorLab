@@ -12,6 +12,8 @@ import styles from './page.module.css'
 const DOWNLOAD_URL = 'https://github.com/AdrianLargoGit/WhiteMirrorLab/releases/download/v1.0.1/wml-xx0-1.0.0-setup.exe'
 
 type DeviceType = 'computer' | 'mobile' | 'tv' | 'unknown'
+type Platform = 'windows' | 'linux'
+type DialogMode = 'download' | 'mobile'
 type NavigatorWithUserAgentData = Navigator & {
   userAgentData?: {
     platform?: string
@@ -22,20 +24,28 @@ const getDeviceType = (): DeviceType => {
   const ua = navigator.userAgent.toLowerCase()
   const userAgentData = (navigator as NavigatorWithUserAgentData).userAgentData
   const platform = userAgentData?.platform?.toLowerCase() || navigator.platform.toLowerCase()
+  const hasCoarsePointer = window.matchMedia('(any-pointer: coarse)').matches
+  const hasFinePointer = window.matchMedia('(any-pointer: fine)').matches
+  const isTouchOnly = hasCoarsePointer && !hasFinePointer
+  const isTablet =
+    /ipad|tablet|kindle|silk/.test(ua) ||
+    (/android/.test(ua) && !/mobi/.test(ua)) ||
+    (platform === 'macintel' && navigator.maxTouchPoints > 1) ||
+    (/win/.test(platform) && isTouchOnly)
 
   if (/smart-tv|smarttv|hbbtv|appletv|google tv|googletv|tizen|webos|netcast|viera|aquos|bravia|roku|aftt|aftm|fire tv/.test(ua)) {
     return 'tv'
   }
 
-  if (/mobi|android|iphone|ipad|ipod|tablet|kindle|silk/.test(ua) || (platform === 'macintel' && navigator.maxTouchPoints > 1)) {
+  if (isTablet || /mobi|iphone|ipod|android/.test(ua)) {
     return 'mobile'
   }
 
-  if (/win|mac|linux|cros|x11/.test(platform)) {
+  if (/win|mac|linux|cros|x11/.test(platform) && !isTouchOnly) {
     return 'computer'
   }
 
-  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches && !hasCoarsePointer) {
     return 'computer'
   }
 
@@ -56,6 +66,12 @@ const IconCheck = () => (
   </svg>
 )
 
+const IconWindows = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M3 4.6 10.7 3.5v8H3V4.6Zm8.7-1.25L21 2v9.5h-9.3V3.35ZM3 12.5h7.7v8L3 19.4v-6.9Zm8.7 0H21V22l-9.3-1.35V12.5Z" />
+  </svg>
+)
+
 export default function DownloadPage() {
   const lang = useLocale()
   const t = downloadCopy[lang]
@@ -64,6 +80,9 @@ export default function DownloadPage() {
   const [message, setMessage] = useState('')
   const [hasSubscribed, setHasSubscribed] = useState(false)
   const [acceptedWidgetTerms, setAcceptedWidgetTerms] = useState(false)
+  const [showDownloadDialog, setShowDownloadDialog] = useState(false)
+  const [dialogMode, setDialogMode] = useState<DialogMode>('download')
+  const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(null)
   const [deviceType, setDeviceType] = useState<DeviceType>('unknown')
   const canDownload = deviceType === 'computer'
 
@@ -74,6 +93,26 @@ export default function DownloadPage() {
 
     return () => window.clearTimeout(detectDevice)
   }, [])
+
+  useEffect(() => {
+    if (!showDownloadDialog) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowDownloadDialog(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [showDownloadDialog])
 
   const handleSubscribe = async () => {
     const normalizedEmail = email.trim().toLowerCase()
@@ -90,14 +129,16 @@ export default function DownloadPage() {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: normalizedEmail }),
+        body: JSON.stringify({ email: normalizedEmail, source: 'tech' }),
       })
 
       if (!res.ok) throw new Error('Subscribe failed')
 
       setSubmitState('success')
       setHasSubscribed(true)
-      setMessage(t.subscribeSuccess)
+      setDialogMode(canDownload ? 'download' : 'mobile')
+      setShowDownloadDialog(true)
+      setMessage('')
     } catch {
       setSubmitState('error')
       setMessage(t.subscribeError)
@@ -111,7 +152,30 @@ export default function DownloadPage() {
       return
     }
 
-    window.location.assign(DOWNLOAD_URL)
+    if (!canDownload) {
+      setDialogMode('mobile')
+      setShowDownloadDialog(true)
+      return
+    }
+
+    if (selectedPlatform !== 'windows') {
+      setSubmitState('error')
+      setMessage(t.choosePlatform)
+      return
+    }
+
+    setShowDownloadDialog(false)
+    setMessage(t.downloadThanksTitle)
+    const downloadWindow = window.open(DOWNLOAD_URL, '_blank')
+    if (downloadWindow) {
+      downloadWindow.opener = null
+    } else {
+      window.location.assign(DOWNLOAD_URL)
+    }
+  }
+
+  const closeDialog = () => {
+    setShowDownloadDialog(false)
   }
 
   return (
@@ -126,27 +190,128 @@ export default function DownloadPage() {
             <h1>{t.title}</h1>
             <p className={styles.lead}>{t.lead}</p>
 
-            {canDownload && (
-              <div className={styles.downloadForm}>
-                <input
-                  type="email"
-                  placeholder={t.emailPlaceholder}
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  onKeyDown={(event) => event.key === 'Enter' && !hasSubscribed && handleSubscribe()}
-                  disabled={submitState === 'loading' || hasSubscribed}
-                  aria-label={t.emailPlaceholder}
-                />
-                <button
-                  type="button"
-                  className={styles.downloadButton}
-                  onClick={handleSubscribe}
-                  disabled={submitState === 'loading' || hasSubscribed}
-                  aria-busy={submitState === 'loading'}
+            <div className={styles.downloadForm}>
+              <input
+                type="email"
+                placeholder={t.emailPlaceholder}
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                onKeyDown={(event) => event.key === 'Enter' && !hasSubscribed && handleSubscribe()}
+                disabled={submitState === 'loading' || hasSubscribed}
+                aria-label={t.emailPlaceholder}
+              />
+              <button
+                type="button"
+                className={styles.downloadButton}
+                onClick={handleSubscribe}
+                disabled={submitState === 'loading' || hasSubscribed}
+                aria-busy={submitState === 'loading'}
+              >
+                <IconDownload />
+                <span>{submitState === 'loading' ? '...' : t.desktopCta}</span>
+              </button>
+            </div>
+
+            {showDownloadDialog && (
+              <div className={styles.modalOverlay} role="presentation" onMouseDown={(event) => {
+                if (event.target === event.currentTarget) closeDialog()
+              }}>
+                <div
+                  className={styles.downloadModal}
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="download-consent-title"
                 >
-                  <IconDownload />
-                  <span>{submitState === 'loading' ? '...' : t.desktopCta}</span>
-                </button>
+                  <div className={styles.modalHeader}>
+                    <div>
+                      <div className="section-label">{t.version}</div>
+                      <h2 id="download-consent-title">
+                        {dialogMode === 'mobile' ? t.mobileDialogTitle : t.consentTitle}
+                      </h2>
+                    </div>
+                    <button type="button" className={styles.closeButton} onClick={closeDialog} aria-label={t.closePopup}>
+                      ×
+                    </button>
+                  </div>
+
+                  {dialogMode === 'mobile' ? (
+                    <>
+                      <p className={styles.modalLead}>{t.mobileDialogText}</p>
+                      <div className={styles.modalActions}>
+                        <button type="button" className={styles.secondaryButton} onClick={closeDialog}>
+                          {t.closePopup}
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className={styles.modalLead}>{t.consentLead}</p>
+                      <ul className={styles.modalList}>
+                        {t.consentItems.map((item) => (
+                          <li key={item}>
+                            <IconCheck />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+
+                      <label className={styles.consentCheck}>
+                        <input
+                          type="checkbox"
+                          checked={acceptedWidgetTerms}
+                          onChange={(event) => {
+                            setAcceptedWidgetTerms(event.target.checked)
+                            if (!event.target.checked) setSelectedPlatform(null)
+                            if (event.target.checked && submitState === 'error') {
+                              setSubmitState('success')
+                              setMessage('')
+                            }
+                          }}
+                        />
+                        <span>{t.consentCheckbox}</span>
+                      </label>
+
+                      <div className={styles.platformBlock} aria-disabled={!acceptedWidgetTerms}>
+                        <h3>{t.platformTitle}</h3>
+                        <p>{t.platformLead}</p>
+                        <div className={styles.platformGrid}>
+                          <button
+                            type="button"
+                            className={`${styles.platformButton} ${selectedPlatform === 'windows' ? styles.platformButtonActive : ''}`}
+                            onClick={() => acceptedWidgetTerms && setSelectedPlatform('windows')}
+                            disabled={!acceptedWidgetTerms}
+                            aria-pressed={selectedPlatform === 'windows'}
+                          >
+                            <IconWindows />
+                            <span>{t.windowsLabel}</span>
+                          </button>
+                          <button
+                            type="button"
+                            className={styles.platformButton}
+                            disabled
+                            aria-disabled="true"
+                          >
+                            <span className={styles.linuxIcon} aria-hidden="true" />
+                            <span>{t.linuxLabel}</span>
+                            <small>{t.linuxUnavailable}</small>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className={styles.modalActions}>
+                        <button
+                          type="button"
+                          className={styles.downloadButton}
+                          onClick={handleAcceptAndDownload}
+                          disabled={!acceptedWidgetTerms || selectedPlatform !== 'windows'}
+                        >
+                          <IconDownload />
+                          <span>{t.consentCta}</span>
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             )}
 
@@ -154,43 +319,6 @@ export default function DownloadPage() {
               <p className={`${styles.formMessage} ${submitState === 'success' ? styles.formMessageSuccess : styles.formMessageError}`}>
                 {message}
               </p>
-            )}
-
-            {canDownload && hasSubscribed && (
-              <div className={styles.consentBox}>
-                <h2>{t.consentTitle}</h2>
-                <p>{t.consentLead}</p>
-                <ul>
-                  {t.consentItems.map((item) => (
-                    <li key={item}>
-                      <IconCheck />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <label className={styles.consentCheck}>
-                  <input
-                    type="checkbox"
-                    checked={acceptedWidgetTerms}
-                    onChange={(event) => {
-                      setAcceptedWidgetTerms(event.target.checked)
-                      if (event.target.checked && submitState === 'error') {
-                        setSubmitState('success')
-                        setMessage(t.subscribeSuccess)
-                      }
-                    }}
-                  />
-                  <span>{t.consentCheckbox}</span>
-                </label>
-                <button
-                  type="button"
-                  className={styles.downloadButton}
-                  onClick={handleAcceptAndDownload}
-                >
-                  <IconDownload />
-                  <span>{t.consentCta}</span>
-                </button>
-              </div>
             )}
 
             <div className={styles.actions}>

@@ -47,7 +47,7 @@ export default function PrivacidadPage() {
         <li><strong>Finalidad:</strong> Enviar comunicaciones informativas sobre White Mirror Lab y sus experimentos</li>
         <li><strong>Base legal:</strong> Consentimiento del interesado (art. 6.1.a RGPD). Puedes retirarlo en cualquier momento sin que ello afecte a la licitud del tratamiento previo.</li>
         <li><strong>Plazo:</strong> Hasta que retires tu consentimiento o solicites la supresión</li>
-        <li><strong>Encargado:</strong> Loops.so (plataforma de email marketing)</li>
+        <li><strong>Encargado:</strong> Brevo (plataforma de email marketing)</li>
       </ul>
 
       <h3>2.2. Registro y participación en el experimento WML 1.0</h3>
@@ -145,7 +145,7 @@ export default function PrivacidadPage() {
             <td style={{ padding: '10px 8px' }}>EE.UU. / UE — CCT o instancia EU (eu.posthog.com)</td>
           </tr>
           <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-            <td style={{ padding: '10px 8px' }}>Loops.so</td>
+            <td style={{ padding: '10px 8px' }}>Brevo</td>
             <td style={{ padding: '10px 8px' }}>Gestión de newsletter y suscriptores</td>
             <td style={{ padding: '10px 8px' }}>EE.UU. — CCT</td>
           </tr>

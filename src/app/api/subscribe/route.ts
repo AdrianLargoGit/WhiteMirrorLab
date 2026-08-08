@@ -1,48 +1,30 @@
 import { NextResponse } from 'next/server'
+import { subscribeEmailToBrevo, type SubscribeSource } from '@/lib/brevo-subscribe'
 
 export async function POST(req: Request) {
-  const apiKey = process.env.LOOPS_API_KEY
-  if (!apiKey) {
-    return NextResponse.json({ error: 'Loops API key not configured' }, { status: 500 })
-  }
-
   let email: string
+  let source: SubscribeSource = 'general'
+
   try {
     const body = await req.json()
     email = (body.email ?? '').trim().toLowerCase()
+    source = body.source === 'tech' || body.source === 'social' ? body.source : 'general'
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return NextResponse.json({ error: 'Email inválido' }, { status: 422 })
+    return NextResponse.json({ error: 'Email invÃ¡lido' }, { status: 422 })
   }
 
   try {
-    const res = await fetch('https://app.loops.so/api/v1/contacts/create', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        email,
-        source: 'wml-landing',
-        subscribed: true,
-        userGroup: 'waitlist',
-      }),
-    })
-
-    const data = await res.json()
-
-    if (!res.ok && res.status !== 409) {
-      console.error('Loops error:', data)
-      return NextResponse.json({ error: 'Error al suscribir' }, { status: 502 })
+    const result = await subscribeEmailToBrevo(email, source)
+    if (!result.ok) {
+      return NextResponse.json({ error: result.error }, { status: result.status })
     }
-
     return NextResponse.json({ ok: true })
   } catch (err) {
-    console.error('Loops fetch error:', err)
+    console.error('Brevo fetch error:', err)
     return NextResponse.json({ error: 'Error de red' }, { status: 500 })
   }
 }

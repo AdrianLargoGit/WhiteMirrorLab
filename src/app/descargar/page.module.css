@@ -96,11 +96,11 @@
 }
 
 .downloadButton:disabled {
-  cursor: wait;
+  cursor: not-allowed;
   opacity: 0.75;
 }
 
-.downloadButton:hover {
+.downloadButton:not(:disabled):hover {
   background: var(--white);
   border-color: var(--white);
 }
@@ -138,49 +138,101 @@
   text-transform: uppercase;
 }
 
-.consentBox {
-  max-width: 680px;
-  margin-top: 28px;
-  border: 1px solid var(--border);
-  background: rgba(17, 17, 17, 0.82);
-  padding: clamp(22px, 3vw, 30px);
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  align-items: start;
+  justify-items: center;
+  padding: clamp(88px, 11vh, 118px) 24px 24px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.78);
 }
 
-.consentBox h2 {
+.downloadModal {
+  width: min(760px, 100%);
+  max-height: calc(100vh - clamp(112px, 14vh, 148px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  contain: layout paint style;
+  will-change: scroll-position;
+  border: 1px solid rgba(217, 255, 107, 0.32);
+  border-radius: 34px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)),
+    rgba(12, 12, 12, 0.96);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.58);
+  padding: clamp(20px, 3vw, 28px);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.modalHeader h2 {
+  margin-top: 8px;
   font-family: var(--font-display);
-  font-size: clamp(22px, 2.8vw, 30px);
+  font-size: clamp(28px, 4vw, 44px);
   font-weight: 800;
   letter-spacing: 0;
-  line-height: 1.1;
+  line-height: 1;
 }
 
-.consentBox p {
-  margin-top: 10px;
-  color: rgba(245, 242, 238, 0.58);
+.closeButton {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--white);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.closeButton:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(217, 255, 107, 0.08);
+}
+
+.modalLead {
+  max-width: 610px;
+  margin-top: 12px;
+  color: rgba(245, 242, 238, 0.68);
   font-size: 14px;
   line-height: 1.7;
 }
 
-.consentBox ul {
+.modalList {
   list-style: none;
   display: grid;
   gap: 1px;
-  margin-top: 20px;
+  margin-top: 16px;
   background: var(--border);
+  border-radius: 18px;
+  overflow: hidden;
 }
 
-.consentBox li {
+.modalList li {
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  padding: 15px 16px;
+  padding: 12px 14px;
   background: var(--surface);
-  color: rgba(245, 242, 238, 0.62);
+  color: rgba(245, 242, 238, 0.66);
   font-size: 13px;
   line-height: 1.6;
 }
 
-.consentBox li svg {
+.modalList li svg {
   color: var(--accent);
   flex: 0 0 auto;
   margin-top: 3px;
@@ -190,7 +242,7 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  margin: 20px 0;
+  margin: 16px 0;
   color: var(--white);
   font-size: 13px;
   line-height: 1.5;
@@ -203,6 +255,121 @@
   flex: 0 0 18px;
   margin-top: 1px;
   accent-color: var(--accent);
+}
+
+.platformBlock {
+  margin: 16px 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.platformBlock h3 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  letter-spacing: 0;
+}
+
+.platformBlock p {
+  margin-top: 8px;
+  color: rgba(245, 242, 238, 0.56);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.platformGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.platformButton {
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--white);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.1s;
+}
+
+.platformButton:not(:disabled):hover,
+.platformButtonActive {
+  border-color: var(--accent);
+  background: rgba(217, 255, 107, 0.1);
+  color: var(--accent);
+}
+
+.platformButton:active {
+  transform: scale(0.99);
+}
+
+.platformButton:disabled {
+  cursor: not-allowed;
+  color: rgba(245, 242, 238, 0.34);
+  opacity: 0.72;
+}
+
+.platformButton small {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+}
+
+.linuxIcon {
+  width: 26px;
+  height: 26px;
+  display: inline-block;
+  background: currentColor;
+  -webkit-mask: url('/downloads/linux-icon.png') center / contain no-repeat;
+  mask: url('/downloads/linux-icon.png') center / contain no-repeat;
+}
+
+.modalActions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.secondaryButton {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--white);
+  padding: 0 20px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.1s;
+}
+
+.secondaryButton:hover {
+  border-color: var(--accent);
+  background: rgba(217, 255, 107, 0.14);
+  color: var(--accent);
+}
+
+.secondaryButton:active {
+  transform: scale(0.98);
 }
 
 .panel {
@@ -335,6 +502,14 @@
   .downloadForm input {
     border-right: 1px solid var(--border);
     border-bottom: none;
+  }
+
+  .downloadModal {
+    border-radius: 26px;
+  }
+
+  .platformGrid {
+    grid-template-columns: 1fr;
   }
 
   .specs div {

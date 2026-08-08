@@ -67,7 +67,7 @@ function PrivacyEn() {
         <li><strong>Data:</strong> email address, subscription date and source.</li>
         <li><strong>Purpose:</strong> send informational communications about White Mirror Lab and its experiments.</li>
         <li><strong>Legal basis:</strong> consent. You may withdraw it at any time.</li>
-        <li><strong>Processor:</strong> Loops.so.</li>
+        <li><strong>Processor:</strong> Brevo.</li>
       </ul>
 
       <h3>2.2. WML 1.0 account and participation</h3>
@@ -83,7 +83,7 @@ function PrivacyEn() {
       <p>PostHog may process page views and interaction events only according to the user&apos;s analytics consent. Analytics are used to improve the experiment and publish aggregated results. White Mirror Lab does not sell, rent or transfer personal data to third parties for commercial purposes.</p>
 
       <h2>3. Recipients and international transfers</h2>
-      <p>We use processors such as Supabase, PostHog, Loops.so and Vercel. Where data is transferred outside the European Economic Area, appropriate safeguards such as Standard Contractual Clauses or EU-hosted services are used.</p>
+      <p>We use processors such as Supabase, PostHog, Brevo and Vercel. Where data is transferred outside the European Economic Area, appropriate safeguards such as Standard Contractual Clauses or EU-hosted services are used.</p>
 
       <h2>4. Your rights</h2>
       <p>You may exercise access, rectification, deletion, restriction, portability, objection, withdrawal of consent and rights relating to automated decisions by emailing <strong>{contact}</strong>. We will answer within one month, extendable where legally permitted.</p>
