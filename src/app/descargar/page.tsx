@@ -9,7 +9,7 @@ import { homePath } from '@/lib/i18n'
 import { useLocale } from '@/hooks/useLocale'
 import styles from './page.module.css'
 
-const DOWNLOAD_URL = 'https://github.com/AdrianLargoGit/WhiteMirrorLab/releases/download/v1.0.1/wml-xx0-1.0.0-setup.exe'
+const DOWNLOAD_URL = 'https://github.com/AdrianLargoGit/WhiteMirrorLab/releases/download/v1.0.2/wml-xx0-1.0.1-setup.exe'
 
 type DeviceType = 'computer' | 'mobile' | 'tv' | 'unknown'
 type Platform = 'windows' | 'linux'
@@ -270,6 +270,18 @@ export default function DownloadPage() {
                         />
                         <span>{t.consentCheckbox}</span>
                       </label>
+
+                      <div className={styles.requirementsBlock}>
+                        <h3>{t.requirementsTitle}</h3>
+                        <ul>
+                          {t.requirements.map((item) => (
+                            <li key={item}>
+                              <IconCheck />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
 
                       <div className={styles.platformBlock} aria-disabled={!acceptedWidgetTerms}>
                         <h3>{t.platformTitle}</h3>
