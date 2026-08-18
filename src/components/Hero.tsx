@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { heroCopy } from '@/lib/copy'
 import { type Locale } from '@/lib/i18n'
 import { BUY_ME_A_COFFEE_URL } from '@/lib/links'
-import { createClient } from '@/lib/supabase'
+import { BREVO_COUNT_FALLBACK, fetchBrevoCount } from '@/lib/brevo-count'
 import styles from './Hero.module.css'
 
 interface HeroProps {
@@ -30,34 +30,33 @@ export default function Hero({ lang }: HeroProps) {
   const statsRef = useRef<HTMLDivElement>(null)
   const participantsRef = useRef<HTMLSpanElement>(null)
   const experimentsRef = useRef<HTMLSpanElement>(null)
-  const counterFiredRef = useRef(false)
   
-  const [totalParticipants, setTotalParticipants] = useState<number>(0)
-  const supabase = createClient()
+  const [totalParticipants, setTotalParticipants] = useState<number>(BREVO_COUNT_FALLBACK)
 
   useEffect(() => {
-    async function fetchProfilesCount() {
-      const { data, error } = await supabase.rpc('get_total_profiles')
-      if (!error && data !== null) {
-        setTotalParticipants(data)
+    let isMounted = true
+
+    async function fetchParticipantsCount() {
+      const count = await fetchBrevoCount('general')
+      if (isMounted) {
+        setTotalParticipants(count)
       }
     }
-    fetchProfilesCount()
-  }, [supabase])
+
+    fetchParticipantsCount()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   useEffect(() => {
-    counterFiredRef.current = false
-  }, [lang])
-
-  useEffect(() => {
-    // Si aún no tenemos datos, no hacemos nada
-    if (totalParticipants === 0 || !statsRef.current) return
+    if (!statsRef.current) return
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            // Animamos directamente con el valor que ya trajo Supabase
             if (participantsRef.current) {
               animateCounter(participantsRef.current, totalParticipants, '')
             }

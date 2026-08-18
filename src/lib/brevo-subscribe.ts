@@ -1,6 +1,9 @@
+import { BREVO_COUNT_FALLBACK } from './brevo-count'
+
 export type SubscribeSource = 'general' | 'tech' | 'social'
 
 const BREVO_CONTACTS_URL = 'https://api.brevo.com/v3/contacts'
+const BREVO_LISTS_URL = `${BREVO_CONTACTS_URL}/lists`
 
 const parseListId = (value: string | undefined) => {
   const id = Number(value)
@@ -12,14 +15,18 @@ const uniqueIds = (ids: Array<number | null | undefined>) => (
 )
 
 const getConfiguredListIds = (source: SubscribeSource) => {
-  const generalListId = parseListId(process.env.BREVO_LIST_ID_GENERAL ?? process.env.BREVO_GENERAL_LIST_ID ?? process.env.BREVO_LIST_ID)
-  const sourceListId = source === 'tech'
-    ? parseListId(process.env.BREVO_LIST_ID_TECH ?? process.env.BREVO_TECH_LIST_ID)
-    : source === 'social'
-      ? parseListId(process.env.BREVO_LIST_ID_SOCIAL ?? process.env.BREVO_SOCIAL_LIST_ID)
-      : null
+  const generalListId = getBrevoListId('general')
+  const sourceListId = source === 'general' ? null : getBrevoListId(source)
 
   return uniqueIds([generalListId, sourceListId])
+}
+
+export const getBrevoListId = (source: SubscribeSource) => {
+  const generalListId = parseListId(process.env.BREVO_LIST_ID_GENERAL ?? process.env.BREVO_GENERAL_LIST_ID ?? process.env.BREVO_LIST_ID)
+
+  if (source === 'tech') return parseListId(process.env.BREVO_LIST_ID_TECH ?? process.env.BREVO_TECH_LIST_ID)
+  if (source === 'social') return parseListId(process.env.BREVO_LIST_ID_SOCIAL ?? process.env.BREVO_SOCIAL_LIST_ID)
+  return generalListId
 }
 
 const getExistingListIds = async (email: string, apiKey: string) => {
@@ -74,4 +81,32 @@ export const subscribeEmailToBrevo = async (email: string, source: SubscribeSour
   }
 
   return { ok: true, status: 200 }
+}
+
+export const getBrevoListCount = async (source: SubscribeSource = 'general') => {
+  const apiKey = process.env.BREVO_API_KEY
+  const listId = getBrevoListId(source)
+
+  if (!apiKey || !listId) {
+    return { ok: false, status: 500, count: BREVO_COUNT_FALLBACK, error: 'Brevo list count not configured' }
+  }
+
+  const res = await fetch(`${BREVO_LISTS_URL}/${listId}/contacts?limit=1&offset=0`, {
+    method: 'GET',
+    headers: { 'api-key': apiKey },
+    cache: 'no-store',
+  })
+
+  const data = await res.json().catch(() => null)
+
+  if (!res.ok) {
+    console.error('Brevo list count error:', data)
+    return { ok: false, status: 502, count: BREVO_COUNT_FALLBACK, error: 'Error al leer el contador' }
+  }
+
+  return {
+    ok: true,
+    status: 200,
+    count: typeof data?.count === 'number' && Number.isFinite(data.count) ? data.count : BREVO_COUNT_FALLBACK,
+  }
 }

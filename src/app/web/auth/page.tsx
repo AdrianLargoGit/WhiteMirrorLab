@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { captureEvent } from '@/lib/posthog'
 import { mapAuthError } from '@/lib/auth-errors'
 import { wmlCopy } from '@/lib/copy'
+import { BREVO_COUNT_FALLBACK, fetchBrevoCount } from '@/lib/brevo-count'
 import { useLocale } from '@/hooks/useLocale'
 import { legalPath, wmlPath } from '@/lib/i18n'
 import PostSignupSharePopup from '@/components/wml/PostSignupSharePopup'
@@ -90,6 +91,7 @@ function AuthForm() {
   const [emailSent, setEmailSent] = useState(false)      // forgot: email enviado
   const [passwordChanged, setPasswordChanged] = useState(false) // reset: éxito
   const [postSignupShare, setPostSignupShare] = useState<{ username: string; redirectOnClose: boolean } | null>(null)
+  const [participantCount, setParticipantCount] = useState(BREVO_COUNT_FALLBACK)
 
   // Redirigir a consentimiento si intenta signup sin cookie
   useEffect(() => {
@@ -112,6 +114,23 @@ function AuthForm() {
       }
     })
     return () => subscription.unsubscribe()
+  }, [])
+
+  useEffect(() => {
+    let isMounted = true
+
+    async function fetchParticipantCount() {
+      const count = await fetchBrevoCount('social')
+      if (isMounted) {
+        setParticipantCount(count)
+      }
+    }
+
+    fetchParticipantCount()
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   const redirectAfterLogin = () => {
@@ -364,6 +383,9 @@ function AuthForm() {
             <>
               <div className="wml-auth-title">{t.authTitleSignup}</div>
               <div className="wml-auth-sub">{t.authSubSignup}</div>
+              <div className="wml-auth-count">
+                {t.authSignupParticipants.replace('{count}', participantCount.toLocaleString(locale))}
+              </div>
 
               {error   && <div className="wml-error-msg">{error}</div>}
               {success && <div className="wml-success-msg">{success}</div>}

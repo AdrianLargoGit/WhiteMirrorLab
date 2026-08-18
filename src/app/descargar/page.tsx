@@ -6,6 +6,7 @@ import CustomCursor from '@/components/CustomCursor'
 import Navbar from '@/components/Navbar'
 import { downloadCopy } from '@/lib/copy'
 import { homePath } from '@/lib/i18n'
+import { BREVO_COUNT_FALLBACK, fetchBrevoCount } from '@/lib/brevo-count'
 import { useLocale } from '@/hooks/useLocale'
 import styles from './page.module.css'
 
@@ -84,6 +85,7 @@ export default function DownloadPage() {
   const [dialogMode, setDialogMode] = useState<DialogMode>('download')
   const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(null)
   const [deviceType, setDeviceType] = useState<DeviceType>('unknown')
+  const [downloadCount, setDownloadCount] = useState(BREVO_COUNT_FALLBACK)
   const canDownload = deviceType === 'computer'
 
   useEffect(() => {
@@ -92,6 +94,23 @@ export default function DownloadPage() {
     }, 0)
 
     return () => window.clearTimeout(detectDevice)
+  }, [])
+
+  useEffect(() => {
+    let isMounted = true
+
+    async function fetchDownloadCount() {
+      const count = await fetchBrevoCount('tech')
+      if (isMounted) {
+        setDownloadCount(count)
+      }
+    }
+
+    fetchDownloadCount()
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   useEffect(() => {
@@ -367,6 +386,10 @@ export default function DownloadPage() {
               <div>
                 <dt>{t.pointsLabel}</dt>
                 <dd>{t.points}</dd>
+              </div>
+              <div>
+                <dt>{t.downloadsLabel}</dt>
+                <dd>{downloadCount.toLocaleString(lang)}</dd>
               </div>
             </dl>
             <ul className={styles.checks}>
