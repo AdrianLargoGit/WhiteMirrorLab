@@ -5,12 +5,12 @@ import Link from 'next/link'
 import CustomCursor from '@/components/CustomCursor'
 import Navbar from '@/components/Navbar'
 import { downloadCopy } from '@/lib/copy'
-import { homePath } from '@/lib/i18n'
+import { homePath, skinTemplatePath } from '@/lib/i18n'
 import { BREVO_COUNT_FALLBACK, fetchBrevoCount } from '@/lib/brevo-count'
 import { useLocale } from '@/hooks/useLocale'
 import styles from './page.module.css'
 
-const DOWNLOAD_URL = 'https://github.com/AdrianLargoGit/WhiteMirrorLab/releases/download/v1.0.2/wml-xx0-1.0.1-setup.exe'
+const DOWNLOAD_URL = 'https://github.com/AdrianLargoGit/WhiteMirrorLab/releases/download/v1.0.2/wml-xx0-1.0.2-setup.exe'
 
 type DeviceType = 'computer' | 'mobile' | 'tv' | 'unknown'
 type Platform = 'windows' | 'linux'
@@ -229,6 +229,14 @@ export default function DownloadPage() {
                 <IconDownload />
                 <span>{submitState === 'loading' ? '...' : t.desktopCta}</span>
               </button>
+            </div>
+
+            <div className={styles.creatorCallout}>
+              <div>
+                <span>{t.creatorsTitle}</span>
+                <p>{t.creatorsText}</p>
+              </div>
+              <Link href={skinTemplatePath(lang)}>{t.creatorsCta}</Link>
             </div>
 
             {showDownloadDialog && (

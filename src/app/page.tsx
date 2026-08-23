@@ -10,7 +10,7 @@ import { landingCopy } from '@/lib/copy'
 import {
   localizedHashPath,
   legalPath,
-  questionnairePath,
+  contactPath,
   wmlPath,
   type Locale,
 } from '@/lib/i18n'
@@ -314,7 +314,7 @@ export default function Home() {
             <li><a href={localizedHashPath(lang, '#experiments')}>{t.navExperiments}</a></li>
             <li><a href={localizedHashPath(lang, '#how')}>{t.navMethodology}</a></li>
             <li><a href={localizedHashPath(lang, '#apps')}>{t.navAreas}</a></li>
-            <li><a href={questionnairePath(lang)}>{t.navQuestionnaire}</a></li>
+            <li><a href={contactPath(lang)}>{t.navContact}</a></li>
           </ul>
         </div>
         <div className={styles.footerCol}>
@@ -323,6 +323,7 @@ export default function Home() {
             <li><a href={localizedHashPath(lang, '#manifesto')}>{t.navManifesto}</a></li>
             <li><a href={localizedHashPath(lang, '#ethics')}>{t.navEthics}</a></li>
             <li><a href={wmlPath(lang, '/consent')}>{t.navWml}</a></li>
+            <li><a href={contactPath(lang)}>{t.navContact}</a></li>
           </ul>
         </div>
         <div className={styles.footerCol}>

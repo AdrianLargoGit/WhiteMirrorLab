@@ -2,14 +2,17 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { landingCopy } from '@/lib/copy'
 import {
   LOCALE_COOKIE,
   alternateLocalePath,
+  blogPath,
+  contactPath,
   downloadPath,
   localizedHashPath,
-  questionnairePath,
+  marketplacePath,
+  skinTemplatePath,
   wmlPath,
   type Locale,
 } from '@/lib/i18n'
@@ -38,19 +41,35 @@ interface NavbarProps {
 export default function Navbar({ lang, onLangChange }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [wmlMenuOpen, setWmlMenuOpen] = useState(false)
   const progressRef = useRef<HTMLDivElement>(null)
+  const wmlMenuRef = useRef<HTMLLIElement>(null)
   const pathname = usePathname()
-  const router = useRouter()
   const t = landingCopy[lang]
 
   const navLinks = [
+    { href: blogPath(lang), label: t.navBlog },
     { href: localizedHashPath(lang, '#experiments'), label: t.navExperiments },
     { href: localizedHashPath(lang, '#how'), label: t.navMethodology },
-    { href: localizedHashPath(lang, '#apps'), label: t.navAreas },
     { href: localizedHashPath(lang, '#ethics'), label: t.navEthics },
-    { href: questionnairePath(lang), label: t.navQuestionnaire },
-    { href: downloadPath(lang), label: t.navDownload },
-    { href: wmlPath(lang, '/consent'), label: t.navWml },
+    { href: contactPath(lang), label: t.navContact },
+  ]
+
+  const wmlLinks = [
+    {
+      section: t.navWmlOneSection,
+      items: [
+        { href: wmlPath(lang, '/consent'), label: t.navWml },
+      ],
+    },
+    {
+      section: t.navWmlExperimentalSection,
+      items: [
+        { href: downloadPath(lang), label: t.navDownload },
+        { href: marketplacePath(lang), label: t.navMarketplace },
+        { href: skinTemplatePath(lang), label: t.navCreators },
+      ],
+    },
   ]
 
   useEffect(() => {
@@ -73,13 +92,40 @@ export default function Navbar({ lang, onLangChange }: NavbarProps) {
     }
   }, [menuOpen])
 
-  const closeMenu = () => setMenuOpen(false)
+  useEffect(() => {
+    if (!wmlMenuOpen || menuOpen) return
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!wmlMenuRef.current?.contains(event.target as Node)) {
+        setWmlMenuOpen(false)
+      }
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setWmlMenuOpen(false)
+    }
+
+    window.addEventListener('pointerdown', handlePointerDown)
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      window.removeEventListener('pointerdown', handlePointerDown)
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [menuOpen, wmlMenuOpen])
+
+  const closeMenu = () => {
+    setMenuOpen(false)
+    setWmlMenuOpen(false)
+  }
 
   const changeLang = (nextLang: Locale) => {
     document.cookie = `${LOCALE_COOKIE}=${nextLang}; path=/; max-age=31536000; samesite=lax`
     onLangChange?.(nextLang)
     closeMenu()
-    router.push(alternateLocalePath(pathname, nextLang))
+    const currentPath = window.location.pathname || pathname
+    const nextPath = alternateLocalePath(currentPath, nextLang)
+    window.location.assign(`${nextPath}${window.location.search}${window.location.hash}`)
   }
 
   return (
@@ -101,6 +147,34 @@ export default function Navbar({ lang, onLangChange }: NavbarProps) {
               {item.label}
             </Link>
           ))}
+          <div className={styles.mobileWmlGroup}>
+            <button
+              type="button"
+              className={styles.mobileWmlToggle}
+              aria-expanded={wmlMenuOpen}
+              onClick={() => setWmlMenuOpen((value) => !value)}
+            >
+              {t.navWmlMenu}
+              <span className={styles.chevron} aria-hidden="true" />
+            </button>
+            <div className={`${styles.mobileWmlPanel} ${wmlMenuOpen ? styles.mobileWmlPanelOpen : ''}`}>
+              {wmlLinks.map((group) => (
+                <div key={group.section} className={styles.mobileWmlSection}>
+                  <span>{group.section}</span>
+                  {group.items.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={styles.mobileWmlLink}
+                      onClick={closeMenu}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
         </nav>
 
         <div className={styles.mobileLang}>
@@ -141,6 +215,41 @@ export default function Navbar({ lang, onLangChange }: NavbarProps) {
               </Link>
             </li>
           ))}
+          <li
+            className={styles.wmlMenu}
+            ref={wmlMenuRef}
+            onMouseEnter={() => setWmlMenuOpen(true)}
+            onMouseLeave={() => setWmlMenuOpen(false)}
+          >
+            <button
+              type="button"
+              className={styles.navLinkButton}
+              aria-expanded={wmlMenuOpen}
+              aria-haspopup="menu"
+              onClick={() => setWmlMenuOpen((value) => !value)}
+            >
+              {t.navWmlMenu}
+              <span className={styles.chevron} aria-hidden="true" />
+            </button>
+            <div className={`${styles.wmlDropdown} ${wmlMenuOpen ? styles.wmlDropdownOpen : ''}`} role="menu">
+              {wmlLinks.map((group) => (
+                <div key={group.section} className={styles.wmlDropdownSection}>
+                  <span>{group.section}</span>
+                  {group.items.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={styles.wmlDropdownLink}
+                      role="menuitem"
+                      onClick={() => setWmlMenuOpen(false)}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </li>
         </ul>
 
         <div className={styles.navRight}>
@@ -172,7 +281,10 @@ export default function Navbar({ lang, onLangChange }: NavbarProps) {
             className={styles.hamburger}
             aria-label={menuOpen ? (lang === 'es' ? 'Cerrar menu' : 'Close menu') : (lang === 'es' ? 'Abrir menu' : 'Open menu')}
             aria-expanded={menuOpen}
-            onClick={() => setMenuOpen((v) => !v)}
+            onClick={() => {
+              setMenuOpen((v) => !v)
+              setWmlMenuOpen(false)
+            }}
           >
             {menuOpen ? <IconClose /> : <IconMenu />}
           </button>

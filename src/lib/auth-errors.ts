@@ -8,10 +8,10 @@ interface AuthErrorLike {
 
 const messages = {
   es: {
-    generic: 'Ha ocurrido un error. Intentalo de nuevo.',
-    emailNotConfirmed: 'Debes confirmar tu email antes de acceder. Revisa tu bandeja de entrada y spam, y luego inicia sesion.',
-    invalidCredentials: 'Email o contrasena incorrectos.',
-    alreadyRegistered: 'Este email ya esta registrado. Inicia sesion o confirma tu email.',
+    generic: 'Ha ocurrido un error. Inténtalo de nuevo.',
+    emailNotConfirmed: 'Debes confirmar tu email antes de acceder. Revisa tu bandeja de entrada y spam, y luego inicia sesión.',
+    invalidCredentials: 'Email o contraseña incorrectos.',
+    alreadyRegistered: 'Este email ya está registrado. Inicia sesión o confirma tu email.',
   },
   en: {
     generic: 'Something went wrong. Please try again.',

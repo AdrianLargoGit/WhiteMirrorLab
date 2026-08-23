@@ -14,6 +14,7 @@ function getCookieLocale(): Locale | null {
 
 export function useLocale(): Locale {
   const pathname = usePathname()
-  const pathLocale = getLocaleFromPathname(pathname)
+  const browserPathname = typeof window === 'undefined' ? pathname : window.location.pathname
+  const pathLocale = getLocaleFromPathname(browserPathname)
   return pathLocale === 'en' ? 'en' : getCookieLocale() ?? pathLocale
 }

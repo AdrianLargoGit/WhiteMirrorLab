@@ -317,7 +317,7 @@ export default function ProfilePage() {
               </span>
               <span>
                 {locale === 'es'
-                  ? 'Aviso de visibilidad: tu foto de perfil y el contenido que subas pueden ser vistos por cualquier persona a traves de tu perfil publico y enlaces compartidos del experimento.'
+                  ? 'Aviso de visibilidad: tu foto de perfil y el contenido que subas pueden ser vistos por cualquier persona a través de tu perfil público y enlaces compartidos del experimento.'
                   : 'Visibility notice: your profile picture and anything you upload may be visible to anyone through your public profile and shared experiment links.'}
               </span>
             </div>

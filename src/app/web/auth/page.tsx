@@ -165,7 +165,7 @@ function AuthForm() {
   // LOGIN
   const handleLogin = async () => {
     resetMessages()
-    if (!email || !password) { setError(bi('Rellena email y contrasena.', 'Enter your email and password.')); return }
+    if (!email || !password) { setError(bi('Rellena email y contraseña.', 'Enter your email and password.')); return }
     setLoading(true)
     try {
       const { error: loginErr } = await supabase.auth.signInWithPassword({ email, password })
@@ -173,7 +173,7 @@ function AuthForm() {
       captureEvent('auth_login', { locale })
       redirectAfterLogin()
     } catch (e: unknown) {
-      setError(mapAuthError(e, locale) || (e instanceof Error ? e.message : bi('Error al iniciar sesion.', 'Sign-in failed.')))
+      setError(mapAuthError(e, locale) || (e instanceof Error ? e.message : bi('Error al iniciar sesión.', 'Sign-in failed.')))
     } finally {
       setLoading(false)
     }
@@ -260,7 +260,7 @@ function AuthForm() {
   // FORGOT PASSWORD — envía el email de recuperación
   const handleForgot = async () => {
     resetMessages()
-    if (!email || !email.includes('@')) { setError(bi('Introduce un email valido.', 'Enter a valid email.')); return }
+    if (!email || !email.includes('@')) { setError(bi('Introduce un email válido.', 'Enter a valid email.')); return }
     setLoading(true)
     try {
       const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
@@ -283,11 +283,11 @@ function AuthForm() {
   const handleReset = async () => {
     resetMessages()
     if (newPassword.length < 8) {
-      setError(bi('La contrasena debe tener al menos 8 caracteres.', 'Password must be at least 8 characters.'))
+      setError(bi('La contraseña debe tener al menos 8 caracteres.', 'Password must be at least 8 characters.'))
       return
     }
     if (newPassword !== confirmPassword) {
-      setError(bi('Las contrasenas no coinciden.', 'Passwords do not match.'))
+      setError(bi('Las contraseñas no coinciden.', 'Passwords do not match.'))
       return
     }
     setLoading(true)
@@ -299,7 +299,7 @@ function AuthForm() {
       // Cerrar sesión limpia para que el usuario haga login con la nueva contraseña
       await supabase.auth.signOut()
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : bi('Error al actualizar la contrasena.', 'Password update failed.'))
+      setError(e instanceof Error ? e.message : bi('Error al actualizar la contraseña.', 'Password update failed.'))
     } finally {
       setLoading(false)
     }
@@ -346,7 +346,7 @@ function AuthForm() {
               <div style={{ textAlign: 'right', marginBottom: 4 }}>
                 <button type="button" onClick={() => goTo('forgot')}
                   style={{ background: 'none', border: 'none', color: 'var(--w-muted-2)', fontSize: 12, cursor: 'pointer', fontFamily: 'var(--w-font-body)', textDecoration: 'underline' }}>
-                  {bi('Olvidaste tu contrasena?', 'Forgot your password?')}
+                  {bi('¿Olvidaste tu contraseña?', 'Forgot your password?')}
                 </button>
               </div>
 
@@ -515,9 +515,9 @@ function AuthForm() {
 
               {!emailSent ? (
                 <>
-                  <div className="wml-auth-title">{bi('Recuperar contrasena', 'Reset password')}</div>
+                  <div className="wml-auth-title">{bi('Recuperar contraseña', 'Reset password')}</div>
                   <div className="wml-auth-sub">
-                    {bi('Introduce tu email y te enviaremos un enlace para crear una nueva contrasena.', 'Enter your email and we will send you a link to create a new password.')}
+                    {bi('Introduce tu email y te enviaremos un enlace para crear una nueva contraseña.', 'Enter your email and we will send you a link to create a new password.')}
                   </div>
 
                   {error && <div className="wml-error-msg">{error}</div>}
@@ -532,7 +532,7 @@ function AuthForm() {
                   <button type="button" className="wml-btn wml-btn-primary" onClick={handleForgot}
                     disabled={loading}
                     style={{ width: '100%', justifyContent: 'center' }}>
-                    {loading ? bi('Enviando...', 'Sending...') : bi('Enviar enlace de recuperacion', 'Send reset link')}
+                    {loading ? bi('Enviando...', 'Sending...') : bi('Enviar enlace de recuperación', 'Send reset link')}
                   </button>
                 </>
               ) : (
@@ -543,7 +543,7 @@ function AuthForm() {
                   </div>
                   <div className="wml-auth-title" style={{ fontSize: 20 }}>{bi('Revisa tu email', 'Check your email')}</div>
                   <div className="wml-auth-sub" style={{ marginBottom: 24 }}>
-                    {bi('Si', 'If')} <strong>{email}</strong> {bi('tiene una cuenta, recibiras un enlace de recuperacion en los proximos minutos. Revisa tambien spam.', 'has an account, you will receive a reset link in the next few minutes. Check your spam folder too.')}
+                    {bi('Si', 'If')} <strong>{email}</strong> {bi('tiene una cuenta, recibirás un enlace de recuperación en los próximos minutos. Revisa también spam.', 'has an account, you will receive a reset link in the next few minutes. Check your spam folder too.')}
                   </div>
                   <div style={{ fontFamily: 'var(--w-font-mono)', fontSize: 10, color: 'var(--w-muted)', letterSpacing: '0.1em', marginBottom: 24 }}>
                     {bi('El enlace expira en 1 hora.', 'The link expires in 1 hour.')}
@@ -564,9 +564,9 @@ function AuthForm() {
             <>
               {!passwordChanged ? (
                 <>
-                  <div className="wml-auth-title">{bi('Nueva contrasena', 'New password')}</div>
+                  <div className="wml-auth-title">{bi('Nueva contraseña', 'New password')}</div>
                   <div className="wml-auth-sub">
-                    {bi('Elige una contrasena segura. Minimo 8 caracteres.', 'Choose a secure password. Minimum 8 characters.')}
+                    {bi('Elige una contraseña segura. Mínimo 8 caracteres.', 'Choose a secure password. Minimum 8 characters.')}
                   </div>
 
                   {error && <div className="wml-error-msg">{error}</div>}
@@ -574,7 +574,7 @@ function AuthForm() {
                   <PasswordField
                     value={newPassword} onChange={setNewPassword}
                     show={showNewPassword} onToggle={() => setShowNewPassword(!showNewPassword)}
-                    placeholder={bi('Nueva contrasena (min. 8 caracteres)', 'New password (min. 8 characters)')}
+                    placeholder={bi('Nueva contraseña (min. 8 caracteres)', 'New password (min. 8 characters)')}
                     autoComplete="new-password"
                     onEnter={() => {}}
                     autoFocus
@@ -588,7 +588,7 @@ function AuthForm() {
                   <PasswordField
                     value={confirmPassword} onChange={setConfirmPassword}
                     show={showConfirmPassword} onToggle={() => setShowConfirmPassword(!showConfirmPassword)}
-                    placeholder={bi('Repetir contrasena', 'Repeat password')}
+                    placeholder={bi('Repetir contraseña', 'Repeat password')}
                     autoComplete="new-password"
                     onEnter={handleReset}
                   />
@@ -600,14 +600,14 @@ function AuthForm() {
                       letterSpacing: '0.08em', marginBottom: 12,
                       color: newPassword === confirmPassword ? 'var(--w-accent)' : 'var(--w-accent-neg)',
                     }}>
-                      {newPassword === confirmPassword ? bi('Las contrasenas coinciden', 'Passwords match') : bi('No coinciden', 'Passwords do not match')}
+                      {newPassword === confirmPassword ? bi('Las contraseñas coinciden', 'Passwords match') : bi('No coinciden', 'Passwords do not match')}
                     </div>
                   )}
 
                   <button type="button" className="wml-btn wml-btn-primary" onClick={handleReset}
                     disabled={loading || newPassword !== confirmPassword || newPassword.length < 8}
                     style={{ width: '100%', justifyContent: 'center' }}>
-                    {loading ? bi('Guardando...', 'Saving...') : bi('Guardar nueva contrasena', 'Save new password')}
+                    {loading ? bi('Guardando...', 'Saving...') : bi('Guardar nueva contraseña', 'Save new password')}
                   </button>
                 </>
               ) : (
@@ -622,7 +622,7 @@ function AuthForm() {
                   </div>
                   <div className="wml-auth-title" style={{ fontSize: 20 }}>{bi('Contrasena actualizada', 'Password updated')}</div>
                   <div className="wml-auth-sub" style={{ marginBottom: 24 }}>
-                    {bi('Tu contrasena se ha cambiado correctamente. Ahora puedes acceder con ella.', 'Your password was updated. You can now sign in with it.')}
+                    {bi('Tu contraseña se ha cambiado correctamente. Ahora puedes acceder con ella.', 'Your password was updated. You can now sign in with it.')}
                   </div>
                   <button type="button" className="wml-btn wml-btn-primary"
                     onClick={() => { setMode('login'); setNewPassword(''); setConfirmPassword('') }}
@@ -684,7 +684,7 @@ function PasswordField({
           background: 'none', border: 'none', color: 'var(--w-muted)',
           cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 4, zIndex: 2,
         }}
-        title={show ? (locale === 'es' ? 'Ocultar contrasena' : 'Hide password') : (locale === 'es' ? 'Mostrar contrasena' : 'Show password')}
+        title={show ? (locale === 'es' ? 'Ocultar contraseña' : 'Hide password') : (locale === 'es' ? 'Mostrar contraseña' : 'Show password')}
       >
         {show ? <IcoEyeOff /> : <IcoEye />}
       </button>

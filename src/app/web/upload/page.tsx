@@ -85,11 +85,11 @@ export default function UploadPage() {
     const isImg = f.type.startsWith('image/')
 
     if (mode === 'post' && !isImg) {
-      setErrorMsg(isEnglish ? 'Only images are allowed in posts.' : 'Solo se permiten imagenes en los posts.')
+      setErrorMsg(isEnglish ? 'Only images are allowed in posts.' : 'Solo se permiten imágenes en los posts.')
       return
     }
     if (mode === 'story' && !isImg && !isVid) {
-      setErrorMsg(isEnglish ? 'Stories accept images or short videos.' : 'Las historias aceptan imagenes o videos cortos.')
+      setErrorMsg(isEnglish ? 'Stories accept images or short videos.' : 'Las historias aceptan imágenes o vídeos cortos.')
       return
     }
     if (f.size > MAX_SIZE_MB * 1024 * 1024) {
@@ -214,7 +214,7 @@ export default function UploadPage() {
         <span>
           {isEnglish
             ? 'Visibility notice: anything you publish here may be visible to anyone through your public profile and shared experiment links.'
-            : 'Aviso de visibilidad: cualquier contenido que publiques aqui puede ser visto por cualquier persona a traves de tu perfil publico y enlaces compartidos del experimento.'}
+            : 'Aviso de visibilidad: cualquier contenido que publiques aquí puede ser visto por cualquier persona a través de tu perfil público y enlaces compartidos del experimento.'}
         </span>
       </div>
 
@@ -277,7 +277,7 @@ export default function UploadPage() {
         }}>
           <span style={{ flexShrink: 0, marginTop: 1 }}><IcoInfo /></span>
           {atLimit
-            ? (isEnglish ? `You have ${MAX_POSTS}/${MAX_POSTS} photos. Publishing this one will automatically delete the oldest.` : `Tienes ${MAX_POSTS}/${MAX_POSTS} fotos. Al publicar esta, se eliminara automaticamente la mas antigua.`)
+            ? (isEnglish ? `You have ${MAX_POSTS}/${MAX_POSTS} photos. Publishing this one will automatically delete the oldest.` : `Tienes ${MAX_POSTS}/${MAX_POSTS} fotos. Al publicar esta, se eliminará automáticamente la más antigua.`)
             : (isEnglish ? `You can have up to ${MAX_POSTS} photos. You currently have ${postCount}.` : `Puedes tener hasta ${MAX_POSTS} fotos. Tienes ${postCount}.`)}
         </div>
       )}
@@ -290,7 +290,7 @@ export default function UploadPage() {
           fontFamily: 'var(--w-font-mono)', fontSize: 10, letterSpacing: '0.08em', color: 'var(--w-muted)',
         }}>
           <IcoInfo />
-          {isEnglish ? `Images or short videos (MP4, MOV, WEBM) / Max ${MAX_SIZE_MB} MB / Recommended max duration: 60s` : `Imagenes o videos cortos (MP4, MOV, WEBM) / Max. ${MAX_SIZE_MB} MB / Duracion recomendada: 60 s`}
+          {isEnglish ? `Images or short videos (MP4, MOV, WEBM) / Max ${MAX_SIZE_MB} MB / Recommended max duration: 60s` : `Imágenes o vídeos cortos (MP4, MOV, WEBM) / Max. ${MAX_SIZE_MB} MB / Duración recomendada: 60 s`}
         </div>
       )}
 
@@ -529,7 +529,7 @@ export default function UploadPage() {
         }}>
           {isEnglish
             ? 'Stories disappear automatically after 24 hours. Videos loop in the viewer.'
-            : 'Las historias desaparecen automaticamente a las 24 horas. Los videos se reproducen en bucle en el visor.'}
+            : 'Las historias desaparecen automáticamente a las 24 horas. Los vídeos se reproducen en bucle en el visor.'}
         </div>
       )}
 

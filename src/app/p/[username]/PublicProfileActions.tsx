@@ -192,12 +192,12 @@ export default function PublicProfileActions({
 
       <div className={styles.votePanel}>
         <div className={styles.votePanelHeader}>
-          <span>{isEnglish ? 'Anonymous vote' : 'Voto anonimo'}</span>
+          <span>{isEnglish ? 'Anonymous vote' : 'Voto anónimo'}</span>
           <span className={styles.live}>LIVE</span>
         </div>
 
         <p className={styles.voteCallout}>
-          {isEnglish ? 'Vote here. ' : 'Vota aqui. '}
+          {isEnglish ? 'Vote here. ' : 'Vota aquí. '}
           <span>{isEnglish ? 'It takes one tap.' : 'Solo es un toque.'}</span>
         </p>
 
@@ -340,7 +340,7 @@ function AuthModal({
       if (data.session && data.user) {
         onAuthenticated(data.user.id)
       } else {
-        setSuccess(isEnglish ? 'Account created. Confirm your email, then sign in here to apply your vote.' : 'Cuenta creada. Confirma tu email y despues inicia sesion aqui para aplicar tu voto.')
+        setSuccess(isEnglish ? 'Account created. Confirm your email, then sign in here to apply your vote.' : 'Cuenta creada. Confirma tu email y después inicia sesión aquí para aplicar tu voto.')
         setMode('login')
       }
     } catch (e) {
@@ -367,7 +367,7 @@ function AuthModal({
               </h2>
               <p className={styles.authSub}>
                 {mode === 'login'
-                  ? (isEnglish ? 'Your pending vote will be applied automatically.' : 'Tu voto pendiente se aplicara automaticamente.')
+                  ? (isEnglish ? 'Your pending vote will be applied automatically.' : 'Tu voto pendiente se aplicará automáticamente.')
                   : (isEnglish ? 'Create your WML profile to finish voting.' : 'Crea tu perfil WML para terminar de votar.')}
               </p>
             </div>

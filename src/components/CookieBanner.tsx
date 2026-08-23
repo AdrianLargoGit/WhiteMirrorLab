@@ -7,15 +7,15 @@ import { ANALYTICS_CONSENT_EVENT, ANALYTICS_CONSENT_KEY } from '@/lib/posthog'
 const copy = {
   es: {
     title: 'Preferencias de privacidad',
-    description: 'Usamos almacenamiento esencial para que la plataforma funcione. La analitica opcional mide el uso de forma agregada y solo se activa con tu permiso.',
+    description: 'Usamos almacenamiento esencial para que la plataforma funcione. La analítica opcional mide el uso de forma agregada y solo se activa con tu permiso.',
     essentialTitle: 'Esenciales y seguridad',
-    essentialDesc: 'Necesarias para iniciar sesion y proteger tu cuenta.',
+    essentialDesc: 'Necesarias para iniciar sesión y proteger tu cuenta.',
     required: 'Obligatorias',
-    analyticsTitle: 'Analitica de uso',
-    analyticsDesc: 'Pageviews, funciones usadas, dispositivo aproximado e idioma. No incluye textos, contrasenas ni contenido de formularios.',
+    analyticsTitle: 'Analítica de uso',
+    analyticsDesc: 'Pageviews, funciones usadas, dispositivo aproximado e idioma. No incluye textos, contraseñas ni contenido de formularios.',
     acceptAll: 'Aceptar todas',
     configure: 'Configurar',
-    saveSettings: 'Guardar seleccion',
+    saveSettings: 'Guardar selección',
     onlyEssential: 'Solo esenciales',
   },
   en: {

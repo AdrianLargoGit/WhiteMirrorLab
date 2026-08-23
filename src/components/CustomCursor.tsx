@@ -3,13 +3,25 @@
 import { useEffect, useRef } from 'react'
 import styles from './CustomCursor.module.css'
 
-export default function CustomCursor() {
+type CustomCursorProps = {
+  variant?: 'default' | 'magnifier'
+}
+
+export default function CustomCursor({ variant = 'default' }: CustomCursorProps) {
   const dotRef = useRef<HTMLDivElement>(null)
   const ringRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const isFine = window.matchMedia('(pointer: fine)').matches
     if (!isFine) return
+    const shouldUseMagnifier = variant === 'magnifier'
+
+    if (shouldUseMagnifier) {
+      document.documentElement.classList.add(styles.hideNativeCursor)
+      return () => {
+        document.documentElement.classList.remove(styles.hideNativeCursor)
+      }
+    }
 
     let mx = 0,
       my = 0,
@@ -39,11 +51,11 @@ export default function CustomCursor() {
     document.addEventListener('mousemove', onMove)
     rafId = requestAnimationFrame(animRing)
 
-    const interactables = document.querySelectorAll(
-      'a, button, .experiment-row, .app-card, .principle-card'
-    )
     const addActive = () => ringRef.current?.classList.add(styles.active)
     const removeActive = () => ringRef.current?.classList.remove(styles.active)
+    const interactables = shouldUseMagnifier
+      ? []
+      : Array.from(document.querySelectorAll('a, button, .experiment-row, .app-card, .principle-card'))
 
     interactables.forEach((el) => {
       el.addEventListener('mouseenter', addActive)
@@ -58,7 +70,9 @@ export default function CustomCursor() {
         el.removeEventListener('mouseleave', removeActive)
       })
     }
-  }, [])
+  }, [variant])
+
+  if (variant === 'magnifier') return null
 
   return (
     <>

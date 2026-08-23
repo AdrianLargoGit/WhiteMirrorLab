@@ -11,7 +11,7 @@ const LEGAL_LINKS: Array<{ page: LegalPage; es: string; en: string }> = [
   { page: 'privacy', es: 'Privacidad', en: 'Privacy' },
   { page: 'cookies', es: 'Cookies', en: 'Cookies' },
   { page: 'terms', es: 'Terminos', en: 'Terms' },
-  { page: 'ethics', es: 'Etica', en: 'Ethics' },
+  { page: 'ethics', es: 'Ética', en: 'Ethics' },
 ]
 
 const IconArrowLeft = () => (

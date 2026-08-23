@@ -9,16 +9,24 @@ export const SUPPORTED_LOCALES: Locale[] = ['es', 'en']
 export const ROUTES = {
   es: {
     home: '/',
-    questionnaire: '/cuestionario',
+    blog: '/blog',
+    contact: '/contacto',
     download: '/descargar',
+    marketplace: '/marketplace',
+    skinTemplate: '/plantilla-skins',
+    marketplaceSubmit: '/marketplace/submit',
     wml: '/web',
     publicProfile: '/p',
     legal: '/legal',
   },
   en: {
     home: '/en',
-    questionnaire: '/en/questionnaire',
+    blog: '/en/blog',
+    contact: '/en/contact',
     download: '/en/download',
+    marketplace: '/en/marketplace',
+    skinTemplate: '/en/skin-template',
+    marketplaceSubmit: '/en/marketplace/submit',
     wml: '/en/wml-1-0',
     publicProfile: '/en/p',
     legal: '/en/legal',
@@ -104,12 +112,28 @@ export function homePath(locale: Locale): string {
   return ROUTES[locale].home
 }
 
-export function questionnairePath(locale: Locale): string {
-  return ROUTES[locale].questionnaire
+export function contactPath(locale: Locale): string {
+  return ROUTES[locale].contact
+}
+
+export function blogPath(locale: Locale): string {
+  return ROUTES[locale].blog
 }
 
 export function downloadPath(locale: Locale): string {
   return ROUTES[locale].download
+}
+
+export function marketplacePath(locale: Locale): string {
+  return ROUTES[locale].marketplace
+}
+
+export function skinTemplatePath(locale: Locale): string {
+  return ROUTES[locale].skinTemplate
+}
+
+export function marketplaceSubmitPath(locale: Locale): string {
+  return ROUTES[locale].marketplaceSubmit
 }
 
 export function wmlPath(locale: Locale, path = ''): string {
@@ -135,8 +159,16 @@ export function localizedHashPath(locale: Locale, hash: string): string {
 
 export function toInternalPath(pathname: string): string {
   if (pathname === '/en') return '/'
-  if (pathname === ROUTES.en.questionnaire) return ROUTES.es.questionnaire
+  if (pathname === ROUTES.en.blog || pathname.startsWith(`${ROUTES.en.blog}/`)) {
+    return pathname.replace(ROUTES.en.blog, ROUTES.es.blog)
+  }
+  if (pathname === ROUTES.en.contact) return ROUTES.es.contact
   if (pathname === ROUTES.en.download) return ROUTES.es.download
+  if (pathname === ROUTES.en.marketplace || pathname.startsWith(`${ROUTES.en.marketplace}/`)) {
+    return pathname.replace(ROUTES.en.marketplace, ROUTES.es.marketplace)
+  }
+  if (pathname === ROUTES.en.skinTemplate) return ROUTES.es.skinTemplate
+  if (pathname === ROUTES.en.marketplaceSubmit) return ROUTES.es.marketplaceSubmit
   if (pathname === ROUTES.en.legal) return ROUTES.es.legal
   if (pathname.startsWith(`${ROUTES.en.legal}/`)) {
     const suffix = pathname.slice(ROUTES.en.legal.length + 1)
@@ -162,8 +194,16 @@ export function alternateLocalePath(pathname: string, nextLocale: Locale): strin
   const internal = toInternalPath(pathname)
   if (nextLocale === 'es') return internal
   if (internal === '/') return ROUTES.en.home
-  if (internal === ROUTES.es.questionnaire) return ROUTES.en.questionnaire
+  if (internal === ROUTES.es.blog || internal.startsWith(`${ROUTES.es.blog}/`)) {
+    return internal.replace(ROUTES.es.blog, ROUTES.en.blog)
+  }
+  if (internal === ROUTES.es.contact) return ROUTES.en.contact
   if (internal === ROUTES.es.download) return ROUTES.en.download
+  if (internal === ROUTES.es.marketplace || internal.startsWith(`${ROUTES.es.marketplace}/`)) {
+    return internal.replace(ROUTES.es.marketplace, ROUTES.en.marketplace)
+  }
+  if (internal === ROUTES.es.skinTemplate) return ROUTES.en.skinTemplate
+  if (internal === ROUTES.es.marketplaceSubmit) return ROUTES.en.marketplaceSubmit
   if (internal === ROUTES.es.legal) return ROUTES.en.legal
   if (internal.startsWith(`${ROUTES.es.legal}/`)) {
     const suffix = internal.slice(ROUTES.es.legal.length + 1)

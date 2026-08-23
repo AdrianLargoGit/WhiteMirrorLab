@@ -112,6 +112,7 @@ export type WMLEvent =
   | 'terms_accepted'
   | 'experiment_consent_given'
   | 'experiment_started'
+  | 'contact_form_submitted'
   | 'quiz_completed'
 
 export function captureEvent(

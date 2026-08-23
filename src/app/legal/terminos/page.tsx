@@ -74,6 +74,24 @@ export default function TerminosPage() {
         sin previo aviso. Las infracciones graves pueden comunicarse a las autoridades competentes.
       </p>
 
+      <h2>3 bis. Dossiers documentales de crimen real (+18)</h2>
+      <p>
+        El blog puede ofrecer, de forma opcional y previo pago, ZIPs documentales sobre expedientes
+        criminales reales. Estos paquetes estan restringidos a personas <strong>mayores de 18 anos</strong>.
+        Antes de acceder al pago, el usuario debe confirmar expresamente su mayoria de edad.
+      </p>
+      <p>
+        Los dossiers se elaboran con fuentes publicas verificables, documentos oficiales cuando
+        existen, capturas de archivo, imagenes de interes documental y notas editoriales que separan
+        hechos, sospechas, descartes y limites probatorios. No constituyen asesoramiento legal,
+        investigacion policial oficial ni acusacion contra ninguna persona.
+      </p>
+      <p>
+        Algunos materiales pueden referirse a homicidios, desapariciones, escenas de crimen,
+        victimas, sospechosos o restos humanos. Cuando procede, la interfaz puede velar imagenes
+        sensibles por defecto, pero el usuario acepta que el contenido puede resultar perturbador.
+      </p>
+
       <h2>4. Contenido generado por usuarios</h2>
 
       <h3>4.1. Límites y reglas técnicas</h3>

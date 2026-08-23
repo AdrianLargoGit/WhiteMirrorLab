@@ -1,0 +1,177 @@
+.page {
+  min-height: 100dvh;
+  --ink: #17120f;
+  --paper: #f4eadb;
+  --cream: #fff7e8;
+  --blue: #45b8ff;
+  --lime: #b8f05a;
+  --sun: #f7d65a;
+  color: var(--ink);
+  background:
+    linear-gradient(90deg, rgba(23, 18, 15, 0.06) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(23, 18, 15, 0.06) 1px, transparent 1px),
+    radial-gradient(circle at 12% 18%, rgba(69, 184, 255, 0.22), transparent 28%),
+    radial-gradient(circle at 86% 10%, rgba(184, 240, 90, 0.26), transparent 26%),
+    var(--paper);
+  background-size: 38px 38px, 38px 38px, auto, auto, auto;
+  padding: clamp(116px, 13vw, 164px) var(--px) clamp(72px, 9vw, 120px);
+}
+
+.shell {
+  width: min(1080px, 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.48fr);
+  gap: clamp(24px, 4vw, 54px);
+  align-items: end;
+  margin: 0 auto;
+}
+
+.copy,
+.aside {
+  border: 2px solid var(--ink);
+  border-radius: 16px;
+  box-shadow: 8px 8px 0 var(--ink);
+}
+
+.copy {
+  display: grid;
+  gap: 22px;
+  background: rgba(255, 247, 232, 0.88);
+  padding: clamp(24px, 5vw, 56px);
+}
+
+.aside {
+  display: grid;
+  gap: 16px;
+  background: linear-gradient(145deg, var(--lime), var(--cream) 72%);
+  padding: clamp(22px, 4vw, 34px);
+}
+
+.kicker,
+.status {
+  width: max-content;
+  max-width: 100%;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--sun);
+  box-shadow: 5px 5px 0 var(--ink);
+  padding: 10px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.status {
+  background: var(--blue);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.copy h1 {
+  max-width: 780px;
+  font-family: var(--font-display);
+  font-size: clamp(48px, 7vw, 98px);
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 0.9;
+}
+
+.copy p,
+.downloadStatus,
+.aside p,
+.aside li {
+  color: rgba(23, 18, 15, 0.72);
+  font-size: clamp(15px, 1.8vw, 18px);
+  line-height: 1.65;
+}
+
+.downloadStatus {
+  border: 2px solid rgba(23, 18, 15, 0.18);
+  border-radius: 12px;
+  background: rgba(184, 240, 90, 0.28);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 14px 16px;
+  text-transform: uppercase;
+}
+
+.aside h2 {
+  font-family: var(--font-display);
+  font-size: clamp(30px, 4vw, 48px);
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 0.96;
+}
+
+.aside ul {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+}
+
+.aside li {
+  border-top: 1px solid rgba(23, 18, 15, 0.18);
+  padding-top: 10px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.primaryButton,
+.secondaryButton {
+  min-height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 5px 5px 0 var(--ink);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 0 22px;
+  text-decoration: none;
+  text-transform: uppercase;
+  text-align: center;
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+
+.primaryButton {
+  background: var(--ink);
+  color: var(--cream);
+}
+
+.secondaryButton {
+  background: var(--cream);
+  color: var(--ink);
+}
+
+.primaryButton:hover,
+.secondaryButton:hover {
+  box-shadow: 2px 2px 0 var(--ink);
+  transform: translate(3px, 3px);
+}
+
+@media (max-width: 860px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .page {
+    padding-top: 112px;
+  }
+
+  .actions {
+    display: grid;
+  }
+}

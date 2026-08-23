@@ -91,7 +91,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const karma = data.profile.karma_score > 0 ? `+${data.profile.karma_score}` : `${data.profile.karma_score}`
   const title = `@${data.profile.username} tiene ${karma} de karma en WML 1.0`
-  const description = `Vota anonimamente el perfil de ${data.profile.display_name} y entra en el experimento social de reputacion digital.`
+  const description = `Vota anónimamente el perfil de ${data.profile.display_name} y entra en el experimento social de reputación digital.`
 
   return {
     title,
@@ -130,10 +130,10 @@ export default async function PublicProfilePage({ params }: PageProps) {
         <div className={styles.profileCard}>
           <div className={styles.cardTop}>
             <div className={styles.eyebrow}>
-              {isEnglish ? 'Public experiment profile' : 'Perfil publico del experimento'}
+              {isEnglish ? 'Public experiment profile' : 'Perfil público del experimento'}
             </div>
             <div className={styles.pill}>
-              {isEnglish ? 'Anonymous voting' : 'Voto anonimo'}
+              {isEnglish ? 'Anonymous voting' : 'Voto anónimo'}
             </div>
           </div>
 
@@ -152,7 +152,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
           <p className={styles.description}>
             {isEnglish
               ? `Vote anonymously on ${profile.display_name}'s reputation and join WML 1.0, a public experiment about digital karma and collective judgment.`
-              : `Vota anonimamente la reputacion de ${profile.display_name} y entra en WML 1.0, un experimento publico sobre karma digital y juicio colectivo.`}
+              : `Vota anónimamente la reputación de ${profile.display_name} y entra en WML 1.0, un experimento público sobre karma digital y juicio colectivo.`}
           </p>
 
           <PublicProfileActions profile={profile} locale={locale} />
@@ -161,7 +161,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
             <div className={styles.sectionTitle}>
-              {isEnglish ? 'Public photos' : 'Fotos publicas'}
+              {isEnglish ? 'Public photos' : 'Fotos públicas'}
             </div>
             <span className={styles.sectionCount}>{posts.length}/5</span>
           </div>
@@ -174,7 +174,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
                   className={`${styles.photo} ${index === 0 && posts.length > 2 ? styles.photoFeatured : ''}`}
                   style={{ aspectRatio: index === 0 ? '4 / 5' : '1' }}
                 >
-                  <img src={post.image_url} alt={post.caption ?? (isEnglish ? 'Public photo' : 'Foto publica')} />
+                  <img src={post.image_url} alt={post.caption ?? (isEnglish ? 'Public photo' : 'Foto pública')} />
                   {post.caption && (
                     <figcaption className={styles.caption}>{post.caption}</figcaption>
                   )}
@@ -183,7 +183,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
             </div>
           ) : (
             <div className={styles.empty}>
-              {isEnglish ? 'No public photos yet.' : 'Aun no hay fotos publicas.'}
+              {isEnglish ? 'No public photos yet.' : 'Aún no hay fotos públicas.'}
             </div>
           )}
         </section>
@@ -210,7 +210,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
             </div>
           ) : (
             <div className={styles.empty}>
-              {isEnglish ? 'No public pulses yet.' : 'Aun no hay pulses publicos.'}
+              {isEnglish ? 'No public pulses yet.' : 'Aún no hay pulses públicos.'}
             </div>
           )}
         </section>

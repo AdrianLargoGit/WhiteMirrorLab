@@ -80,6 +80,128 @@
   color: var(--white);
 }
 
+.wmlMenu {
+  position: relative;
+}
+
+.wmlMenu::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: -18px;
+  right: -18px;
+  height: 18px;
+}
+
+.navLinkButton {
+  width: max-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0 4px;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--muted);
+  transition: color 0.2s;
+  font-family: var(--font-mono);
+}
+
+.navLinkButton:hover,
+.navLinkButton[aria-expanded='true'] {
+  color: var(--white);
+}
+
+.chevron {
+  width: 7px;
+  height: 7px;
+  display: inline-block;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.18s;
+}
+
+.navLinkButton[aria-expanded='true'] .chevron,
+.wmlMenu:hover .chevron {
+  transform: translateY(1px) rotate(225deg);
+}
+
+.wmlDropdown {
+  position: absolute;
+  top: calc(100% + 18px);
+  left: 50%;
+  width: min(520px, calc(100vw - 40px));
+  transform: translateX(-50%) translateY(-6px);
+  pointer-events: none;
+  opacity: 0;
+  border: 1px solid rgba(217, 255, 107, 0.24);
+  background: rgba(10, 10, 10, 0.97);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+  padding: 12px;
+  transition: opacity 0.18s, transform 0.18s;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+
+.wmlMenu:hover .wmlDropdown,
+.wmlDropdownOpen {
+  pointer-events: auto;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.wmlDropdown {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+}
+
+.wmlDropdownSection {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  padding: 12px;
+}
+
+.wmlDropdownSection + .wmlDropdownSection {
+  border-left: 1px solid var(--border);
+}
+
+.wmlDropdownSection > span {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.wmlDropdownLink {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  border: 1px solid transparent;
+  color: rgba(245, 242, 238, 0.72);
+  padding: 0 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+
+.wmlDropdownLink:hover {
+  border-color: var(--border);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--white);
+}
+
 /* ── RIGHT CONTROLS ── */
 .navRight {
   display: flex;
@@ -160,14 +282,16 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 40px;
+  justify-content: flex-start;
+  gap: 24px;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
-  padding: 20px;
+  padding: calc(92px + env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .mobileMenuOpen {
@@ -180,15 +304,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px; /* Separación perfecta entre enlaces */
+  gap: clamp(12px, 2.7vh, 20px); /* Separación perfecta entre enlaces */
   width: 100%;
+  max-width: 520px;
 }
 
 .mobileLink {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 28px; /* Tamaño optimizado para pantallas pequeñas */
-  letter-spacing: -0.03em;
+  font-size: clamp(22px, 7vw, 30px); /* Tamaño optimizado para pantallas pequeñas */
+  letter-spacing: 0;
+  line-height: 1;
   text-decoration: none;
   color: var(--white);
   transition: color 0.2s;
@@ -200,12 +326,100 @@
   color: var(--accent);
 }
 
+.mobileWmlGroup {
+  width: 100%;
+  display: grid;
+  gap: 0;
+  margin-top: 2px;
+  padding-top: 4px;
+}
+
+.mobileWmlToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--white);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(22px, 7vw, 30px);
+  letter-spacing: 0;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.mobileWmlToggle:hover,
+.mobileWmlToggle[aria-expanded='true'] {
+  color: var(--accent);
+}
+
+.mobileWmlToggle[aria-expanded='true'] .chevron {
+  transform: translateY(1px) rotate(225deg);
+}
+
+.mobileWmlPanel {
+  max-height: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.22s ease, opacity 0.18s ease, padding-top 0.22s ease;
+}
+
+.mobileWmlPanelOpen {
+  max-height: 220px;
+  opacity: 1;
+  padding-top: 10px;
+}
+
+.mobileWmlSection {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  border: 1px solid var(--border);
+  padding: 10px;
+}
+
+.mobileWmlSection span {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.mobileWmlLink {
+  min-height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(245, 242, 238, 0.12);
+  color: var(--white);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  line-height: 1.35;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.mobileWmlLink:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 /* Selector de idioma móvil */
 .mobileLang {
   display: flex;
   border: 1px solid var(--border);
   overflow: hidden;
-  margin-top: 8px;
+  margin-top: 0;
 }
 .mobileLang .langBtn {
   padding: 10px 20px;
@@ -231,6 +445,36 @@
   /* Ajustamos el espacio del lado derecho */
   .navRight {
     gap: 0px;
+  }
+}
+
+@media (max-width: 520px) {
+  .mobileMenu {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .mobileWmlPanel {
+    grid-template-columns: 1fr;
+  }
+
+  .mobileWmlPanelOpen {
+    max-height: 360px;
+  }
+}
+
+@media (max-height: 680px) {
+  .mobileMenu {
+    gap: 18px;
+    padding-top: calc(78px + env(safe-area-inset-top));
+  }
+
+  .mobileMenu nav {
+    gap: 11px;
+  }
+
+  .mobileLink {
+    font-size: clamp(20px, 6vh, 26px);
   }
 }
 

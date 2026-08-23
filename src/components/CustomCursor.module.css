@@ -1,5 +1,12 @@
 /* Only applied on fine-pointer (mouse) devices */
 @media (pointer: fine) {
+  .hideNativeCursor,
+  .hideNativeCursor * {
+    cursor:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cg fill='none' stroke='%23c8ff00' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='9' cy='9' r='5.6'/%3E%3Cpath d='M13.4 13.4 19 19'/%3E%3C/g%3E%3C/svg%3E") 9 9,
+      zoom-in !important;
+  }
+
   .cursor {
     width: 10px;
     height: 10px;
@@ -30,6 +37,7 @@
     height: 56px;
     opacity: 1;
   }
+
 }
 
 @media (pointer: coarse) {

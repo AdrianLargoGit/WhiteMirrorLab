@@ -1,7 +1,22 @@
 import { NextResponse } from 'next/server'
 import { subscribeEmailToBrevo, type SubscribeSource } from '@/lib/brevo-subscribe'
+import { checkRateLimit, getClientIp, rateLimitHeaders } from '@/lib/rateLimit'
 
 export async function POST(req: Request) {
+  const clientIp = getClientIp(req)
+  const rateLimit = checkRateLimit({
+    key: `subscribe:${clientIp}`,
+    limit: 12,
+    windowMs: 60 * 60 * 1000,
+  })
+
+  if (!rateLimit.ok) {
+    return NextResponse.json(
+      { error: 'Demasiados intentos. Prueba mas tarde.' },
+      { status: 429, headers: rateLimitHeaders(rateLimit) },
+    )
+  }
+
   let email: string
   let source: SubscribeSource = 'general'
 
@@ -14,7 +29,7 @@ export async function POST(req: Request) {
   }
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return NextResponse.json({ error: 'Email invÃ¡lido' }, { status: 422 })
+    return NextResponse.json({ error: 'Email inválido' }, { status: 422 })
   }
 
   try {
@@ -22,7 +37,7 @@ export async function POST(req: Request) {
     if (!result.ok) {
       return NextResponse.json({ error: result.error }, { status: result.status })
     }
-    return NextResponse.json({ ok: true })
+    return NextResponse.json({ ok: true }, { headers: rateLimitHeaders(rateLimit) })
   } catch (err) {
     console.error('Brevo fetch error:', err)
     return NextResponse.json({ error: 'Error de red' }, { status: 500 })

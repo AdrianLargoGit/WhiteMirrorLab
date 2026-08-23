@@ -64,7 +64,7 @@ export default function PostSignupSharePopup({ username, locale, onClose }: Prop
         <p className={styles.sub}>
           {isEnglish
             ? 'Send your public profile now while the account is fresh. The faster people open it, the faster your first votes arrive.'
-            : 'Envia ahora tu perfil publico mientras la cuenta esta recien creada. Cuanto antes lo abran, antes llegan tus primeros votos.'}
+            : 'Envía ahora tu perfil público mientras la cuenta está recién creada. Cuanto antes lo abran, antes llegan tus primeros votos.'}
         </p>
 
         <span className={styles.linkBox}>{profileUrl}</span>

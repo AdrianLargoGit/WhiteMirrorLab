@@ -69,7 +69,7 @@ export default function EticaPage() {
 
       <h3>2.1. Hipótesis de investigación</h3>
       <p>
-        Investigamos cómo el comportamiento humano —en términos de contenido publicado, patrrones
+        Investigamos cómo el comportamiento humano —en términos de contenido publicado, patrones
         de interacción y estrategias de presentación— cambia cuando cada persona lleva una
         puntuación de reputación pública derivada del juicio anónimo colectivo de otros
         participantes.
@@ -196,6 +196,20 @@ export default function EticaPage() {
         Si detectas un problema ético en el diseño o la conducción del experimento que no quede
         cubierto por los canales habituales, puedes contactar directamente con el equipo en
         whitemirrorlab.info@gmail.com (asunto: «Consulta ética»).
+      </p>
+
+      <h2>4 bis. Criterios para dossiers de crimen real</h2>
+      <p>
+        Los dossiers documentales del blog se publican bajo una regla de proporcionalidad: solo se
+        ofrece descarga de pago cuando existe un volumen suficiente de fuentes publicas reales,
+        trazables y relevantes. Si el material disponible no aporta valor documental suficiente, el
+        articulo no muestra ZIP de pago.
+      </p>
+      <p>
+        El tratamiento editorial debe preservar la dignidad de victimas y familias, separar hechos
+        de teorias, explicar por que un sospechoso fue descartado, no acusado o no probado, y evitar
+        convertir imagenes de violencia real en reclamo visual. Las imagenes sensibles pueden
+        mostrarse veladas por defecto y deben conservar contexto de fuente.
       </p>
 
       <h2>5. Compromiso de transparencia y ciencia abierta</h2>
