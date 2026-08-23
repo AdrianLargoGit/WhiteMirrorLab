@@ -107,6 +107,7 @@ export default async function BlogPage() {
                     className={styles.downloadButton}
                     href={`/api/blog/download?case=${item.slug}&lang=${lang}`}
                     label={t.ageGate}
+                    pcRecommendation={t.pcRecommendation}
                   >
                     <IconDownload />
                     <span>{t.downloadZip} / {evidencePrice}</span>

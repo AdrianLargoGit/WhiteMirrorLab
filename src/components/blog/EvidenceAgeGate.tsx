@@ -8,10 +8,11 @@ type EvidenceAgeGateProps = {
   href: string
   className: string
   label: string
+  pcRecommendation: string
   children: ReactNode
 }
 
-export function EvidenceAgeGate({ href, className, label, children }: EvidenceAgeGateProps) {
+export function EvidenceAgeGate({ href, className, label, pcRecommendation, children }: EvidenceAgeGateProps) {
   const [open, setOpen] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
   const gatedHref = `${href}${href.includes('?') ? '&' : '?'}age_confirmed=1`
@@ -72,6 +73,7 @@ export function EvidenceAgeGate({ href, className, label, children }: EvidenceAg
           Este dossier contiene material real de casos criminales: fuentes publicas, escenas,
           victimas, sospechosos y posibles imagenes sensibles veladas por defecto.
         </p>
+        <p className={styles.pcNotice}>{pcRecommendation}</p>
         <label className={styles.check}>
           <input
             type="checkbox"

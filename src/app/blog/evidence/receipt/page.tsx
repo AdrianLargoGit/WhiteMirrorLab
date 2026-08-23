@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { headers } from 'next/headers'
 import CustomCursor from '@/components/CustomCursor'
 import Navbar from '@/components/Navbar'
-import { caseHref, getLocalizedCase } from '@/lib/blogLocale'
+import { blogUiCopy, caseHref, getLocalizedCase } from '@/lib/blogLocale'
 import { DEFAULT_LOCALE, blogPath, isLocale, type Locale } from '@/lib/i18n'
 import {
   formatBlogEvidencePrice,
@@ -32,6 +32,7 @@ export default async function EvidenceReceiptPage({ searchParams }: PageProps) {
   const lang: Locale = isLocale(headerLocale) ? headerLocale : DEFAULT_LOCALE
   const caseFile = findUnsolvedSerialCase(params.case ?? null)
   const item = caseFile ? getLocalizedCase(caseFile, lang) : null
+  const t = blogUiCopy[lang]
   const hasValidSession = isStripeCheckoutSessionId(params.session_id)
   let price = formatBlogEvidencePrice(lang, caseFile ?? undefined)
 
@@ -81,6 +82,7 @@ export default async function EvidenceReceiptPage({ searchParams }: PageProps) {
                 ? 'No hemos podido identificar el expediente asociado a este recibo.'
                 : 'We could not identify the case file attached to this receipt.'}
           </p>
+          <p className={styles.pcNotice}>{t.pcRecommendation}</p>
 
           <div className={styles.actions}>
             <a className={styles.primaryButton} href={downloadHref}>

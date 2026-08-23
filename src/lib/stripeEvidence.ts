@@ -128,7 +128,7 @@ export async function createBlogEvidenceCheckout(input: {
   params.set('line_items[0][price_data][product_data][name]', `WML evidence dossier: ${caseFile.title}`)
   params.set(
     'line_items[0][price_data][product_data][description]',
-    'Downloadable public-source evidence ZIP from White Mirror Lab.',
+    'Downloadable public-source evidence ZIP from White Mirror Lab. Best viewed on PC.',
   )
 
   return stripeRequest<StripeCheckoutSession>('/checkout/sessions', {
