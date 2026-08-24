@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: 'White Mirror Lab',
   description:
     'Social experimentation lab. We design applications that explore the limits of collective behavior.',
+  other: {
+    'google-adsense-account': 'ca-pub-1100562858393483',
+  },
 }
 
 export const viewport: Viewport = {
