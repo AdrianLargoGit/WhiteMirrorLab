@@ -176,7 +176,7 @@ export default function TerminosPage() {
       </p>
       <ul>
         <li>Cerrando sesión y dejando de participar (tus datos permanecerán durante el período de conservación establecido)</li>
-        <li>Solicitando la eliminación completa de tu cuenta y datos a whitemirrorlab.info@gmail.com (asunto: «Eliminación de cuenta WML 1.0»). Procesaremos la solicitud en un plazo máximo de 30 días.</li>
+        <li>Solicitando la eliminación completa de tu cuenta y datos a support@whitemirrorlab.com (asunto: «Eliminación de cuenta WML 1.0»). Procesaremos la solicitud en un plazo máximo de 30 días.</li>
       </ul>
       <p>
         La retirada no afecta a la licitud del tratamiento realizado hasta ese momento ni a los
@@ -198,7 +198,7 @@ export default function TerminosPage() {
       <h2>10. Mecanismo de reporte y moderación</h2>
       <p>
         Si detectas contenido ilegal, conductas abusivas o infracciones de estos términos, puedes
-        notificarlo a <strong>whitemirrorlab.info@gmail.com</strong> (asunto: «Reporte de contenido»)
+        notificarlo a <strong>support@whitemirrorlab.com</strong> (asunto: «Reporte de contenido»)
         indicando el nombre de usuario o contenido afectado y una descripción del motivo.
         Atenderemos los reportes en un plazo razonable. Este mecanismo cumple con las obligaciones
         de notificación y acción («notice and action») del DSA para plataformas de tamaño pequeño.
@@ -234,7 +234,7 @@ export default function TerminosPage() {
 
       <div className="legal-contact-box">
         <p>
-          <strong>Contacto:</strong> whitemirrorlab.info@gmail.com<br />
+          <strong>Contacto:</strong> support@whitemirrorlab.com<br />
           Reportes: asunto «Reporte de contenido»<br />
           Baja: asunto «Eliminación de cuenta WML 1.0»<br />
           Consultas legales: asunto «Consulta legal WML»<br /><br />

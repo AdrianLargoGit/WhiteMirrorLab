@@ -24,13 +24,13 @@ export default function PrivacidadPage() {
       </p>
       <p>
         Te recomendamos leer este documento completo. Si tienes preguntas, escríbenos a{' '}
-        <strong>whitemirrorlab.info@gmail.com</strong> antes de proporcionar tus datos.
+        <strong>support@whitemirrorlab.com</strong> antes de proporcionar tus datos.
       </p>
 
       <h2>1. Responsable del tratamiento</h2>
       <ul>
         <li><strong>Responsable:</strong> White Mirror Lab</li>
-        <li><strong>Correo electrónico:</strong> whitemirrorlab.info@gmail.com</li>
+        <li><strong>Correo electrónico:</strong> support@whitemirrorlab.com</li>
         <li><strong>Domicilio:</strong> España (Unión Europea)</li>
         <li><strong>Sitio web:</strong> whitemirrorlab.com</li>
       </ul>
@@ -180,7 +180,7 @@ export default function PrivacidadPage() {
       <h2>4. Tus derechos</h2>
       <p>
         Puedes ejercer los siguientes derechos en cualquier momento, de forma gratuita, dirigiéndote
-        a <strong>whitemirrorlab.info@gmail.com</strong> con el asunto «Ejercicio de derechos RGPD»
+        a <strong>support@whitemirrorlab.com</strong> con el asunto «Ejercicio de derechos RGPD»
         e indicando tu nombre de usuario:
       </p>
       <ul>
@@ -208,7 +208,7 @@ export default function PrivacidadPage() {
       <p>
         La participación en WML 1.0 está restringida a personas mayores de <strong>18 años</strong>.
         No recabamos datos de menores de forma consciente. Si tienes conocimiento de que un menor
-        ha creado una cuenta, comunícalo a whitemirrorlab.info@gmail.com para proceder a su
+        ha creado una cuenta, comunícalo a support@whitemirrorlab.com para proceder a su
         eliminación inmediata.
       </p>
 
@@ -241,7 +241,7 @@ export default function PrivacidadPage() {
 
       <div className="legal-contact-box">
         <p>
-          <strong>Contacto privacidad / DPD:</strong> whitemirrorlab.info@gmail.com<br />
+          <strong>Contacto privacidad / DPD:</strong> support@whitemirrorlab.com<br />
           Asunto sugerido: «Ejercicio de derechos RGPD» o «Consulta privacidad»<br />
           Plazo de respuesta: máximo 30 días naturales
         </p>

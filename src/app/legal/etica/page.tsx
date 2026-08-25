@@ -195,7 +195,7 @@ export default function EticaPage() {
       <p>
         Si detectas un problema ético en el diseño o la conducción del experimento que no quede
         cubierto por los canales habituales, puedes contactar directamente con el equipo en
-        whitemirrorlab.info@gmail.com (asunto: «Consulta ética»).
+        support@whitemirrorlab.com (asunto: «Consulta ética»).
       </p>
 
       <h2>4 bis. Criterios para dossiers de crimen real</h2>
@@ -231,7 +231,7 @@ export default function EticaPage() {
       <h2>6. Derecho a retirarse y a recibir apoyo</h2>
       <p>
         Puedes abandonar el experimento en cualquier momento y solicitar la eliminación de todos
-        tus datos en whitemirrorlab.info@gmail.com. Procesaremos las solicitudes en un plazo
+        tus datos en support@whitemirrorlab.com. Procesaremos las solicitudes en un plazo
         máximo de 30 días.
       </p>
       <p>
@@ -243,7 +243,7 @@ export default function EticaPage() {
 
       <div className="legal-contact-box">
         <p>
-          <strong>Contacto ético:</strong> whitemirrorlab.info@gmail.com<br />
+          <strong>Contacto ético:</strong> support@whitemirrorlab.com<br />
           Asunto sugerido: «Consulta ética WML 1.0»<br /><br />
           <a href="/legal/terminos">Términos de participación</a> ·{' '}
           <a href="/legal/privacidad">Privacidad</a> ·{' '}

@@ -175,7 +175,7 @@ export default function CookiesPage() {
 
       <h2>7. Más información y reclamaciones</h2>
       <p>
-        Para cualquier consulta sobre esta política: <strong>whitemirrorlab.info@gmail.com</strong>.
+        Para cualquier consulta sobre esta política: <strong>support@whitemirrorlab.com</strong>.
         Consulta también nuestra <a href="/legal/privacidad">Política de privacidad</a>.
       </p>
       <p>

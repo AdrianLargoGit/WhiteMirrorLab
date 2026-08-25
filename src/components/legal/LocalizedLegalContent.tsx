@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import { useLocale } from '@/hooks/useLocale'
 import { legalPath, type LegalPage } from '@/lib/i18n'
 
-const contact = 'whitemirrorlab.info@gmail.com'
+const contact = 'support@whitemirrorlab.com'
 
 function LegalNoticeEn() {
   return (

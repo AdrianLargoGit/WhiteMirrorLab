@@ -26,12 +26,12 @@ export default function AvisoLegalPage() {
         <li><strong>Denominación:</strong> White Mirror Lab</li>
         <li><strong>Actividad:</strong> Laboratorio de experimentación social digital sin ánimo de lucro</li>
         <li><strong>Domicilio social:</strong> España (Unión Europea)</li>
-        <li><strong>Correo electrónico de contacto:</strong> whitemirrorlab.info@gmail.com</li>
+        <li><strong>Correo electrónico de contacto:</strong> support@whitemirrorlab.com</li>
         <li><strong>Sitio web:</strong> whitemirrorlab.com</li>
         <li>
           <strong>Nota sobre NIF/CIF:</strong> White Mirror Lab opera como proyecto de investigación
           no mercantil. En caso de requerir datos registrales adicionales para fines legales, diríjase
-          a whitemirrorlab.info@gmail.com.
+          a support@whitemirrorlab.com.
         </li>
       </ul>
 
@@ -109,7 +109,7 @@ export default function AvisoLegalPage() {
         existencia.
       </p>
       <p>
-        Para notificar contenido ilegal o abusivo: <strong>whitemirrorlab.info@gmail.com</strong>,
+        Para notificar contenido ilegal o abusivo: <strong>support@whitemirrorlab.com</strong>,
         indicando en el asunto «Notificación de contenido» y describiendo el contenido y su
         localización.
       </p>
@@ -163,7 +163,7 @@ export default function AvisoLegalPage() {
 
       <div className="legal-contact-box">
         <p>
-          <strong>Contacto legal:</strong> whitemirrorlab.info@gmail.com<br />
+          <strong>Contacto legal:</strong> support@whitemirrorlab.com<br />
           Consulta también: <a href="/legal/privacidad">Privacidad</a> ·{' '}
           <a href="/legal/cookies">Cookies</a> ·{' '}
           <a href="/legal/terminos">Términos de participación</a> ·{' '}
