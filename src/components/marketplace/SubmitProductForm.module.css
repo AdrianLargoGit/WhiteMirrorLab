@@ -119,6 +119,46 @@
   grid-column: 1 / -1;
 }
 
+.freeField {
+  min-height: var(--control-height);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: #d6ff95;
+  box-shadow: 4px 4px 0 rgba(23, 18, 15, 0.2);
+  cursor: pointer;
+  padding: 14px 16px;
+}
+
+.freeField input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--ink);
+  flex: 0 0 auto;
+}
+
+.freeField > span {
+  display: grid;
+  gap: 4px;
+}
+
+.freeField strong {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.freeField small {
+  color: rgba(23, 18, 15, 0.66);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .fileField input {
   height: 1px;
   margin: 0;

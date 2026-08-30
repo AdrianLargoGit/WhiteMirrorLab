@@ -32,6 +32,9 @@ const copy = {
     stripeLabel: 'Stripe Connect account ID',
     stripePlaceholder: 'acct_...',
     priceLabel: 'Precio',
+    freeLabel: 'Gratis para quien lo quiera',
+    freeHint: 'No pediremos Stripe y cualquiera podra descargarlo cuando se apruebe.',
+    priceChangeHint: 'Si luego quieres cambiar el precio, escribenos desde el correo de soporte que has puesto en este formulario.',
     descriptionLabel: 'Descripcion',
     descriptionPlaceholder: 'Cuenta que incluye el pack, estilo visual, variantes y requisitos de uso.',
     zipLabel: 'ZIP del pack',
@@ -52,7 +55,7 @@ const copy = {
     minHint: 'Precio minimo',
     previewHint: 'Hasta 6 imagenes PNG, JPG, WEBP o GIF.',
     required: 'Completa los campos obligatorios y adjunta ZIP y portada.',
-    stripeHint: 'Debe empezar por acct_. Lo usamos para dirigir pagos con Stripe Connect.',
+    stripeHint: 'Debe empezar por acct_. Solo hace falta si el pack es de pago.',
   },
   en: {
     badge: 'Form open',
@@ -67,6 +70,9 @@ const copy = {
     stripeLabel: 'Stripe Connect account ID',
     stripePlaceholder: 'acct_...',
     priceLabel: 'Price',
+    freeLabel: 'Free for anyone',
+    freeHint: 'We will not ask for Stripe and anyone can download it once approved.',
+    priceChangeHint: 'If you want to change the price later, email us from the support email you entered in this form.',
     descriptionLabel: 'Description',
     descriptionPlaceholder: 'Describe what is included, visual style, variants, and usage requirements.',
     zipLabel: 'Pack ZIP',
@@ -87,7 +93,7 @@ const copy = {
     minHint: 'Minimum price',
     previewHint: 'Up to 6 PNG, JPG, WEBP, or GIF images.',
     required: 'Complete the required fields and attach a ZIP and cover image.',
-    stripeHint: 'Must start with acct_. We use it to route payments with Stripe Connect.',
+    stripeHint: 'Must start with acct_. Only required for paid packs.',
   },
 } satisfies Record<Locale, Record<string, string>>
 
@@ -185,6 +191,8 @@ export function SubmitProductForm({ lang }: SubmitProductFormProps) {
   const [zipSummary, setZipSummary] = useState<MarketplaceZipSummary | null>(null)
   const [coverFile, setCoverFile] = useState<File | null>(null)
   const [previewFiles, setPreviewFiles] = useState<File[]>([])
+  const [isFree, setIsFree] = useState(false)
+  const [priceInput, setPriceInput] = useState(() => minimumPrice.toFixed(2))
 
   const isBusy = state === 'uploading' || state === 'submitting'
   const zipFileName = zipFile?.name ?? t.noFile
@@ -204,10 +212,10 @@ export function SubmitProductForm({ lang }: SubmitProductFormProps) {
     const creatorName = String(data.get('creator_name') ?? '').trim()
     const email = String(data.get('email') ?? '').trim()
     const stripeAccountId = String(data.get('stripe_account_id') ?? '').trim()
-    const price = Number(data.get('price'))
+    const price = isFree ? 0 : Number(priceInput)
     const website = String(data.get('website') ?? '').trim()
 
-    if (!title || !description || !creatorName || !email || !stripeAccountId || !zipFile || !coverFile || !zipSummary) {
+    if (!title || !description || !creatorName || !email || (!isFree && !stripeAccountId) || !zipFile || !coverFile || !zipSummary) {
       setState('error')
       setMessage(t.required)
       return
@@ -232,7 +240,7 @@ export function SubmitProductForm({ lang }: SubmitProductFormProps) {
           description,
           creator_name: creatorName,
           email,
-          stripe_account_id: stripeAccountId,
+          stripe_account_id: isFree ? null : stripeAccountId,
           price,
           blob_url: blobUrl,
           cover_image_url: coverImageUrl,
@@ -252,6 +260,8 @@ export function SubmitProductForm({ lang }: SubmitProductFormProps) {
       setZipSummary(null)
       setCoverFile(null)
       setPreviewFiles([])
+      setIsFree(false)
+      setPriceInput(minimumPrice.toFixed(2))
       setState('success')
       setMessage(t.success)
     } catch (error) {
@@ -274,6 +284,11 @@ export function SubmitProductForm({ lang }: SubmitProductFormProps) {
       setState('error')
       setMessage(error instanceof Error && error.message ? error.message : 'Invalid ZIP file')
     }
+  }
+
+  function handleFreeChange(checked: boolean) {
+    setIsFree(checked)
+    setPriceInput(checked ? '0.00' : minimumPrice.toFixed(2))
   }
 
   return (
@@ -302,14 +317,37 @@ export function SubmitProductForm({ lang }: SubmitProductFormProps) {
 
         <label className={styles.field}>
           <span>{t.stripeLabel}</span>
-          <input name="stripe_account_id" type="text" pattern="acct_[A-Za-z0-9]+" placeholder={t.stripePlaceholder} required disabled={isBusy} />
+          <input name="stripe_account_id" type="text" pattern="acct_[A-Za-z0-9]+" placeholder={t.stripePlaceholder} required={!isFree} disabled={isBusy || isFree} />
           <small>{t.stripeHint}</small>
         </label>
 
         <label className={styles.field}>
           <span>{t.priceLabel}</span>
-          <input name="price" type="number" min={minimumPrice} step="0.01" defaultValue={minimumPrice.toFixed(2)} required disabled={isBusy} />
-          <small>{t.minHint}: {minimumPrice.toFixed(2)}</small>
+          <input
+            name="price"
+            type="number"
+            min={isFree ? 0 : minimumPrice}
+            step="0.01"
+            value={priceInput}
+            required
+            disabled={isBusy || isFree}
+            onChange={(event) => setPriceInput(event.target.value)}
+          />
+          <small>{isFree ? t.freeHint : `${t.minHint}: ${minimumPrice.toFixed(2)}`}</small>
+          <small>{t.priceChangeHint}</small>
+        </label>
+
+        <label className={styles.freeField}>
+          <input
+            type="checkbox"
+            checked={isFree}
+            disabled={isBusy}
+            onChange={(event) => handleFreeChange(event.target.checked)}
+          />
+          <span>
+            <strong>{t.freeLabel}</strong>
+            <small>{t.freeHint}</small>
+          </span>
         </label>
 
         <label className={`${styles.field} ${styles.descriptionField}`}>

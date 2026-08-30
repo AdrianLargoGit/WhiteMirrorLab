@@ -5,7 +5,7 @@ import CustomCursor from '@/components/CustomCursor'
 import Navbar from '@/components/Navbar'
 import { DEFAULT_LOCALE, downloadPath, isLocale, marketplaceSubmitPath, type Locale } from '@/lib/i18n'
 import { MARKETPLACE_IS_AVAILABLE, marketplaceAvailabilityCopy } from '@/lib/marketplaceAvailability'
-import { getMarketplaceCurrency } from '@/lib/marketplacePricing'
+import { getMarketplaceCurrency, isFreeMarketplacePrice } from '@/lib/marketplacePricing'
 import { createMarketplaceSupabaseClient, type MarketplaceProduct } from '@/lib/marketplaceSupabase'
 import styles from './page.module.css'
 
@@ -43,6 +43,8 @@ const copy = {
     empty: 'Sin skins publicadas todavia',
     emptyText: 'Muy pronto apareceran aqui los primeros packs de creadores para WML X.X.0.',
     buy: 'Comprar',
+    download: 'Descargar',
+    free: 'Gratis',
     unavailable: 'No disponible',
     creator: 'Creador',
     email: 'Email de soporte',
@@ -65,6 +67,8 @@ const copy = {
     empty: 'No skins published yet',
     emptyText: 'The first creator packs for WML X.X.0 will appear here soon.',
     buy: 'Buy',
+    download: 'Download',
+    free: 'Free',
     unavailable: 'Unavailable',
     creator: 'Creator',
     email: 'Support email',
@@ -79,7 +83,9 @@ const copy = {
   },
 } satisfies Record<Locale, Record<string, string>>
 
-function formatPrice(price: number, currency: string, lang: Locale) {
+function formatPrice(price: number, currency: string, lang: Locale, freeLabel: string) {
+  if (isFreeMarketplacePrice(price)) return freeLabel
+
   return new Intl.NumberFormat(lang === 'es' ? 'es-ES' : 'en-US', {
     style: 'currency',
     currency,
@@ -188,8 +194,11 @@ export default async function MarketplacePage() {
         {products.length > 0 ? (
           <section className={styles.grid} aria-label={t.title}>
             {products.map((product, index) => {
-              const isAvailable = MARKETPLACE_IS_AVAILABLE && Boolean(product.download_blob_url && product.stripe_account_id)
-              const buyHref = `/api/marketplace/checkout?product=${encodeURIComponent(product.id)}`
+              const isFree = isFreeMarketplacePrice(product.price)
+              const isAvailable = MARKETPLACE_IS_AVAILABLE && Boolean(product.download_blob_url && (isFree || product.stripe_account_id))
+              const buyHref = isFree
+                ? `/api/marketplace/download?product=${encodeURIComponent(product.id)}`
+                : `/api/marketplace/checkout?product=${encodeURIComponent(product.id)}`
               const productHref = `${lang === 'en' ? '/en' : ''}/marketplace/${product.id}`
 
               return (
@@ -223,7 +232,7 @@ export default async function MarketplacePage() {
                     </div>
                     <div className={styles.priceRow}>
                       <span>{t.price}</span>
-                      <strong>{formatPrice(product.price, currency, lang)}</strong>
+                      <strong>{formatPrice(product.price, currency, lang, t.free)}</strong>
                     </div>
                   </div>
                   <div className={styles.cardActions}>
@@ -232,7 +241,7 @@ export default async function MarketplacePage() {
                     </Link>
                     {isAvailable ? (
                       <a className={styles.buyButton} href={buyHref}>
-                        {t.buy}
+                        {isFree ? t.download : t.buy}
                       </a>
                     ) : (
                       <span className={styles.disabledButton}>{t.unavailable}</span>

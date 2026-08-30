@@ -26,6 +26,12 @@ export function getMinimumMarketplacePrice() {
   )
 }
 
+export function isFreeMarketplacePrice(price: number | string) {
+  const parsed = typeof price === 'string' ? Number(price) : price
+
+  return Number.isFinite(parsed) && parsed <= 0
+}
+
 export function toMinorCurrencyUnit(price: number) {
   return Math.round(price * 100)
 }

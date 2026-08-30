@@ -6,7 +6,7 @@ import CustomCursor from '@/components/CustomCursor'
 import Navbar from '@/components/Navbar'
 import { DEFAULT_LOCALE, isLocale, marketplacePath, type Locale } from '@/lib/i18n'
 import { MARKETPLACE_IS_AVAILABLE, marketplaceAvailabilityCopy } from '@/lib/marketplaceAvailability'
-import { getMarketplaceCurrency } from '@/lib/marketplacePricing'
+import { getMarketplaceCurrency, isFreeMarketplacePrice } from '@/lib/marketplacePricing'
 import { createMarketplaceSupabaseClient } from '@/lib/marketplaceSupabase'
 import styles from './page.module.css'
 
@@ -26,6 +26,8 @@ const copy = {
     pets: 'Mascotas',
     accessories: 'Accesorios',
     buy: 'Comprar pack',
+    download: 'Descargar pack',
+    free: 'Gratis',
     email: 'Email de soporte',
     gallery: 'Galeria',
     galleryText: 'Imagenes de preview protegidas con marca de agua.',
@@ -40,6 +42,8 @@ const copy = {
     pets: 'Pets',
     accessories: 'Accessories',
     buy: 'Buy pack',
+    download: 'Download pack',
+    free: 'Free',
     email: 'Support email',
     gallery: 'Gallery',
     galleryText: 'Preview images protected with watermark.',
@@ -49,7 +53,9 @@ const copy = {
   },
 } satisfies Record<Locale, Record<string, string>>
 
-function formatPrice(price: number, currency: string, lang: Locale) {
+function formatPrice(price: number, currency: string, lang: Locale, freeLabel: string) {
+  if (isFreeMarketplacePrice(price)) return freeLabel
+
   return new Intl.NumberFormat(lang === 'es' ? 'es-ES' : 'en-US', {
     style: 'currency',
     currency,
@@ -74,7 +80,10 @@ export default async function MarketplacePackPage({ params }: PageProps) {
   if (error || !product) notFound()
 
   const previewUrls = product.preview_image_urls ?? []
-  const buyHref = `/api/marketplace/checkout?product=${encodeURIComponent(product.id)}`
+  const isFree = isFreeMarketplacePrice(product.price)
+  const buyHref = isFree
+    ? `/api/marketplace/download?product=${encodeURIComponent(product.id)}`
+    : `/api/marketplace/checkout?product=${encodeURIComponent(product.id)}`
 
   return (
     <div className="landing-page">
@@ -111,7 +120,7 @@ export default async function MarketplacePackPage({ params }: PageProps) {
             <dl>
               <div>
                 <dt>{t.price}</dt>
-                <dd>{formatPrice(product.price, currency, lang)}</dd>
+                <dd>{formatPrice(product.price, currency, lang, t.free)}</dd>
               </div>
               <div>
                 <dt>{t.pets}</dt>
@@ -124,8 +133,8 @@ export default async function MarketplacePackPage({ params }: PageProps) {
             </dl>
             {!MARKETPLACE_IS_AVAILABLE ? (
               <p className={styles.closedNotice}>{availability.body}</p>
-            ) : product.download_blob_url && product.stripe_account_id ? (
-              <a className={styles.buyButton} href={buyHref}>{t.buy}</a>
+            ) : product.download_blob_url && (isFree || product.stripe_account_id) ? (
+              <a className={styles.buyButton} href={buyHref}>{isFree ? t.download : t.buy}</a>
             ) : null}
           </div>
         </section>

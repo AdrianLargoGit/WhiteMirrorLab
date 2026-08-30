@@ -3,7 +3,7 @@ import Image from 'next/image'
 import CustomCursor from '@/components/CustomCursor'
 import Navbar from '@/components/Navbar'
 import { approveProduct, rejectProduct } from './actions'
-import { getMarketplaceCurrency } from '@/lib/marketplacePricing'
+import { getMarketplaceCurrency, isFreeMarketplacePrice } from '@/lib/marketplacePricing'
 import { createMarketplaceSupabaseClient } from '@/lib/marketplaceSupabase'
 import { DEFAULT_LOCALE, isLocale, type Locale } from '@/lib/i18n'
 import styles from './page.module.css'
@@ -84,7 +84,7 @@ export default async function AdminPage({
                     <p className={styles.description}>{product.description}</p>
                   ) : null}
                   <p>Creator: {product.creator_name}</p>
-                  <p>{new Intl.NumberFormat(lang === 'es' ? 'es-ES' : 'en-US', {
+                  <p>{isFreeMarketplacePrice(product.price) ? 'Free' : new Intl.NumberFormat(lang === 'es' ? 'es-ES' : 'en-US', {
                     style: 'currency',
                     currency: getMarketplaceCurrency(),
                   }).format(product.price)}</p>

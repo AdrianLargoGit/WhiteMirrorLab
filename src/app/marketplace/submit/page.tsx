@@ -25,7 +25,7 @@ const copy = {
     checklist: [
       'Incluye todos los assets dentro del ZIP.',
       'Usa nombres claros para carpetas y archivos.',
-      'Comprueba que el precio supera el minimo para cubrir comisiones de Stripe y plataforma.',
+      'Elige gratis o comprueba que el precio supera el minimo para cubrir comisiones de Stripe y plataforma.',
     ],
   },
   en: {
@@ -41,7 +41,7 @@ const copy = {
     checklist: [
       'Include every asset inside the ZIP.',
       'Use clear folder and file names.',
-      'Check the price clears the minimum for Stripe and platform fees.',
+      'Choose free or check the price clears the minimum for Stripe and platform fees.',
     ],
   },
 } satisfies Record<Locale, Record<string, string | string[]>>

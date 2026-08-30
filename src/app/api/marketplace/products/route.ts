@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { MARKETPLACE_SUBMISSIONS_ARE_OPEN } from '@/lib/marketplaceAvailability'
-import { getMinimumMarketplacePrice } from '@/lib/marketplacePricing'
+import { getMinimumMarketplacePrice, isFreeMarketplacePrice } from '@/lib/marketplacePricing'
 import { deleteMarketplaceObject, getMarketplaceObjectBuffer, isMarketplaceStorageUrl } from '@/lib/marketplaceStorage'
 import { createMarketplaceSupabaseClient } from '@/lib/marketplaceSupabase'
 import { summarizeMarketplaceZip } from '@/lib/marketplaceZipSummary'
@@ -67,6 +67,7 @@ export async function POST(request: Request) {
   const email = body.email?.trim().toLowerCase()
   const stripeAccountId = body.stripe_account_id?.trim()
   const price = Number(body.price)
+  const isFree = isFreeMarketplacePrice(price)
   const minimumPrice = getMinimumMarketplacePrice()
   const blobUrl = body.blob_url?.trim()
   const coverImageUrl = body.cover_image_url?.trim()
@@ -107,13 +108,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Valid email is required' }, { status: 422 })
   }
 
-  if (!stripeAccountId || !isValidStripeAccountId(stripeAccountId)) {
+  if (!isFree && (!stripeAccountId || !isValidStripeAccountId(stripeAccountId))) {
     return NextResponse.json({ error: 'Valid Stripe Connect account ID is required' }, { status: 422 })
   }
 
-  if (!Number.isFinite(price) || price < minimumPrice) {
+  if (!Number.isFinite(price) || price < 0 || (!isFree && price < minimumPrice)) {
     return NextResponse.json(
-      { error: `Price must be at least ${minimumPrice.toFixed(2)}` },
+      { error: `Price must be 0 for a free pack or at least ${minimumPrice.toFixed(2)}` },
       { status: 422 },
     )
   }
@@ -170,8 +171,8 @@ export async function POST(request: Request) {
         description,
         creator_name: creatorName,
         creator_email: email,
-        stripe_account_id: stripeAccountId,
-        price,
+        stripe_account_id: isFree ? null : stripeAccountId,
+        price: isFree ? 0 : price,
         blob_url: blobUrl,
         cover_image_url: coverImageUrl,
         preview_image_urls: previewImageUrls,

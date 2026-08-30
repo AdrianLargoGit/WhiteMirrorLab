@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { MARKETPLACE_IS_AVAILABLE } from '@/lib/marketplaceAvailability'
+import { isFreeMarketplacePrice } from '@/lib/marketplacePricing'
 import { createMarketplaceSupabaseClient } from '@/lib/marketplaceSupabase'
 import { createMarketplaceStripeCheckout } from '@/lib/stripeMarketplace'
 
@@ -26,11 +27,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
     }
 
-    if (
-      product.status !== 'approved' ||
-      !product.download_blob_url ||
-      !product.stripe_account_id
-    ) {
+    if (product.status !== 'approved' || !product.download_blob_url) {
+      return NextResponse.json({ error: 'Product is not available for purchase' }, { status: 409 })
+    }
+
+    if (isFreeMarketplacePrice(product.price)) {
+      const downloadUrl = new URL('/api/marketplace/download', request.nextUrl.origin)
+      downloadUrl.searchParams.set('product', product.id)
+      return NextResponse.redirect(downloadUrl, 303)
+    }
+
+    if (!product.stripe_account_id) {
       return NextResponse.json({ error: 'Product is not available for purchase' }, { status: 409 })
     }
 

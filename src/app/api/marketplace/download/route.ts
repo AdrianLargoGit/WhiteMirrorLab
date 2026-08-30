@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { isFreeMarketplacePrice } from '@/lib/marketplacePricing'
 import { getMarketplaceObject, marketplaceObjectToWebStream } from '@/lib/marketplaceStorage'
 import { createMarketplaceSupabaseClient } from '@/lib/marketplaceSupabase'
 import {
@@ -21,12 +22,8 @@ export async function GET(request: NextRequest) {
   const productId = request.nextUrl.searchParams.get('product')?.trim()
   const sessionId = request.nextUrl.searchParams.get('session_id')?.trim()
 
-  if (!productId || !sessionId) {
-    return NextResponse.json({ error: 'Missing product or Stripe session id' }, { status: 400 })
-  }
-
-  if (!isStripeCheckoutSessionId(sessionId)) {
-    return NextResponse.json({ error: 'Invalid Stripe session id' }, { status: 400 })
+  if (!productId) {
+    return NextResponse.json({ error: 'Missing product id' }, { status: 400 })
   }
 
   try {
@@ -45,10 +42,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Product download is not available' }, { status: 409 })
     }
 
-    const session = await retrieveMarketplaceStripeCheckoutSession(sessionId)
+    if (!isFreeMarketplacePrice(product.price)) {
+      if (!sessionId) {
+        return NextResponse.json({ error: 'Missing Stripe session id' }, { status: 400 })
+      }
 
-    if (!isPaidMarketplaceSession(session, product)) {
-      return NextResponse.json({ error: 'Payment could not be verified' }, { status: 403 })
+      if (!isStripeCheckoutSessionId(sessionId)) {
+        return NextResponse.json({ error: 'Invalid Stripe session id' }, { status: 400 })
+      }
+
+      const session = await retrieveMarketplaceStripeCheckoutSession(sessionId)
+
+      if (!isPaidMarketplaceSession(session, product)) {
+        return NextResponse.json({ error: 'Payment could not be verified' }, { status: 403 })
+      }
     }
 
     const blobResult = await getMarketplaceObject(product.download_blob_url)

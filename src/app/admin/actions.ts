@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { sendMarketplaceStatusEmail } from '@/lib/marketplaceEmail'
 import { deleteMarketplaceObject } from '@/lib/marketplaceStorage'
 import { createMarketplaceSupabaseClient } from '@/lib/marketplaceSupabase'
+import { isFreeMarketplacePrice } from '@/lib/marketplacePricing'
 
 function requireAdminToken(formData: FormData) {
   const expectedToken = process.env.MARKETPLACE_ADMIN_TOKEN
@@ -46,7 +47,7 @@ export async function approveProduct(formData: FormData) {
     throw new Error('Product has no temporary blob_url')
   }
 
-  if (!product.stripe_account_id) {
+  if (!isFreeMarketplacePrice(product.price) && !product.stripe_account_id) {
     throw new Error('Product has no Stripe Connect account id')
   }
 
