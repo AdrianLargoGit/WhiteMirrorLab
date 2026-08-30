@@ -73,6 +73,7 @@ type Game = {
 type Profile = { id: string; name: string; skin: Skin }
 type LeaderboardEntry = { id: string; name: string; points: number; floor: number; at: number }
 type RenderState = { vx: number; vy: number; ready: boolean }
+type JoystickVector = { x: number; y: number }
 
 const finalLevel = 12
 const saveKey = 'wml-mirror-article-roguelike-v1'
@@ -103,7 +104,7 @@ const copy = {
     armor: 'armadura',
     restart: 'reiniciar',
     newRun: 'nueva partida',
-    controls: 'Mantener flechas/WASD o usar tactil: moverte · ataque automatico · Espacio: bengala radial · portal verde avanza · portal azul vuelve.',
+    controls: 'Mantener flechas/WASD o usar joystick tactil: moverte · ataque automatico · Espacio o boton estrella: bengala radial · portal verde avanza · portal azul vuelve.',
     dead: 'Has caido. El laberinto recuerda tus pasos.',
     won: 'Has abierto el espejo final.',
     secret: 'RECOMPENSA FINAL: llegaste al articulo que casi nadie termina. Codigo WML-CAPITAL-ADLESS.',
@@ -130,7 +131,7 @@ const copy = {
     armor: 'armor',
     restart: 'restart',
     newRun: 'new run',
-    controls: 'Hold arrows/WASD or use touch: move · automatic attack · Space: radial flare · green portal advances · blue portal returns.',
+    controls: 'Hold arrows/WASD or use the touch joystick: move · automatic attack · Space or star button: radial flare · green portal advances · blue portal returns.',
     dead: 'You fell. The labyrinth remembers your steps.',
     won: 'You opened the final mirror.',
     secret: 'FINAL REWARD: you reached the article almost nobody finishes. Code WML-CAPITAL-ADLESS.',
@@ -1492,6 +1493,12 @@ function sanitizeSavedGame(saved: Game) {
   }
 }
 
+function isEditingText(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false
+  const tag = target.tagName.toLowerCase()
+  return tag === 'input' || tag === 'textarea' || tag === 'select' || target.isContentEditable
+}
+
 export default function RoguelikeGame({ locale }: { locale: Locale }) {
   const t = copy[locale]
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -1501,11 +1508,14 @@ export default function RoguelikeGame({ locale }: { locale: Locale }) {
   const renderStateRef = useRef<RenderState>({ vx: 0, vy: 0, ready: false })
   const lastMoveRef = useRef(0)
   const pressedKeysRef = useRef<Set<string>>(new Set())
+  const joystickRef = useRef<JoystickVector>({ x: 0, y: 0 })
+  const joystickPointerRef = useRef<number | null>(null)
   const [profile, setProfile] = useState<Profile>(() => freshProfile())
   const [draftName, setDraftName] = useState('Runner')
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [game, setGame] = useState(() => makeLevel(1))
   const [effects, setEffects] = useState<Fx[]>([])
+  const [joystick, setJoystick] = useState<JoystickVector>({ x: 0, y: 0 })
 
   const points = game.player.score + game.level * 100 + game.player.shards * 20 + game.player.keys * 120
 
@@ -1575,16 +1585,36 @@ export default function RoguelikeGame({ locale }: { locale: Locale }) {
     persist(applyUpgrade(game, upgrade))
   }, [game, persist])
 
-  const moveFromStage = useCallback((event: PointerEvent<HTMLDivElement>) => {
+  const updateJoystick = useCallback((event: PointerEvent<HTMLDivElement>) => {
     const rect = event.currentTarget.getBoundingClientRect()
-    const dx = event.clientX - (rect.left + rect.width / 2)
-    const dy = event.clientY - (rect.top + rect.height / 2)
-    if (Math.abs(dx) > Math.abs(dy)) {
-      move(dx > 0 ? 1 : -1, 0)
-    } else {
-      move(0, dy > 0 ? 1 : -1)
-    }
-  }, [move])
+    const radius = rect.width / 2
+    const rawX = (event.clientX - (rect.left + radius)) / radius
+    const rawY = (event.clientY - (rect.top + radius)) / radius
+    const length = Math.hypot(rawX, rawY)
+    const scale = length > 1 ? 1 / length : 1
+    const next = { x: rawX * scale, y: rawY * scale }
+    joystickRef.current = next
+    setJoystick(next)
+  }, [])
+
+  const startJoystick = useCallback((event: PointerEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    joystickPointerRef.current = event.pointerId
+    event.currentTarget.setPointerCapture(event.pointerId)
+    updateJoystick(event)
+  }, [updateJoystick])
+
+  const moveJoystick = useCallback((event: PointerEvent<HTMLDivElement>) => {
+    if (joystickPointerRef.current !== event.pointerId) return
+    updateJoystick(event)
+  }, [updateJoystick])
+
+  const stopJoystick = useCallback((event: PointerEvent<HTMLDivElement>) => {
+    if (joystickPointerRef.current !== event.pointerId) return
+    joystickPointerRef.current = null
+    joystickRef.current = { x: 0, y: 0 }
+    setJoystick({ x: 0, y: 0 })
+  }, [])
 
   const saveProfile = useCallback(() => {
     const cleanName = draftName.trim().slice(0, 20) || 'Runner'
@@ -1686,6 +1716,7 @@ export default function RoguelikeGame({ locale }: { locale: Locale }) {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (isEditingText(event.target)) return
       const key = event.key.toLowerCase()
       if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd', ' '].includes(key)) event.preventDefault()
       if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(key)) pressedKeysRef.current.add(key)
@@ -1709,6 +1740,13 @@ export default function RoguelikeGame({ locale }: { locale: Locale }) {
       else if (keys.has('arrowdown') || keys.has('s')) move(0, 1)
       else if (keys.has('arrowleft') || keys.has('a')) move(-1, 0)
       else if (keys.has('arrowright') || keys.has('d')) move(1, 0)
+      else {
+        const stick = joystickRef.current
+        if (Math.hypot(stick.x, stick.y) > 0.24) {
+          if (Math.abs(stick.x) > Math.abs(stick.y)) move(stick.x > 0 ? 1 : -1, 0)
+          else move(0, stick.y > 0 ? 1 : -1)
+        }
+      }
     }, 28)
     return () => window.clearInterval(timer)
   }, [move])
@@ -1782,7 +1820,7 @@ export default function RoguelikeGame({ locale }: { locale: Locale }) {
         </div>
       </div>
 
-      <div className={styles.stage} onPointerDown={moveFromStage}>
+      <div className={styles.stage}>
         <canvas ref={canvasRef} aria-label={t.title} />
       </div>
 
@@ -1790,7 +1828,15 @@ export default function RoguelikeGame({ locale }: { locale: Locale }) {
         <div className={styles.profileBox}>
           <label>
             <span>{t.name}</span>
-            <input value={draftName} onChange={(event) => setDraftName(event.target.value)} maxLength={20} />
+            <input
+              value={draftName}
+              onChange={(event) => setDraftName(event.target.value)}
+              onBlur={saveProfile}
+              maxLength={20}
+              inputMode="text"
+              autoComplete="nickname"
+              aria-label={t.name}
+            />
           </label>
           <button type="button" onClick={saveProfile}>{t.saveProfile}</button>
           <div className={styles.skinGrid} aria-label={t.skin}>
@@ -1849,13 +1895,21 @@ export default function RoguelikeGame({ locale }: { locale: Locale }) {
         </div>
       ) : null}
 
-      <nav className={styles.touch}>
-        <button type="button" onClick={() => move(0, -1)}>↑</button>
-        <button type="button" onClick={() => move(-1, 0)}>←</button>
-        <button type="button" onClick={() => move(1, 0)}>→</button>
-        <button type="button" onClick={() => move(0, 1)}>↓</button>
-        <button type="button" onClick={flare}>*</button>
-      </nav>
+      <div className={styles.touch} aria-label={t.controls}>
+        <div
+          className={styles.joystick}
+          role="application"
+          aria-label="Joystick"
+          onPointerDown={startJoystick}
+          onPointerMove={moveJoystick}
+          onPointerUp={stopJoystick}
+          onPointerCancel={stopJoystick}
+          onLostPointerCapture={stopJoystick}
+        >
+          <span style={{ transform: `translate(${joystick.x * 34}px, ${joystick.y * 34}px)` }} />
+        </div>
+        <button type="button" className={styles.flareButton} onClick={flare} aria-label="Bengala radial">*</button>
+      </div>
     </section>
   )
 }

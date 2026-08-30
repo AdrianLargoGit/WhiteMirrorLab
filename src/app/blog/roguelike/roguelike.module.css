@@ -27,8 +27,7 @@
 }
 
 .hud,
-.panel,
-.touch {
+.panel {
   border: 1px solid rgba(245, 242, 238, 0.18);
   background:
     linear-gradient(145deg, rgba(245, 242, 238, 0.08), rgba(8, 8, 8, 0.78) 34%),
@@ -63,7 +62,7 @@
 .panel strong,
 .panel button,
 .log span,
-.touch button {
+.flareButton {
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 900;
@@ -157,7 +156,7 @@
 }
 
 .panel button,
-.touch button {
+.flareButton {
   min-height: 44px;
   color: #080808;
   background:
@@ -285,13 +284,15 @@
 
 .touch {
   position: fixed;
-  right: 16px;
-  bottom: 16px;
+  right: max(14px, env(safe-area-inset-right));
+  bottom: max(14px, env(safe-area-inset-bottom));
+  left: max(14px, env(safe-area-inset-left));
   z-index: 20;
   display: none;
-  grid-template-columns: repeat(3, 54px);
-  gap: 7px;
-  padding: 8px;
+  align-items: end;
+  justify-content: space-between;
+  gap: 14px;
+  pointer-events: none;
 }
 
 .upgradeOverlay {
@@ -365,19 +366,67 @@
   text-transform: uppercase;
 }
 
-.touch button {
-  width: 54px;
-  height: 54px;
+.joystick,
+.flareButton {
+  pointer-events: auto;
+  user-select: none;
+  touch-action: none;
+}
+
+.joystick {
+  width: 132px;
+  height: 132px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(245, 242, 238, 0.28);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(215, 255, 94, 0.16), transparent 36%),
+    linear-gradient(145deg, rgba(245, 242, 238, 0.12), rgba(8, 8, 8, 0.74)),
+    rgba(8, 8, 8, 0.72);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(245, 242, 238, 0.12);
+  backdrop-filter: blur(18px) saturate(1.2);
+}
+
+.joystick::before,
+.joystick::after {
+  content: '';
+  position: absolute;
+  background: rgba(245, 242, 238, 0.2);
+}
+
+.joystick::before {
+  width: 58%;
+  height: 1px;
+}
+
+.joystick::after {
+  width: 1px;
+  height: 58%;
+}
+
+.joystick span {
+  position: relative;
+  z-index: 1;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 35% 28%, #fff, transparent 22%),
+    linear-gradient(180deg, #edff8c, #bfff21);
+  border: 2px solid rgba(245, 242, 238, 0.88);
+  box-shadow: 0 12px 30px rgba(215, 255, 94, 0.22), 0 0 0 6px rgba(215, 255, 94, 0.08);
+  transition: transform 80ms linear;
+}
+
+.flareButton {
+  width: 74px;
+  height: 74px;
   padding: 0;
-  font-size: 18px;
-}
-
-.touch button:first-child {
-  grid-column: 2;
-}
-
-.touch button:nth-child(5) {
-  grid-column: 2;
+  border-radius: 999px;
+  font-size: 26px;
+  line-height: 1;
 }
 
 @media (max-width: 980px) {
@@ -394,11 +443,12 @@
 
   .panel {
     margin: 0 8px 8px;
-    max-height: 176px;
+    max-height: min(196px, 28dvh);
+    padding-bottom: 18px;
   }
 
   .touch {
-    display: grid;
+    display: flex;
   }
 
   .upgradeGrid {
@@ -422,13 +472,24 @@
   }
 
   .touch {
-    right: 8px;
-    bottom: 8px;
-    grid-template-columns: repeat(3, 46px);
+    right: max(10px, env(safe-area-inset-right));
+    bottom: max(10px, env(safe-area-inset-bottom));
+    left: max(10px, env(safe-area-inset-left));
   }
 
-  .touch button {
-    width: 46px;
-    height: 46px;
+  .joystick {
+    width: 116px;
+    height: 116px;
+  }
+
+  .joystick span {
+    width: 50px;
+    height: 50px;
+  }
+
+  .flareButton {
+    width: 64px;
+    height: 64px;
+    font-size: 23px;
   }
 }
