@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
 import { MARKETPLACE_SUBMISSIONS_ARE_OPEN } from '@/lib/marketplaceAvailability'
 import { getMinimumMarketplacePrice } from '@/lib/marketplacePricing'
-import { deleteMarketplaceObject, isMarketplaceStorageUrl } from '@/lib/marketplaceStorage'
+import { deleteMarketplaceObject, getMarketplaceObjectBuffer, isMarketplaceStorageUrl } from '@/lib/marketplaceStorage'
 import { createMarketplaceSupabaseClient } from '@/lib/marketplaceSupabase'
+import { summarizeMarketplaceZip } from '@/lib/marketplaceZipSummary'
+import { sendMarketplaceStatusEmail } from '@/lib/marketplaceEmail'
 import { checkRateLimit, getClientIp, rateLimitHeaders } from '@/lib/rateLimit'
 
 type SubmitProductBody = {
@@ -71,8 +73,6 @@ export async function POST(request: Request) {
   const previewImageUrls = Array.isArray(body.preview_image_urls)
     ? body.preview_image_urls.map((url) => url.trim()).filter(Boolean).slice(0, 6)
     : []
-  const petCount = Number(body.pet_count)
-  const clothesCount = Number(body.clothes_count)
   const honeypot = body.website?.trim()
   const formStartedAt = Number(body.form_started_at)
 
@@ -119,17 +119,6 @@ export async function POST(request: Request) {
   }
 
   if (
-    !Number.isInteger(petCount) ||
-    !Number.isInteger(clothesCount) ||
-    petCount < 0 ||
-    clothesCount < 0 ||
-    petCount > 1500 ||
-    clothesCount > 1500
-  ) {
-    return NextResponse.json({ error: 'Invalid ZIP summary' }, { status: 422 })
-  }
-
-  if (
     !blobUrl ||
     !isMarketplaceStorageUrl(blobUrl) ||
     !blobUrl.includes('marketplace-submissions/')
@@ -159,6 +148,18 @@ export async function POST(request: Request) {
   }
 
   try {
+    const zipObject = await getMarketplaceObjectBuffer(blobUrl)
+
+    if (!zipObject) {
+      return NextResponse.json({ error: 'ZIP file not found' }, { status: 422 })
+    }
+
+    const zipSummary = summarizeMarketplaceZip(zipObject.bytes)
+
+    if (zipSummary.petCount > 1500 || zipSummary.clothesCount > 1500) {
+      return NextResponse.json({ error: 'Invalid ZIP summary' }, { status: 422 })
+    }
+
     const productId = crypto.randomUUID()
     const supabase = createMarketplaceSupabaseClient({ useServiceRole: true })
     const { error } = await supabase
@@ -174,8 +175,8 @@ export async function POST(request: Request) {
         blob_url: blobUrl,
         cover_image_url: coverImageUrl,
         preview_image_urls: previewImageUrls,
-        pet_count: petCount,
-        clothes_count: clothesCount,
+        pet_count: zipSummary.petCount,
+        clothes_count: zipSummary.clothesCount,
         status: 'pending',
       })
 
@@ -184,6 +185,16 @@ export async function POST(request: Request) {
       await deleteMarketplaceObject(coverImageUrl)
       await Promise.all(previewImageUrls.map((url) => deleteMarketplaceObject(url)))
       return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    const emailResult = await sendMarketplaceStatusEmail({
+      to: email,
+      productTitle: title,
+      status: 'submitted',
+    })
+
+    if (!emailResult.ok) {
+      console.error('Marketplace submission email failed:', emailResult.error)
     }
 
     return NextResponse.json(

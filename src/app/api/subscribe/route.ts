@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json()
     email = (body.email ?? '').trim().toLowerCase()
-    source = body.source === 'tech' || body.source === 'social' ? body.source : 'general'
+    source = body.source === 'tech' || body.source === 'social' || body.source === 'faro' ? body.source : 'general'
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }

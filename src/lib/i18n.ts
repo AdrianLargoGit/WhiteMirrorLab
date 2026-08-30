@@ -10,7 +10,9 @@ export const ROUTES = {
   es: {
     home: '/',
     blog: '/blog',
+    experiments: '/experimentos',
     contact: '/contacto',
+    faro: '/faro',
     download: '/descargar',
     marketplace: '/marketplace',
     skinTemplate: '/plantilla-skins',
@@ -22,7 +24,9 @@ export const ROUTES = {
   en: {
     home: '/en',
     blog: '/en/blog',
+    experiments: '/en/experiments',
     contact: '/en/contact',
+    faro: '/en/faro',
     download: '/en/download',
     marketplace: '/en/marketplace',
     skinTemplate: '/en/skin-template',
@@ -116,8 +120,16 @@ export function contactPath(locale: Locale): string {
   return ROUTES[locale].contact
 }
 
+export function faroPath(locale: Locale): string {
+  return ROUTES[locale].faro
+}
+
 export function blogPath(locale: Locale): string {
   return ROUTES[locale].blog
+}
+
+export function experimentsPath(locale: Locale): string {
+  return ROUTES[locale].experiments
 }
 
 export function downloadPath(locale: Locale): string {
@@ -162,7 +174,9 @@ export function toInternalPath(pathname: string): string {
   if (pathname === ROUTES.en.blog || pathname.startsWith(`${ROUTES.en.blog}/`)) {
     return pathname.replace(ROUTES.en.blog, ROUTES.es.blog)
   }
+  if (pathname === ROUTES.en.experiments) return ROUTES.es.experiments
   if (pathname === ROUTES.en.contact) return ROUTES.es.contact
+  if (pathname === ROUTES.en.faro) return ROUTES.es.faro
   if (pathname === ROUTES.en.download) return ROUTES.es.download
   if (pathname === ROUTES.en.marketplace || pathname.startsWith(`${ROUTES.en.marketplace}/`)) {
     return pathname.replace(ROUTES.en.marketplace, ROUTES.es.marketplace)
@@ -197,7 +211,9 @@ export function alternateLocalePath(pathname: string, nextLocale: Locale): strin
   if (internal === ROUTES.es.blog || internal.startsWith(`${ROUTES.es.blog}/`)) {
     return internal.replace(ROUTES.es.blog, ROUTES.en.blog)
   }
+  if (internal === ROUTES.es.experiments) return ROUTES.en.experiments
   if (internal === ROUTES.es.contact) return ROUTES.en.contact
+  if (internal === ROUTES.es.faro) return ROUTES.en.faro
   if (internal === ROUTES.es.download) return ROUTES.en.download
   if (internal === ROUTES.es.marketplace || internal.startsWith(`${ROUTES.es.marketplace}/`)) {
     return internal.replace(ROUTES.es.marketplace, ROUTES.en.marketplace)

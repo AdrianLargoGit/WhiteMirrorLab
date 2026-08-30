@@ -1,9 +1,18 @@
-type MarketplaceEmailStatus = 'approved' | 'rejected'
+type MarketplaceEmailStatus = 'submitted' | 'approved' | 'rejected'
 
 const BREVO_SMTP_URL = 'https://api.brevo.com/v3/smtp/email'
-const FALLBACK_FROM_EMAIL = 'whitemirrorlab.info@gmail.com'
+const FALLBACK_FROM_EMAIL = 'Sender@whitemirrorlab.com'
+const FALLBACK_FROM_NAME = 'White Mirror Lab'
 
 const copy = {
+  submitted: {
+    subject: 'Hemos recibido tu skin en White Mirror Lab',
+    title: 'Tu skin esta en revision.',
+    body:
+      'Hemos recibido tu pack correctamente. Nuestro equipo lo revisara antes de publicarlo en el marketplace de WML X.X.0.',
+    footer:
+      'Te avisaremos por este email cuando el pack sea aprobado o rechazado.',
+  },
   approved: {
     subject: 'Tu skin ha sido aprobada en White Mirror Lab',
     title: 'Tu skin ha sido aprobada.',
@@ -47,8 +56,13 @@ export async function sendMarketplaceStatusEmail(input: {
     return { ok: false, error: 'Brevo API key not configured' }
   }
 
-  const senderEmail = process.env.CONTACT_FROM_EMAIL ?? process.env.BREVO_SENDER_EMAIL ?? FALLBACK_FROM_EMAIL
-  const senderName = process.env.CONTACT_FROM_NAME ?? 'White Mirror Lab'
+  const senderEmail = process.env.MARKETPLACE_FROM_EMAIL ??
+    process.env.CONTACT_FROM_EMAIL ??
+    process.env.BREVO_SENDER_EMAIL ??
+    FALLBACK_FROM_EMAIL
+  const senderName = process.env.MARKETPLACE_FROM_NAME ??
+    process.env.CONTACT_FROM_NAME ??
+    FALLBACK_FROM_NAME
   const message = copy[input.status]
   const safeTitle = escapeHtml(input.productTitle)
 

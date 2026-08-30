@@ -198,20 +198,6 @@ export default function EticaPage() {
         support@whitemirrorlab.com (asunto: «Consulta ética»).
       </p>
 
-      <h2>4 bis. Criterios para dossiers de crimen real</h2>
-      <p>
-        Los dossiers documentales del blog se publican bajo una regla de proporcionalidad: solo se
-        ofrece descarga de pago cuando existe un volumen suficiente de fuentes publicas reales,
-        trazables y relevantes. Si el material disponible no aporta valor documental suficiente, el
-        articulo no muestra ZIP de pago.
-      </p>
-      <p>
-        El tratamiento editorial debe preservar la dignidad de victimas y familias, separar hechos
-        de teorias, explicar por que un sospechoso fue descartado, no acusado o no probado, y evitar
-        convertir imagenes de violencia real en reclamo visual. Las imagenes sensibles pueden
-        mostrarse veladas por defecto y deben conservar contexto de fuente.
-      </p>
-
       <h2>5. Compromiso de transparencia y ciencia abierta</h2>
       <p>
         Al finalizar el experimento, publicaremos:

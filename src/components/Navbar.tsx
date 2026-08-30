@@ -10,6 +10,8 @@ import {
   blogPath,
   contactPath,
   downloadPath,
+  experimentsPath,
+  faroPath,
   localizedHashPath,
   marketplacePath,
   skinTemplatePath,
@@ -49,10 +51,9 @@ export default function Navbar({ lang, onLangChange }: NavbarProps) {
 
   const navLinks = [
     { href: blogPath(lang), label: t.navBlog },
-    { href: localizedHashPath(lang, '#experiments'), label: t.navExperiments },
-    { href: localizedHashPath(lang, '#how'), label: t.navMethodology },
-    { href: localizedHashPath(lang, '#ethics'), label: t.navEthics },
+    { href: experimentsPath(lang), label: t.navExperiments },
     { href: contactPath(lang), label: t.navContact },
+    { href: faroPath(lang), label: t.navFaro },
   ]
 
   const wmlLinks = [

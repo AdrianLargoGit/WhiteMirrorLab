@@ -439,6 +439,82 @@
   flex-direction: column;
 }
 
+.wml-ad-post-card {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  width: min(100vw, 520px);
+  height: 360px;
+  visibility: hidden;
+  pointer-events: none;
+  border-color: rgba(244, 244, 245, 0.11);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 44%),
+    var(--w-surface, #141417);
+}
+
+.wml-ad-post-card-loaded {
+  position: static;
+  left: auto;
+  top: auto;
+  height: auto;
+  display: flex;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.wml-ad-post-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+}
+
+.wml-ad-avatar {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(244, 244, 245, 0.14);
+  border-radius: 50%;
+  background: #0b0b0d;
+  color: #f4f4f5;
+  font-family: var(--w-font-mono, monospace);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.wml-ad-label {
+  flex: 0 0 auto;
+  border: 1px solid rgba(244, 244, 245, 0.12);
+  border-radius: 999px;
+  color: var(--w-muted, #71717a);
+  font-family: var(--w-font-mono, monospace);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 5px 8px;
+  text-transform: uppercase;
+}
+
+.wml-ad-frame-wrap {
+  position: relative;
+  width: 100%;
+  min-height: 260px;
+  aspect-ratio: 1 / 0.82;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.045), transparent 34%),
+    #0b0b0d;
+  overflow: hidden;
+}
+
+.wml-ad-frame {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+  background: transparent;
+}
+
 /* Cabecera del Post (Avatar, Nombres, Badge) */
 .wml-post-header {
   display: flex;

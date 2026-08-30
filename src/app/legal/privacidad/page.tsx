@@ -119,15 +119,6 @@ export default function PrivacidadPage() {
         <li><strong>Plazo:</strong> Máximo 12 meses en logs del servidor</li>
       </ul>
 
-      <h3>2.5. Compra de dossiers documentales del blog</h3>
-      <ul>
-        <li><strong>Datos:</strong> Identificador de sesion de Stripe, caso adquirido, codigo de dossier, confirmacion declarativa de mayoria de edad, fecha de compra y estado del pago.</li>
-        <li><strong>Finalidad:</strong> Gestionar el pago, verificar el derecho de descarga y prevenir descargas no autorizadas.</li>
-        <li><strong>Base legal:</strong> Ejecucion de contrato (art. 6.1.b RGPD), cumplimiento de obligaciones legales contables/fiscales cuando proceda (art. 6.1.c RGPD) e interes legitimo en seguridad antifraude (art. 6.1.f RGPD).</li>
-        <li><strong>Plazo:</strong> Durante el tiempo necesario para gestionar la descarga, incidencias, reembolsos y obligaciones legales aplicables.</li>
-        <li><strong>Encargado:</strong> Stripe procesa el pago. White Mirror Lab no almacena datos completos de tarjeta.</li>
-      </ul>
-
       <h2>3. Destinatarios y transferencias internacionales</h2>
       <p>
         Tus datos son tratados por los siguientes encargados del tratamiento, con los que mantenemos
@@ -162,11 +153,6 @@ export default function PrivacidadPage() {
             <td style={{ padding: '10px 8px' }}>Vercel Inc.</td>
             <td style={{ padding: '10px 8px' }}>Alojamiento y CDN de la aplicación web</td>
             <td style={{ padding: '10px 8px' }}>EE.UU. / UE — CCT; opción de región UE disponible</td>
-          </tr>
-          <tr>
-            <td style={{ padding: '10px 8px' }}>Stripe Payments Europe, Ltd. / Stripe</td>
-            <td style={{ padding: '10px 8px' }}>Procesamiento de pagos de dossiers documentales</td>
-            <td style={{ padding: '10px 8px' }}>UE / transferencias con garantias aplicables</td>
           </tr>
         </tbody>
       </table>

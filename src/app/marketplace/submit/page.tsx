@@ -16,7 +16,7 @@ const copy = {
     eyebrow: 'Marketplace de skins',
     title: 'Sube tu skin para revision',
     lead:
-      'El marketplace aun no esta disponible. Puedes preparar tu ZIP con la plantilla oficial; abriremos el formulario muy pronto.',
+      'Completa el formulario oficial para enviar tu ZIP, portada y previews. Revisaremos el pack antes de publicarlo.',
     backToKit: 'Volver al kit',
     privacy: 'Blob privado',
     review: 'Revision manual',
@@ -32,7 +32,7 @@ const copy = {
     eyebrow: 'Skin marketplace',
     title: 'Submit your skin for review',
     lead:
-      'The marketplace is not available yet. You can prepare your ZIP with the official template; we will open the form very soon.',
+      'Complete the official form to send your ZIP, cover, and previews. We will review the pack before publishing it.',
     backToKit: 'Back to kit',
     privacy: 'Private Blob',
     review: 'Manual review',

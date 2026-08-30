@@ -59,12 +59,6 @@ export default function AvisoLegalPage() {
         cuenta creada por un menor, será eliminada de forma inmediata y sus datos suprimidos.
       </p>
 
-      <p>
-        Los dossiers documentales de crimen real disponibles en el blog tambien estan restringidos
-        a mayores de 18 anos y pueden contener referencias a violencia real, desapariciones,
-        homicidios, sospechosos, victimas y material de archivo potencialmente sensible.
-      </p>
-
       <h2>4. Propiedad intelectual e industrial</h2>
       <p>
         La totalidad de los contenidos de este sitio web —incluyendo, sin carácter limitativo,

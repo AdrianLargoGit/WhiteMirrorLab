@@ -1,28 +1,27 @@
 import type { Locale } from './i18n'
 
-export const MARKETPLACE_IS_AVAILABLE = false
-export const MARKETPLACE_SUBMISSIONS_ARE_OPEN = false
+export const MARKETPLACE_IS_AVAILABLE = true
+export const MARKETPLACE_SUBMISSIONS_ARE_OPEN = true
 
 export const marketplaceAvailabilityCopy = {
   es: {
-    title: 'Marketplace no disponible todavia',
+    title: 'Marketplace abierto',
     body:
-      'Estamos preparando la apertura. Puedes descargar la plantilla y dejar tus skins listas; el envio y la compra se abriran muy pronto.',
-    short: 'Pronto disponible',
-    submitTitle: 'El formulario abrira muy pronto',
+      'Ya puedes enviar skins para revision y comprar packs aprobados por White Mirror Lab.',
+    short: 'Abierto',
+    submitTitle: 'Envia tu skin',
     submitBody:
-      'Aun no aceptamos envios desde la web. Prepara tu ZIP con la plantilla oficial y vuelve cuando activemos la subida.',
-    prepareCta: 'Preparar mi skin',
+      'Sube tu ZIP, portada y previews. Revisaremos el pack antes de publicarlo en el marketplace.',
+    prepareCta: 'Subir mi skin',
   },
   en: {
-    title: 'Marketplace is not available yet',
+    title: 'Marketplace is open',
     body:
-      'We are preparing the launch. You can download the template and get your skins ready; submissions and purchases will open very soon.',
-    short: 'Available soon',
-    submitTitle: 'The form will open very soon',
+      'You can now submit skins for review and buy creator packs approved by White Mirror Lab.',
+    short: 'Open',
+    submitTitle: 'Submit your skin',
     submitBody:
-      'We are not accepting web submissions yet. Prepare your ZIP with the official template and come back when uploads are enabled.',
-    prepareCta: 'Prepare my skin',
+      'Upload your ZIP, cover, and previews. We will review the pack before publishing it in the marketplace.',
+    prepareCta: 'Submit my skin',
   },
 } satisfies Record<Locale, Record<string, string>>
-

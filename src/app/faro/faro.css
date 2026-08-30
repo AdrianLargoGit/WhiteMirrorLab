@@ -1,0 +1,659 @@
+.faro-app {
+  min-height: 100dvh;
+  background:
+    radial-gradient(ellipse 54% 36% at 50% 52%, rgba(200, 255, 0, 0.16), transparent 64%),
+    radial-gradient(ellipse 30% 22% at 50% 52%, rgba(245, 242, 238, 0.13), transparent 74%),
+    linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+    #050505;
+  background-size: auto, auto, 56px 56px, 56px 56px, auto;
+  color: #f5f2ee;
+  font-family: 'DM Sans', sans-serif;
+  cursor: auto;
+  overflow-x: hidden;
+}
+
+.faro-header {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px clamp(16px, 4vw, 40px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(5, 5, 5, 0.82);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(18px);
+}
+
+.faro-back,
+.faro-brand,
+.faro-eyebrow,
+.faro-status,
+.faro-form span,
+.faro-form-footer,
+.faro-form small,
+.faro-feedback,
+.faro-newsletter h2,
+.faro-newsletter-form button,
+.faro-newsletter-success,
+.faro-newsletter-error {
+  font-family: 'Space Mono', monospace;
+}
+
+.faro-back {
+  color: rgba(245, 242, 238, 0.42);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+
+.faro-back:hover {
+  color: #f5f2ee;
+}
+
+.faro-brand {
+  color: #c8ff00;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.faro-ad-columns {
+  display: none;
+}
+
+.faro-main {
+  width: min(100%, 1120px);
+  min-height: calc(100dvh - 58px);
+  margin: 0 auto;
+  padding: clamp(18px, 4vh, 42px) clamp(16px, 5vw, 56px);
+  display: grid;
+  align-content: center;
+  gap: clamp(18px, 4vh, 34px);
+  position: relative;
+  z-index: 2;
+}
+
+.faro-main:has(.faro-form-entry) {
+  align-content: start;
+}
+
+.faro-main:has(.faro-form-entry) .faro-stage {
+  min-height: clamp(360px, 46dvh, 520px);
+}
+
+.faro-stage {
+  min-height: min(500px, calc(100dvh - 260px));
+  display: grid;
+  place-items: center;
+  position: relative;
+  isolation: isolate;
+}
+
+.faro-orbit,
+.faro-orbit span {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.faro-orbit {
+  width: min(92vw, 900px);
+  aspect-ratio: 1.95;
+  z-index: -1;
+}
+
+.faro-orbit span {
+  border-radius: 999px;
+}
+
+.faro-orbit span:nth-child(1) {
+  width: 100%;
+  height: 100%;
+  border: 1px solid rgba(200, 255, 0, 0.12);
+}
+
+.faro-orbit span:nth-child(2) {
+  width: 82%;
+  height: 72%;
+  background: radial-gradient(circle, rgba(200, 255, 0, 0.28), rgba(200, 255, 0, 0.08) 42%, transparent 72%);
+  filter: blur(34px);
+  animation: faroGlow 4.8s ease-in-out infinite;
+}
+
+.faro-orbit span:nth-child(3) {
+  width: 44%;
+  height: 38%;
+  background: rgba(245, 242, 238, 0.08);
+  filter: blur(42px);
+}
+
+.faro-message-shell {
+  width: min(100%, 880px);
+  display: grid;
+  justify-items: center;
+  gap: clamp(14px, 2.4vh, 20px);
+}
+
+.faro-eyebrow {
+  color: #c8ff00;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.faro-stage h1 {
+  width: min(100%, 790px);
+  min-height: clamp(150px, 26vh, 248px);
+  max-height: min(54dvh, 390px);
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: clamp(26px, 5vw, 54px);
+  border: 1px solid rgba(200, 255, 0, 0.32);
+  border-radius: clamp(24px, 4vw, 44px) clamp(24px, 4vw, 44px) clamp(24px, 4vw, 44px) 12px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(245, 242, 238, 0.9) 48%, rgba(218, 255, 78, 0.86)),
+    #f5f2ee;
+  box-shadow:
+    0 0 110px rgba(200, 255, 0, 0.2),
+    0 34px 110px rgba(0, 0, 0, 0.66),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  color: #080808;
+  font-family: var(--font-display);
+  font-size: clamp(30px, 5.5vw, 66px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  position: relative;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.faro-stage h1::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.56), transparent 30%),
+    linear-gradient(300deg, rgba(200, 255, 0, 0.18), transparent 38%);
+  pointer-events: none;
+}
+
+.faro-stage h1::after {
+  content: '';
+  position: absolute;
+  left: clamp(26px, 5vw, 48px);
+  bottom: -11px;
+  width: 24px;
+  height: 24px;
+  border-left: 1px solid rgba(245, 242, 238, 0.15);
+  border-bottom: 1px solid rgba(245, 242, 238, 0.15);
+  background: linear-gradient(145deg, #ece9df, #dfff57);
+  transform: rotate(-20deg) skew(-18deg);
+}
+
+.faro-stage h1 span {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  overflow-wrap: anywhere;
+  position: relative;
+  z-index: 1;
+}
+
+.faro-stage h1.faro-message-md {
+  font-size: clamp(24px, 3.7vw, 46px);
+  line-height: 1.14;
+}
+
+.faro-stage h1.faro-message-lg {
+  font-size: clamp(22px, 3.2vw, 38px);
+  line-height: 1.16;
+}
+
+.faro-stage h1.faro-message-xl {
+  font-size: clamp(18px, 2.45vw, 29px);
+  line-height: 1.24;
+  padding: clamp(22px, 4vw, 42px);
+}
+
+.faro-status {
+  color: rgba(245, 242, 238, 0.48);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.faro-form {
+  width: min(100%, 640px);
+  margin: 0 auto;
+  display: grid;
+  gap: 14px;
+  padding: clamp(18px, 4vw, 24px);
+  border: 1px solid rgba(245, 242, 238, 0.12);
+  border-radius: 14px;
+  background: rgba(10, 10, 10, 0.9);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.34);
+}
+
+.faro-form-entry {
+  width: min(100%, 760px);
+  border-color: rgba(200, 255, 0, 0.28);
+  background:
+    linear-gradient(180deg, rgba(200, 255, 0, 0.055), rgba(245, 242, 238, 0.025)),
+    rgba(8, 8, 8, 0.94);
+  box-shadow:
+    0 0 70px rgba(200, 255, 0, 0.08),
+    0 24px 80px rgba(0, 0, 0, 0.42);
+}
+
+.faro-form label {
+  display: grid;
+  gap: 10px;
+}
+
+.faro-form span {
+  color: #c8ff00;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.faro-form textarea {
+  width: 100%;
+  min-height: 126px;
+  resize: vertical;
+  border: 1px solid rgba(245, 242, 238, 0.12);
+  border-radius: 10px;
+  background: #070707;
+  color: #f5f2ee;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.55;
+  padding: 14px;
+  outline: none;
+}
+
+.faro-form textarea:focus {
+  border-color: #c8ff00;
+  background: rgba(200, 255, 0, 0.035);
+}
+
+.faro-form-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.faro-form-footer p,
+.faro-form small,
+.faro-feedback {
+  margin: 0;
+  color: #8c8881;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.faro-form button {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid #c8ff00;
+  background: #c8ff00;
+  color: #050505;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.faro-form button:hover:not(:disabled) {
+  background: #f5f2ee;
+  color: #050505;
+}
+
+.faro-form button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.faro-feedback {
+  text-align: center;
+  color: #c8ff00;
+}
+
+.faro-feedback-error {
+  color: #ff6b3d;
+}
+
+.faro-newsletter {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(290px, 0.9fr);
+  gap: clamp(16px, 3vw, 28px);
+  align-items: center;
+  padding: clamp(14px, 2.4vw, 20px);
+  border: 1px solid rgba(245, 242, 238, 0.1);
+  background:
+    radial-gradient(circle at 8% 20%, rgba(200, 255, 0, 0.08), transparent 34%),
+    rgba(8, 8, 8, 0.76);
+  box-shadow: 0 18px 70px rgba(0, 0, 0, 0.24);
+}
+
+.faro-newsletter .faro-eyebrow {
+  margin: 0 0 8px;
+  font-size: 9px;
+}
+
+.faro-newsletter h2 {
+  margin: 0;
+  color: #f5f2ee;
+  font-size: clamp(16px, 1.55vw, 20px);
+  line-height: 1.04;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.faro-newsletter span {
+  display: block;
+  margin-top: 8px;
+  color: rgba(245, 242, 238, 0.52);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.faro-newsletter-form {
+  display: flex;
+  min-width: 0;
+}
+
+.faro-newsletter-form input {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid rgba(245, 242, 238, 0.14);
+  border-right: 0;
+  background: rgba(255, 255, 255, 0.045);
+  color: #f5f2ee;
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+  padding: 15px 16px;
+}
+
+.faro-newsletter-form input:focus {
+  border-color: #c8ff00;
+}
+
+.faro-newsletter-form input::placeholder {
+  color: rgba(245, 242, 238, 0.38);
+}
+
+.faro-newsletter-form button {
+  border: 1px solid #c8ff00;
+  background: #c8ff00;
+  color: #050505;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 0 18px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.faro-newsletter-form button:hover:not(:disabled) {
+  background: #f5f2ee;
+  border-color: #f5f2ee;
+}
+
+.faro-newsletter-form button:disabled {
+  cursor: wait;
+  opacity: 0.64;
+}
+
+.faro-newsletter-success,
+.faro-newsletter-error {
+  margin: 0;
+  color: #c8ff00;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.faro-newsletter-error {
+  grid-column: 2;
+  color: #ff6b3d;
+}
+
+@media (orientation: landscape) and (min-width: 1180px) {
+  .faro-ad-columns {
+    position: fixed;
+    inset: 66px 18px 14px;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: clamp(118px, 10vw, 154px) 1fr clamp(118px, 10vw, 154px);
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: 14px 18px;
+    pointer-events: none;
+  }
+
+  .faro-ad-slot {
+    position: relative;
+    width: 100%;
+    min-height: 0;
+    height: 100%;
+    align-self: stretch;
+    border: 1px solid rgba(200, 255, 0, 0.14);
+    background:
+      radial-gradient(circle at 22% 14%, rgba(200, 255, 0, 0.12), transparent 34%),
+      linear-gradient(145deg, rgba(245, 242, 238, 0.045), rgba(245, 242, 238, 0.012)),
+      rgba(5, 5, 5, 0.72);
+    box-shadow:
+      0 0 44px rgba(200, 255, 0, 0.055),
+      0 22px 70px rgba(0, 0, 0, 0.32);
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(8px);
+    transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease;
+    visibility: hidden;
+  }
+
+  .faro-ad-slot-loaded {
+    opacity: 0.72;
+    pointer-events: auto;
+    transform: translateY(0);
+    visibility: visible;
+  }
+
+  .faro-ad-slot::before {
+    content: 'FARO / AD';
+    position: absolute;
+    left: 10px;
+    top: 9px;
+    z-index: 2;
+    color: rgba(200, 255, 0, 0.72);
+    font-family: 'Space Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.14em;
+  }
+
+  .faro-ad-slot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    border: 1px solid rgba(245, 242, 238, 0.045);
+    background:
+      linear-gradient(90deg, rgba(0, 0, 0, 0.35), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.35)),
+      linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size: auto, 20px 20px, 20px 20px;
+    pointer-events: none;
+  }
+
+  .faro-ad-slot-left {
+    grid-column: 1;
+  }
+
+  .faro-ad-slot-right {
+    grid-column: 3;
+  }
+
+  .faro-ad-slot-1 {
+    grid-row: 1;
+  }
+
+  .faro-ad-slot-2 {
+    grid-row: 2;
+  }
+
+  .faro-ad-frame {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    display: block;
+    border: 0;
+    background: transparent;
+    filter: grayscale(0.15) saturate(0.75) contrast(1.04);
+  }
+}
+
+@media (orientation: landscape) and (min-width: 1180px) and (max-width: 1399px) {
+  .faro-main {
+    width: min(100%, 860px);
+  }
+}
+
+@keyframes faroGlow {
+  0%,
+  100% {
+    opacity: 0.82;
+    transform: translate(-50%, -50%) scale(0.98);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+}
+
+@media (max-width: 720px) {
+  .faro-header {
+    min-height: 54px;
+    align-items: flex-start;
+    padding: 15px 16px;
+  }
+
+  .faro-brand {
+    max-width: 170px;
+    text-align: right;
+  }
+
+  .faro-main {
+    min-height: calc(100dvh - 54px);
+    padding: 16px 18px 22px;
+  }
+
+  .faro-stage {
+    min-height: min(470px, calc(100dvh - 250px));
+  }
+
+  .faro-main:has(.faro-form-entry) .faro-stage {
+    min-height: 410px;
+  }
+
+  .faro-orbit {
+    width: 118vw;
+    aspect-ratio: 0.78;
+  }
+
+  .faro-message-shell {
+    gap: 18px;
+  }
+
+  .faro-stage h1 {
+    width: 100%;
+    min-height: clamp(158px, 25vh, 224px);
+    max-height: 56dvh;
+    padding: 25px 20px;
+    font-size: clamp(25px, 8.2vw, 40px);
+    line-height: 1.08;
+  }
+
+  .faro-stage h1.faro-message-md {
+    font-size: clamp(20px, 6vw, 30px);
+  }
+
+  .faro-stage h1.faro-message-lg,
+  .faro-stage h1.faro-message-xl {
+    font-size: clamp(17px, 5.15vw, 25px);
+    line-height: 1.2;
+  }
+
+  .faro-form-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .faro-form button {
+    width: 100%;
+  }
+
+  .faro-newsletter {
+    grid-template-columns: 1fr;
+    align-items: center;
+    padding: 14px;
+    gap: 14px;
+  }
+
+  .faro-newsletter h2 {
+    white-space: normal;
+  }
+
+  .faro-newsletter-form {
+    flex-direction: row;
+  }
+
+  .faro-newsletter-form input {
+    border-right: 0;
+    border-bottom: 1px solid rgba(245, 242, 238, 0.14);
+    padding: 13px 12px;
+  }
+
+  .faro-newsletter-form button {
+    min-height: 44px;
+    padding: 0 12px;
+  }
+
+  .faro-newsletter-error {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 380px) {
+  .faro-stage h1 {
+    font-size: clamp(23px, 7.5vw, 34px);
+    padding: 22px 16px;
+  }
+
+  .faro-stage h1.faro-message-lg,
+  .faro-stage h1.faro-message-xl {
+    font-size: clamp(16px, 4.8vw, 22px);
+  }
+}

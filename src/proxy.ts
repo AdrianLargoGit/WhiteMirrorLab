@@ -46,8 +46,16 @@ export async function proxy(request: NextRequest) {
       url.pathname = originalPathname.replace(ROUTES.es.blog, ROUTES.en.blog)
       return applySecurityHeaders(NextResponse.redirect(url))
     }
+    if (originalPathname === ROUTES.es.experiments) {
+      url.pathname = ROUTES.en.experiments
+      return applySecurityHeaders(NextResponse.redirect(url))
+    }
     if (originalPathname === ROUTES.es.contact) {
       url.pathname = ROUTES.en.contact
+      return applySecurityHeaders(NextResponse.redirect(url))
+    }
+    if (originalPathname === ROUTES.es.faro) {
+      url.pathname = ROUTES.en.faro
       return applySecurityHeaders(NextResponse.redirect(url))
     }
     if (originalPathname === ROUTES.es.download) {

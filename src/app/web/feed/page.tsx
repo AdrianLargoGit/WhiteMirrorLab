@@ -14,6 +14,7 @@ import { AvatarMini, KarmaBadge } from '@/components/wml/AppShell'
 import type { Post, Profile, Story, VoteType } from '@/lib/database.types'
 import StoryViewer from '@/components/wml/StoryViewer'
 import SpainWorldCupBadge from '@/components/wml/SpainWorldCupBadge'
+import FeedAdCard from '@/components/wml/FeedAdCard'
 
 const PWAInstallBanner = dynamic(() => import('@/components/wml/PWABanner'), {
   ssr: false,
@@ -196,15 +197,29 @@ export default function FeedPage() {
           </div>
         )}
 
-        {posts.map((post) => (
-          <PostCard
-            key={post.id}
-            post={post}
-            isOwnPost={user?.id === post.user_id}
-            myVote={myVotes[post.user_id] ?? null}
-            onVote={handleVote}
-          />
-        ))}
+        {posts.flatMap((post, index) => {
+          const items = [
+            <PostCard
+              key={post.id}
+              post={post}
+              isOwnPost={user?.id === post.user_id}
+              myVote={myVotes[post.user_id] ?? null}
+              onVote={handleVote}
+            />,
+          ]
+
+          if ((index + 1) % 4 === 0) {
+            items.push(
+              <FeedAdCard
+                key={`feed-ad-${post.id}`}
+                locale={locale}
+                slotId={`wml-feed-ad-${post.id}`}
+              />,
+            )
+          }
+
+          return items
+        })}
 
         {/* Infinite scroll sentinel */}
         <div ref={sentinelRef} style={{ height: 1 }} />

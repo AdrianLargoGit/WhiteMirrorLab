@@ -11,6 +11,8 @@ import {
   localizedHashPath,
   legalPath,
   contactPath,
+  experimentsPath,
+  faroPath,
   wmlPath,
   type Locale,
 } from '@/lib/i18n'
@@ -311,19 +313,19 @@ export default function Home() {
         <div className={styles.footerCol}>
           <h4>{t.footerLab}</h4>
           <ul>
-            <li><a href={localizedHashPath(lang, '#experiments')}>{t.navExperiments}</a></li>
-            <li><a href={localizedHashPath(lang, '#how')}>{t.navMethodology}</a></li>
+            <li><a href={experimentsPath(lang)}>{t.navExperiments}</a></li>
             <li><a href={localizedHashPath(lang, '#apps')}>{t.navAreas}</a></li>
             <li><a href={contactPath(lang)}>{t.navContact}</a></li>
+            <li><a href={faroPath(lang)}>{t.navFaro}</a></li>
           </ul>
         </div>
         <div className={styles.footerCol}>
           <h4>{t.footerCompany}</h4>
           <ul>
             <li><a href={localizedHashPath(lang, '#manifesto')}>{t.navManifesto}</a></li>
-            <li><a href={localizedHashPath(lang, '#ethics')}>{t.navEthics}</a></li>
             <li><a href={wmlPath(lang, '/consent')}>{t.navWml}</a></li>
             <li><a href={contactPath(lang)}>{t.navContact}</a></li>
+            <li><a href={faroPath(lang)}>{t.navFaro}</a></li>
           </ul>
         </div>
         <div className={styles.footerCol}>
