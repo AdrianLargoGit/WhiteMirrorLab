@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 import { useLocale } from '@/hooks/useLocale'
 import { ANALYTICS_CONSENT_EVENT, ANALYTICS_CONSENT_KEY } from '@/lib/posthog'
 
@@ -33,12 +33,24 @@ const copy = {
   },
 } as const
 
+function subscribeToConsent(callback: () => void) {
+  window.addEventListener('storage', callback)
+  window.addEventListener(ANALYTICS_CONSENT_EVENT, callback)
+
+  return () => {
+    window.removeEventListener('storage', callback)
+    window.removeEventListener(ANALYTICS_CONSENT_EVENT, callback)
+  }
+}
+
+function getConsentSnapshot() {
+  return !localStorage.getItem(ANALYTICS_CONSENT_KEY)
+}
+
 export default function CookieBanner() {
   const locale = useLocale()
   const t = copy[locale]
-  const [isVisible, setIsVisible] = useState(() =>
-    typeof window !== 'undefined' && !localStorage.getItem(ANALYTICS_CONSENT_KEY)
-  )
+  const isVisible = useSyncExternalStore(subscribeToConsent, getConsentSnapshot, () => false)
   const [showSettings, setShowSettings] = useState(false)
   const [analyticsConsent, setAnalyticsConsent] = useState(false)
 
@@ -51,7 +63,6 @@ export default function CookieBanner() {
     window.dispatchEvent(new CustomEvent(ANALYTICS_CONSENT_EVENT, {
       detail: { analytics },
     }))
-    setIsVisible(false)
   }
 
   if (!isVisible) return null

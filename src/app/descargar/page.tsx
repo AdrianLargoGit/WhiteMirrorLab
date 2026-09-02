@@ -11,6 +11,9 @@ import { useLocale } from '@/hooks/useLocale'
 import styles from './page.module.css'
 
 const DOWNLOAD_URL = 'https://github.com/AdrianLargoGit/WhiteMirrorLab/releases/download/v1.0.2/wml-xx0-1.0.2-setup.exe'
+const AD_MESSAGE_TYPE = 'wml-adsterra-status'
+const AD_CONTAINER_ID = 'container-54237a243e6e5ead86fd96dfae1f4fe7'
+const AD_SCRIPT_SRC = 'https://pl31053382.profitableratecpmnetwork.com/54237a243e6e5ead86fd96dfae1f4fe7/invoke.js'
 
 type DeviceType = 'computer' | 'mobile' | 'tv' | 'unknown'
 type Platform = 'windows' | 'linux'
@@ -72,6 +75,80 @@ const IconWindows = () => (
     <path d="M3 4.6 10.7 3.5v8H3V4.6Zm8.7-1.25L21 2v9.5h-9.3V3.35ZM3 12.5h7.7v8L3 19.4v-6.9Zm8.7 0H21V22l-9.3-1.35V12.5Z" />
   </svg>
 )
+
+function adsterraFrameHtml(slotId: string) {
+  return `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      * { box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; margin: 0; background: transparent; overflow: hidden; }
+      body { position: relative; font-family: Arial, Helvetica, sans-serif; }
+      #${AD_CONTAINER_ID} { position: absolute; inset: 0; width: 100%; min-height: 100%; display: grid; place-items: center; background: transparent; }
+    </style>
+  </head>
+  <body>
+    <script async="async" data-cfasync="false" src="${AD_SCRIPT_SRC}"></script>
+    <div id="${AD_CONTAINER_ID}"></div>
+    <script>
+      (function () {
+        var container = document.getElementById('${AD_CONTAINER_ID}');
+        function hasAdContent() {
+          return Boolean(container && (container.children.length > 0 || container.textContent.trim().length > 0));
+        }
+        function update() {
+          window.parent.postMessage({
+            type: '${AD_MESSAGE_TYPE}',
+            slotId: '${slotId}',
+            loaded: hasAdContent()
+          }, '*');
+        }
+        if (container && 'MutationObserver' in window) {
+          new MutationObserver(update).observe(container, { childList: true, subtree: true, characterData: true });
+        }
+        window.addEventListener('load', update);
+        window.setTimeout(update, 1200);
+        window.setTimeout(update, 2200);
+        window.setTimeout(update, 5200);
+      })();
+    </script>
+  </body>
+</html>`
+}
+
+function DownloadAd({ label }: { label: string }) {
+  const slotId = 'download-primary'
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    function onMessage(event: MessageEvent) {
+      const data = event.data as { type?: string; slotId?: string; loaded?: boolean } | null
+      if (!data || data.type !== AD_MESSAGE_TYPE || data.slotId !== slotId) return
+      setLoaded(Boolean(data.loaded))
+    }
+
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [])
+
+  return (
+    <aside className={`${styles.downloadAd} ${loaded ? styles.downloadAdLoaded : ''}`} aria-label={label}>
+      <div className={styles.downloadAdHeader}>
+        <span>{label}</span>
+      </div>
+      <iframe
+        title={`${label} WML X.X.0`}
+        className={styles.downloadAdFrame}
+        srcDoc={adsterraFrameHtml(slotId)}
+        loading="lazy"
+        sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
+        referrerPolicy="no-referrer-when-downgrade"
+      />
+    </aside>
+  )
+}
 
 export default function DownloadPage() {
   const lang = useLocale()
@@ -377,38 +454,41 @@ export default function DownloadPage() {
             ) : null}
           </div>
 
-          <aside className={styles.panel} aria-label={t.version}>
-            <div className={styles.panelTop}>
-              <span>WML</span>
-              <span>X.X.0</span>
-            </div>
-            <dl className={styles.specs}>
-              <div>
-                <dt>{t.versionLabel}</dt>
-                <dd>{t.version}</dd>
+          <div className={styles.sideColumn}>
+            <aside className={styles.panel} aria-label={t.version}>
+              <div className={styles.panelTop}>
+                <span>WML</span>
+                <span>X.X.0</span>
               </div>
-              <div>
-                <dt>{t.petLabel}</dt>
-                <dd>{t.pet}</dd>
-              </div>
-              <div>
-                <dt>{t.pointsLabel}</dt>
-                <dd>{t.points}</dd>
-              </div>
-              <div>
-                <dt>{t.downloadsLabel}</dt>
-                <dd>{downloadCount.toLocaleString(lang)}</dd>
-              </div>
-            </dl>
-            <ul className={styles.checks}>
-              {t.checks.map((item) => (
-                <li key={item}>
-                  <IconCheck />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </aside>
+              <dl className={styles.specs}>
+                <div>
+                  <dt>{t.versionLabel}</dt>
+                  <dd>{t.version}</dd>
+                </div>
+                <div>
+                  <dt>{t.petLabel}</dt>
+                  <dd>{t.pet}</dd>
+                </div>
+                <div>
+                  <dt>{t.pointsLabel}</dt>
+                  <dd>{t.points}</dd>
+                </div>
+                <div>
+                  <dt>{t.downloadsLabel}</dt>
+                  <dd>{downloadCount.toLocaleString(lang)}</dd>
+                </div>
+              </dl>
+              <ul className={styles.checks}>
+                {t.checks.map((item) => (
+                  <li key={item}>
+                    <IconCheck />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </aside>
+            <DownloadAd label={lang === 'es' ? 'Anuncio' : 'Ad'} />
+          </div>
         </section>
       </main>
     </div>
