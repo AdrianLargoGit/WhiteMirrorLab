@@ -18,6 +18,10 @@ type FaroDayState = {
   usedPasswords: Set<string>
 }
 
+type FaroStateStore = {
+  days: Record<string, FaroDayState>
+}
+
 const FARO_TIME_ZONE = 'Europe/Madrid'
 const FARO_PUBLISH_HOUR = 20
 const DEFAULT_MESSAGE =
@@ -51,20 +55,45 @@ const normalizeDateParts = (date = new Date()) => {
   }
 }
 
-const getStateStore = () => {
+const getPreviousDateKey = (dateKey: string) => {
+  const [year, month, day] = dateKey.split('-').map(Number)
+  const utcNoon = Date.UTC(year, month - 1, day, 12)
+
+  return normalizeDateParts(new Date(utcNoon - 24 * 60 * 60 * 1000)).dateKey
+}
+
+const getStateStore = (dateKey = normalizeDateParts().dateKey) => {
   const globalStore = globalThis as typeof globalThis & {
-    __wmlFaroState?: FaroDayState
+    __wmlFaroState?: FaroDayState | FaroStateStore
   }
 
-  const today = normalizeDateParts().dateKey
-  if (!globalStore.__wmlFaroState || globalStore.__wmlFaroState.dateKey !== today) {
-    globalStore.__wmlFaroState = {
-      dateKey: today,
+  if (!globalStore.__wmlFaroState || !('days' in globalStore.__wmlFaroState)) {
+    const previousState = globalStore.__wmlFaroState
+    globalStore.__wmlFaroState = { days: {} }
+
+    if (previousState?.dateKey) {
+      globalStore.__wmlFaroState.days[previousState.dateKey] = previousState
+    }
+  }
+
+  if (!globalStore.__wmlFaroState.days[dateKey]) {
+    globalStore.__wmlFaroState.days[dateKey] = {
+      dateKey,
       usedPasswords: new Set(),
     }
   }
 
-  return globalStore.__wmlFaroState
+  return globalStore.__wmlFaroState.days[dateKey]
+}
+
+const getExistingStateStore = (dateKey: string) => {
+  const globalStore = globalThis as typeof globalThis & {
+    __wmlFaroState?: FaroDayState | FaroStateStore
+  }
+
+  if (!globalStore.__wmlFaroState) return undefined
+  if ('days' in globalStore.__wmlFaroState) return globalStore.__wmlFaroState.days[dateKey]
+  return globalStore.__wmlFaroState.dateKey === dateKey ? globalStore.__wmlFaroState : undefined
 }
 
 export const getFaroTodayKey = () => normalizeDateParts().dateKey
@@ -125,22 +154,23 @@ export const validateFaroMessage = (message: string) => {
 }
 
 export const getFaroPublicState = (): FaroPublicState => {
-  const state = getStateStore()
-  const publishTime = isFaroPublishTime()
-  const liveMessage = state.adminMessage ?? (publishTime ? state.pendingMessage : undefined)
+  const today = normalizeDateParts()
+  const state = getStateStore(today.dateKey)
+  const publishTime = today.hour >= FARO_PUBLISH_HOUR
+  const previousState = getExistingStateStore(getPreviousDateKey(state.dateKey))
+  const liveState = state.adminMessage || publishTime ? state : previousState
+  const liveMessage = liveState?.adminMessage ?? liveState?.pendingMessage
   const status = liveMessage
-    ? publishTime || state.adminMessage
-      ? 'live'
-      : 'pending'
+    ? 'live'
     : state.pendingMessage
     ? 'pending'
     : 'default'
 
   return {
-    dateKey: state.dateKey,
+    dateKey: liveMessage ? liveState.dateKey : state.dateKey,
     message: liveMessage ?? DEFAULT_MESSAGE,
     status,
-    publishedAt: liveMessage ? state.adminUpdatedAt ?? `${state.dateKey}T20:00:00+01:00` : null,
+    publishedAt: liveMessage ? liveState.adminUpdatedAt ?? `${liveState.dateKey}T20:00:00+01:00` : null,
     canSubmit: isFaroSubmissionOpen() && !state.pendingMessage,
   }
 }
