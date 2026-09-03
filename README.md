@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# White Mirror Lab
 
-## Getting Started
+Web oficial de White Mirror Lab, un laboratorio de experimentacion social que crea aplicaciones temporales para observar comportamiento colectivo, reputacion digital, identidad online y etica tecnologica.
 
-First, run the development server:
+La web combina la landing publica del laboratorio con el primer experimento activo, WML 1.0 / Karma Score, la pagina de descarga del widget de escritorio WML X.X.0, el marketplace de skins para creadores, paginas legales, contacto, blog y paneles internos de administracion.
+
+## Que incluye
+
+- Landing bilingue en espanol e ingles para presentar el manifiesto, metodologia, areas de investigacion y experimentos.
+- WML 1.0 / Karma Score, un experimento social de reputacion digital con perfiles, feed, ranking, historias, fotos y votos anonimos.
+- Paginas publicas de perfil para compartir participantes y recibir votos.
+- Descarga de WML X.X.0, una mascota flotante para Windows con suscripcion previa y consentimiento informado.
+- Marketplace de skins y packs de creadores para WML X.X.0, con subida, revision, pago o descarga.
+- Integracion con Supabase, Cloudflare R2, Stripe Connect, Brevo y PostHog.
+- Documentacion legal: privacidad, cookies, aviso legal, terminos y marco etico.
+
+## Stack
+
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- Supabase
+- Cloudflare R2
+- Stripe Marketplace
+- Brevo
+- PostHog
+
+## Desarrollo local
+
+Instala dependencias:
+
+```bash
+npm install
+```
+
+Arranca el servidor de desarrollo:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre `http://localhost:3000` en el navegador.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev
+npm run build
+npm run start
+npm run lint
+```
 
-## Learn More
+## Rutas principales
 
-To learn more about Next.js, take a look at the following resources:
+- `/` - Landing de White Mirror Lab.
+- `/web` - Redireccion al feed de WML 1.0.
+- `/web/consent` - Consentimiento informado del experimento.
+- `/web/feed` - Feed privado de participantes.
+- `/web/ranking` - Ranking de Karma Score.
+- `/p/[username]` - Perfil publico compartible.
+- `/descargar` - Descarga del widget WML X.X.0.
+- `/plantilla-skins` - Kit para creadores de skins.
+- `/marketplace` - Marketplace de skins.
+- `/marketplace/submit` - Envio de productos para revision.
+- `/experimentos` - Archivo de experimentos.
+- `/blog` - Blog editorial.
+- `/faro` - FARO.
+- `/contacto` - Formulario de contacto.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Variables de entorno
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+El proyecto usa variables de entorno para Supabase, marketplace, pagos, email, analitica y almacenamiento. Revisa los modulos de `src/lib` y las rutas de `src/app/api` antes de desplegar para configurar las claves necesarias de:
 
-## Deploy on Vercel
+- Supabase
+- Marketplace Supabase
+- Cloudflare R2
+- Stripe
+- Brevo
+- PostHog
+- FARO
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+No subas secretos reales al repositorio.
