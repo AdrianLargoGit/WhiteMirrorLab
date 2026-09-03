@@ -165,12 +165,13 @@ export const getFaroPublicState = (): FaroPublicState => {
     : state.pendingMessage
     ? 'pending'
     : 'default'
+  const publicDateKey = liveState?.dateKey ?? state.dateKey
 
   return {
-    dateKey: liveMessage ? liveState.dateKey : state.dateKey,
+    dateKey: publicDateKey,
     message: liveMessage ?? DEFAULT_MESSAGE,
     status,
-    publishedAt: liveMessage ? liveState.adminUpdatedAt ?? `${liveState.dateKey}T20:00:00+01:00` : null,
+    publishedAt: liveMessage ? liveState?.adminUpdatedAt ?? `${publicDateKey}T20:00:00+01:00` : null,
     canSubmit: isFaroSubmissionOpen() && !state.pendingMessage,
   }
 }
