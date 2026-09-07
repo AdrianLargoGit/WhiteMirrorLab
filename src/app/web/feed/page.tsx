@@ -156,6 +156,20 @@ export default function FeedPage() {
         />
       )}
 
+      <section className="wml-feed-alert" aria-label={locale === 'es' ? 'Aviso de cierre' : 'Closing notice'}>
+        <div className="wml-feed-alert-kicker">
+          {locale === 'es' ? 'Aviso importante' : 'Important notice'}
+        </div>
+        <div className="wml-feed-alert-title">
+          {locale === 'es' ? 'WML 1.0 finalizará el 13 de septiembre' : 'WML 1.0 will end on September 13'}
+        </div>
+        <p className="wml-feed-alert-text">
+          {locale === 'es'
+            ? 'El experimento se cerrará el 13 de septiembre a las 23:59, hora española. Tras el periodo de actividad observado, ya contamos con los resultados necesarios para completar esta fase. El ganador recibirá un premio de 50€.'
+            : 'The experiment will close on September 13 at 23:59 Spanish time. After the observed activity period, we now have the results needed to complete this phase. The winner will receive a €50 prize.'}
+        </p>
+      </section>
+
       {/* Stories bar */}
       {stories.length > 0 && (
         <div className="wml-stories-bar">

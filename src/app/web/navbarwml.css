@@ -427,6 +427,47 @@
   margin: 0 auto;
 }
 
+/* Aviso destacado del feed */
+.wml-feed-alert {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto 18px auto;
+  padding: 16px 18px;
+  border: 1px solid rgba(248, 113, 113, 0.38);
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, rgba(239, 68, 68, 0.22), rgba(127, 29, 29, 0.48)),
+    #190b0d;
+  box-shadow: 0 14px 34px rgba(127, 29, 29, 0.22);
+}
+
+.wml-feed-alert-kicker {
+  margin-bottom: 8px;
+  color: #fecaca;
+  font-family: var(--w-font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.wml-feed-alert-title {
+  margin-bottom: 8px;
+  color: #fff1f2;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.wml-feed-alert-text {
+  margin: 0;
+  color: #ffe4e6;
+  font-size: 13.5px;
+  line-height: 1.55;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
 /* LA TARJETA DEL POST */
 .wml-post-card {
   background: var(--w-surface, #141417);
