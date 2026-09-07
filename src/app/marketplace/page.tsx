@@ -1,7 +1,9 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import { Fragment } from 'react'
 import { headers } from 'next/headers'
 import CustomCursor from '@/components/CustomCursor'
+import MarketplaceAdCard from '@/components/marketplace/MarketplaceAdBanner'
 import Navbar from '@/components/Navbar'
 import { DEFAULT_LOCALE, downloadPath, isLocale, marketplaceSubmitPath, type Locale } from '@/lib/i18n'
 import { MARKETPLACE_IS_AVAILABLE, marketplaceAvailabilityCopy } from '@/lib/marketplaceAvailability'
@@ -98,6 +100,8 @@ const copy = {
   },
 } satisfies Record<Locale, Record<string, string>>
 
+const MARKETPLACE_AD_SLOTS = ['marketplace-1', 'marketplace-2', 'marketplace-3', 'marketplace-4']
+
 function formatPrice(price: number, currency: string, lang: Locale, freeLabel: string) {
   if (isFreeMarketplacePrice(price)) return freeLabel
 
@@ -113,6 +117,13 @@ function getTone(index: number) {
 
 function isMissingFeaturedRankError(message: string) {
   return message.includes('featured_rank')
+}
+
+function getAdIndexAfterProduct(productIndex: number) {
+  const productNumber = productIndex + 1
+  if (productNumber < 2) return -1
+  if ((productNumber - 2) % 7 !== 0) return -1
+  return (productNumber - 2) / 7
 }
 
 async function getApprovedProducts(query: string) {
@@ -216,20 +227,22 @@ export default async function MarketplacePage({
         </section>
 
         {MARKETPLACE_IS_AVAILABLE ? (
-          <form className={styles.searchForm} action={marketplaceHref}>
-            <label htmlFor="marketplace-search">{t.searchLabel}</label>
-            <div>
-              <input
-                id="marketplace-search"
-                name="q"
-                type="search"
-                defaultValue={searchQuery}
-                placeholder={t.searchPlaceholder}
-              />
-              <button type="submit">{t.searchButton}</button>
-              {searchQuery ? <Link href={marketplaceHref}>{t.clearSearch}</Link> : null}
-            </div>
-          </form>
+          <>
+            <form className={styles.searchForm} action={marketplaceHref}>
+              <label htmlFor="marketplace-search">{t.searchLabel}</label>
+              <div>
+                <input
+                  id="marketplace-search"
+                  name="q"
+                  type="search"
+                  defaultValue={searchQuery}
+                  placeholder={t.searchPlaceholder}
+                />
+                <button type="submit">{t.searchButton}</button>
+                {searchQuery ? <Link href={marketplaceHref}>{t.clearSearch}</Link> : null}
+              </div>
+            </form>
+          </>
         ) : null}
 
         {!MARKETPLACE_IS_AVAILABLE ? (
@@ -277,59 +290,66 @@ export default async function MarketplacePage({
                 ? `/api/marketplace/download?product=${encodeURIComponent(product.id)}`
                 : `/api/marketplace/checkout?product=${encodeURIComponent(product.id)}`
               const productHref = `${lang === 'en' ? '/en' : ''}/marketplace/${product.id}`
+              const adIndex = getAdIndexAfterProduct(index)
+              const adSlot = MARKETPLACE_AD_SLOTS[adIndex]
 
               return (
-                <article className={styles.card} key={product.id}>
-                  <div className={`${styles.art} ${getTone(index)}`}>
-                    {product.cover_image_url ? (
-                      <Image
-                        src={`/api/marketplace/image?product=${encodeURIComponent(product.id)}&kind=cover`}
-                        alt=""
-                        width={520}
-                        height={390}
-                        className={styles.coverImage}
-                        unoptimized
-                      />
-                    ) : null}
-                    <span>{t.approved}</span>
-                    {product.featured_rank ? (
-                      <strong className={styles.featuredBadge} aria-label={`${t.featured} ${product.featured_rank}`}>
-                        🔥
-                      </strong>
-                    ) : null}
-                  </div>
-                  <div className={styles.body}>
-                    <div className={styles.meta}>
-                      <span>{t.creator}: {product.creator_name}</span>
-                      <span>{new Date(product.created_at).toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US')}</span>
+                <Fragment key={product.id}>
+                  <article className={styles.card}>
+                    <div className={`${styles.art} ${getTone(index)}`}>
+                      {product.cover_image_url ? (
+                        <Image
+                          src={`/api/marketplace/image?product=${encodeURIComponent(product.id)}&kind=cover`}
+                          alt=""
+                          width={520}
+                          height={390}
+                          className={styles.coverImage}
+                          unoptimized
+                        />
+                      ) : null}
+                      <span>{t.approved}</span>
+                      {product.featured_rank ? (
+                        <strong className={styles.featuredBadge} aria-label={`${t.featured} ${product.featured_rank}`}>
+                          🔥
+                        </strong>
+                      ) : null}
                     </div>
-                    <p className={styles.emailLine}>{t.email}: {product.creator_email}</p>
-                    <h2>{product.title}</h2>
-                    {product.description ? (
-                      <p className={styles.description}>{product.description}</p>
-                    ) : null}
-                    <div className={styles.counts}>
-                      <span>{product.pet_count} {t.pets}</span>
-                      <span>{product.clothes_count} {t.accessories}</span>
+                    <div className={styles.body}>
+                      <div className={styles.meta}>
+                        <span>{t.creator}: {product.creator_name}</span>
+                        <span>{new Date(product.created_at).toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US')}</span>
+                      </div>
+                      <p className={styles.emailLine}>{t.email}: {product.creator_email}</p>
+                      <h2>{product.title}</h2>
+                      {product.description ? (
+                        <p className={styles.description}>{product.description}</p>
+                      ) : null}
+                      <div className={styles.counts}>
+                        <span>{product.pet_count} {t.pets}</span>
+                        <span>{product.clothes_count} {t.accessories}</span>
+                      </div>
+                      <div className={styles.priceRow}>
+                        <span>{t.price}</span>
+                        <strong>{formatPrice(product.price, currency, lang, t.free)}</strong>
+                      </div>
                     </div>
-                    <div className={styles.priceRow}>
-                      <span>{t.price}</span>
-                      <strong>{formatPrice(product.price, currency, lang, t.free)}</strong>
+                    <div className={styles.cardActions}>
+                      <Link className={styles.detailButton} href={productHref}>
+                        {t.details}
+                      </Link>
+                      {isAvailable ? (
+                        <a className={styles.buyButton} href={buyHref}>
+                          {isFree ? t.download : t.buy}
+                        </a>
+                      ) : (
+                        <span className={styles.disabledButton}>{t.unavailable}</span>
+                      )}
                     </div>
-                  </div>
-                  <div className={styles.cardActions}>
-                    <Link className={styles.detailButton} href={productHref}>
-                      {t.details}
-                    </Link>
-                    {isAvailable ? (
-                      <a className={styles.buyButton} href={buyHref}>
-                        {isFree ? t.download : t.buy}
-                      </a>
-                    ) : (
-                      <span className={styles.disabledButton}>{t.unavailable}</span>
-                    )}
-                  </div>
-                </article>
+                  </article>
+                  {adSlot ? (
+                    <MarketplaceAdCard locale={lang} slotId={adSlot} index={adIndex} />
+                  ) : null}
+                </Fragment>
               )
             })}
           </section>

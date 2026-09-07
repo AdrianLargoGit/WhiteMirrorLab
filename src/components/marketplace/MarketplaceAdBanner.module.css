@@ -1,0 +1,32 @@
+.card {
+  grid-template-rows: 1fr;
+}
+
+.probe {
+  width: 320px;
+  height: 250px;
+  position: absolute;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loaded {
+  display: grid;
+}
+
+.frame {
+  width: 100%;
+  height: 100%;
+  min-height: 210px;
+  position: relative;
+  z-index: 1;
+  display: block;
+  border: 0;
+}
+
+@media (max-width: 560px) {
+  .frame {
+    min-height: 220px;
+  }
+}
