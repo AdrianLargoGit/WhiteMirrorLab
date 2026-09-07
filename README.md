@@ -36,16 +36,16 @@ The goal is not to manipulate users, but to reveal uncomfortable patterns in dig
 
 ## Website Sections
 
-- Lab manifesto
-- Experiment archive
-- WML 1.0 participation
-- Public Karma Score profiles
-- WML X.X.0 download page
-- Creator skin template
-- Marketplace
-- Blog
-- Legal and ethics documentation
-- Contact page
+- [Lab manifesto](https://www.whitemirrorlab.com/#manifesto)
+- [Experiment archive](https://www.whitemirrorlab.com/experimentos)
+- [WML 1.0 participation](https://www.whitemirrorlab.com/web/consent)
+- [Public Karma Score profiles](https://www.whitemirrorlab.com/web/feed)
+- [WML X.X.0 download page](https://www.whitemirrorlab.com/descargar)
+- [Creator skin template](https://www.whitemirrorlab.com/plantilla-skins)
+- [Marketplace](https://www.whitemirrorlab.com/marketplace)
+- [Blog](https://www.whitemirrorlab.com/blog)
+- [Legal and ethics documentation](https://www.whitemirrorlab.com/legal/etica)
+- [Contact page](https://www.whitemirrorlab.com/contacto)
 
 ## Status
 
