@@ -86,6 +86,31 @@
   max-width: 980px;
 }
 
+.approvedSection {
+  display: grid;
+  gap: 18px;
+  margin-top: clamp(34px, 6vw, 64px);
+}
+
+.sectionHeader {
+  max-width: 680px;
+}
+
+.sectionHeader h2 {
+  font-family: var(--font-display);
+  font-size: clamp(30px, 4vw, 48px);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-top: 10px;
+}
+
+.sectionHeader p:last-child {
+  color: rgba(245, 242, 238, 0.58);
+  font-size: 15px;
+  line-height: 1.7;
+  margin-top: 12px;
+}
+
 .item {
   align-items: center;
   border: 1px solid rgba(217, 255, 107, 0.18);
@@ -161,6 +186,39 @@
   display: grid;
 }
 
+.featureForm {
+  display: grid;
+  gap: 10px;
+  min-width: 210px;
+}
+
+.featureForm label {
+  display: grid;
+  gap: 8px;
+}
+
+.featureForm span {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.featureForm select {
+  min-height: 46px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--white);
+  font: inherit;
+  padding: 0 12px;
+}
+
+.featureForm option {
+  color: var(--black);
+}
+
 .item .rejectButton {
   background: #ff8a8a;
   color: #160808;
@@ -195,8 +253,10 @@
   }
 
   .itemActions,
+  .featureForm,
   .item form,
   .item button,
+  .featureForm select,
   .itemActions a {
     width: 100%;
   }

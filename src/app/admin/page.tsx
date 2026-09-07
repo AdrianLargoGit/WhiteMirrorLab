@@ -2,7 +2,7 @@ import { headers } from 'next/headers'
 import Image from 'next/image'
 import CustomCursor from '@/components/CustomCursor'
 import Navbar from '@/components/Navbar'
-import { approveProduct, rejectProduct } from './actions'
+import { approveProduct, rejectProduct, setFeaturedProduct } from './actions'
 import { getMarketplaceCurrency, isFreeMarketplacePrice } from '@/lib/marketplacePricing'
 import { createMarketplaceSupabaseClient } from '@/lib/marketplaceSupabase'
 import { DEFAULT_LOCALE, isLocale, type Locale } from '@/lib/i18n'
@@ -24,12 +24,19 @@ export default async function AdminPage({
   const { token } = await searchParams
   const hasToken = Boolean(process.env.MARKETPLACE_ADMIN_TOKEN)
   const canView = hasToken && token === process.env.MARKETPLACE_ADMIN_TOKEN
-  const products = canView
+  const pendingProducts = canView
     ? await createMarketplaceSupabaseClient({ useServiceRole: true })
         .from('products')
         .select('*')
         .eq('status', 'pending')
         .order('created_at', { ascending: true })
+    : null
+  const approvedProducts = canView
+    ? await createMarketplaceSupabaseClient({ useServiceRole: true })
+        .from('products')
+        .select('*')
+        .eq('status', 'approved')
+        .order('created_at', { ascending: false })
     : null
 
   return (
@@ -54,17 +61,21 @@ export default async function AdminPage({
           </form>
         ) : null}
 
-        {canView && products?.error ? (
-          <p className={styles.error}>{products.error.message}</p>
+        {canView && pendingProducts?.error ? (
+          <p className={styles.error}>{pendingProducts.error.message}</p>
         ) : null}
 
-        {canView && products?.data?.length === 0 ? (
+        {canView && approvedProducts?.error ? (
+          <p className={styles.error}>{approvedProducts.error.message}</p>
+        ) : null}
+
+        {canView && pendingProducts?.data?.length === 0 ? (
           <p className={styles.empty}>No pending products.</p>
         ) : null}
 
-        {canView && products?.data?.length ? (
+        {canView && pendingProducts?.data?.length ? (
           <div className={styles.list}>
-            {products.data.map((product, index) => (
+            {pendingProducts.data.map((product, index) => (
               <article className={styles.item} key={product.id}>
                 {product.cover_image_url ? (
                   <div className={styles.coverPreview}>
@@ -116,6 +127,65 @@ export default async function AdminPage({
               </article>
             ))}
           </div>
+        ) : null}
+
+        {canView ? (
+          <section className={styles.approvedSection}>
+            <div className={styles.sectionHeader}>
+              <p className="section-label">Featured</p>
+              <h2>Approved products</h2>
+              <p>Choose up to three products to show first in the marketplace with a fire badge.</p>
+            </div>
+
+            {approvedProducts?.data?.length === 0 ? (
+              <p className={styles.empty}>No approved products yet.</p>
+            ) : null}
+
+            {approvedProducts?.data?.length ? (
+              <div className={styles.list}>
+                {approvedProducts.data.map((product) => (
+                  <article className={styles.item} key={product.id}>
+                    {product.cover_image_url ? (
+                      <div className={styles.coverPreview}>
+                        <Image
+                          src={`/api/marketplace/image?product=${encodeURIComponent(product.id)}&kind=cover&token=${encodeURIComponent(token ?? '')}`}
+                          alt=""
+                          width={240}
+                          height={180}
+                          unoptimized
+                        />
+                      </div>
+                    ) : null}
+                    <div className={styles.itemMeta}>
+                      <span>{product.featured_rank ? `0${product.featured_rank} / Featured` : 'Normal'}</span>
+                      <h2>{product.title}</h2>
+                      <p>Creator: {product.creator_name}</p>
+                      <p>{isFreeMarketplacePrice(product.price) ? 'Free' : new Intl.NumberFormat(lang === 'es' ? 'es-ES' : 'en-US', {
+                        style: 'currency',
+                        currency: getMarketplaceCurrency(),
+                      }).format(product.price)}</p>
+                      <p>{product.pet_count} pets / {product.clothes_count} accessories</p>
+                    </div>
+
+                    <form className={styles.featureForm} action={setFeaturedProduct}>
+                      <input name="productId" type="hidden" value={product.id} />
+                      <input name="adminToken" type="hidden" value={token} />
+                      <label>
+                        <span>Marketplace position</span>
+                        <select name="featuredRank" defaultValue={product.featured_rank ?? ''}>
+                          <option value="">Normal</option>
+                          <option value="1">Featured 1</option>
+                          <option value="2">Featured 2</option>
+                          <option value="3">Featured 3</option>
+                        </select>
+                      </label>
+                      <button type="submit">Save</button>
+                    </form>
+                  </article>
+                ))}
+              </div>
+            ) : null}
+          </section>
         ) : null}
       </main>
     </div>

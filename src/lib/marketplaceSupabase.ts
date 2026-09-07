@@ -16,6 +16,7 @@ export type MarketplaceProduct = {
   preview_image_urls: string[]
   pet_count: number
   clothes_count: number
+  featured_rank: number | null
   status: MarketplaceProductStatus
   created_at: string
   updated_at: string
@@ -40,6 +41,7 @@ type MarketplaceDatabase = {
           preview_image_urls?: string[]
           pet_count?: number
           clothes_count?: number
+          featured_rank?: number | null
           status?: MarketplaceProductStatus
           created_at?: string
           updated_at?: string
@@ -59,6 +61,7 @@ type MarketplaceDatabase = {
             | 'preview_image_urls'
             | 'pet_count'
             | 'clothes_count'
+            | 'featured_rank'
             | 'status'
           >
         >

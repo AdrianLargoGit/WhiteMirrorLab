@@ -65,6 +65,7 @@ export async function createMarketplaceStripeCheckout(input: {
   const cancelUrl = new URL(`/marketplace/${input.id}`, input.origin)
 
   params.set('mode', 'payment')
+  params.set('managed_payments[enabled]', 'false')
   params.set('success_url', receiptUrl)
   params.set('cancel_url', cancelUrl.toString())
   params.set('metadata[marketplace_product_id]', input.id)

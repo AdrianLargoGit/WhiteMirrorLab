@@ -136,3 +136,58 @@ export async function rejectProduct(formData: FormData) {
 
   revalidatePath('/admin')
 }
+
+export async function setFeaturedProduct(formData: FormData) {
+  requireAdminToken(formData)
+
+  const productId = String(formData.get('productId') ?? '')
+  const rawRank = String(formData.get('featuredRank') ?? '')
+  const featuredRank = rawRank ? Number(rawRank) : null
+
+  if (!productId) {
+    throw new Error('Missing product id')
+  }
+
+  if (featuredRank !== null && (!Number.isInteger(featuredRank) || featuredRank < 1 || featuredRank > 3)) {
+    throw new Error('Featured rank must be 1, 2, or 3')
+  }
+
+  const supabase = createMarketplaceSupabaseClient({ useServiceRole: true })
+  const { data: product, error: productError } = await supabase
+    .from('products')
+    .select('id,status')
+    .eq('id', productId)
+    .single()
+
+  if (productError || !product) {
+    throw new Error(productError?.message ?? 'Product not found')
+  }
+
+  if (product.status !== 'approved') {
+    throw new Error('Only approved products can be featured')
+  }
+
+  if (featuredRank !== null) {
+    const { error: clearError } = await supabase
+      .from('products')
+      .update({ featured_rank: null })
+      .eq('featured_rank', featuredRank)
+      .neq('id', productId)
+
+    if (clearError) {
+      throw new Error(clearError.message)
+    }
+  }
+
+  const { error: updateError } = await supabase
+    .from('products')
+    .update({ featured_rank: featuredRank })
+    .eq('id', productId)
+
+  if (updateError) {
+    throw new Error(updateError.message)
+  }
+
+  revalidatePath('/admin')
+  revalidatePath('/marketplace')
+}

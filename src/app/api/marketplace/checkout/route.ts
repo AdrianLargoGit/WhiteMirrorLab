@@ -4,6 +4,23 @@ import { isFreeMarketplacePrice } from '@/lib/marketplacePricing'
 import { createMarketplaceSupabaseClient } from '@/lib/marketplaceSupabase'
 import { createMarketplaceStripeCheckout } from '@/lib/stripeMarketplace'
 
+function getProductUrl(origin: string, productId: string, errorCode?: string) {
+  const productUrl = new URL(`/marketplace/${productId}`, origin)
+
+  if (errorCode) {
+    productUrl.searchParams.set('payment_error', errorCode)
+  }
+
+  return productUrl
+}
+
+function isCreatorPayoutCapabilityError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error)
+
+  return message.includes('insufficient_capabilities_for_transfer')
+    || message.includes('Your destination account needs to have')
+}
+
 export async function GET(request: NextRequest) {
   if (!MARKETPLACE_IS_AVAILABLE) {
     return NextResponse.json({ error: 'Marketplace is not available yet' }, { status: 503 })
@@ -57,6 +74,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.redirect(checkout.url, 303)
   } catch (error) {
+    if (isCreatorPayoutCapabilityError(error)) {
+      return NextResponse.redirect(getProductUrl(request.nextUrl.origin, productId, 'creator_payouts_unavailable'), 303)
+    }
+
     const message = error instanceof Error ? error.message : 'Unable to open checkout'
     return NextResponse.json({ error: message }, { status: 500 })
   }

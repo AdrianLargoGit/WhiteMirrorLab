@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { MARKETPLACE_SUBMISSIONS_ARE_OPEN } from '@/lib/marketplaceAvailability'
-import { getMinimumMarketplacePrice, isFreeMarketplacePrice } from '@/lib/marketplacePricing'
+import { getMarketplacePaidProductsEnabled, getMinimumMarketplacePrice, isFreeMarketplacePrice } from '@/lib/marketplacePricing'
 import { deleteMarketplaceObject, getMarketplaceObjectBuffer, isMarketplaceStorageUrl } from '@/lib/marketplaceStorage'
 import { createMarketplaceSupabaseClient } from '@/lib/marketplaceSupabase'
 import { summarizeMarketplaceZip } from '@/lib/marketplaceZipSummary'
@@ -65,8 +65,9 @@ export async function POST(request: Request) {
   const description = body.description?.trim()
   const creatorName = body.creator_name?.trim()
   const email = body.email?.trim().toLowerCase()
+  const paidProductsEnabled = getMarketplacePaidProductsEnabled()
   const stripeAccountId = body.stripe_account_id?.trim()
-  const price = Number(body.price)
+  const price = paidProductsEnabled ? Number(body.price) : 0
   const isFree = isFreeMarketplacePrice(price)
   const minimumPrice = getMinimumMarketplacePrice()
   const blobUrl = body.blob_url?.trim()
@@ -108,11 +109,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Valid email is required' }, { status: 422 })
   }
 
-  if (!isFree && (!stripeAccountId || !isValidStripeAccountId(stripeAccountId))) {
+  if (paidProductsEnabled && !isFree && (!stripeAccountId || !isValidStripeAccountId(stripeAccountId))) {
     return NextResponse.json({ error: 'Valid Stripe Connect account ID is required' }, { status: 422 })
   }
 
-  if (!Number.isFinite(price) || price < 0 || (!isFree && price < minimumPrice)) {
+  if (paidProductsEnabled && (!Number.isFinite(price) || price < 0 || (!isFree && price < minimumPrice))) {
     return NextResponse.json(
       { error: `Price must be 0 for a free pack or at least ${minimumPrice.toFixed(2)}` },
       { status: 422 },
@@ -171,8 +172,8 @@ export async function POST(request: Request) {
         description,
         creator_name: creatorName,
         creator_email: email,
-        stripe_account_id: isFree ? null : stripeAccountId,
-        price: isFree ? 0 : price,
+        stripe_account_id: paidProductsEnabled && !isFree ? stripeAccountId : null,
+        price: paidProductsEnabled && !isFree ? price : 0,
         blob_url: blobUrl,
         cover_image_url: coverImageUrl,
         preview_image_urls: previewImageUrls,

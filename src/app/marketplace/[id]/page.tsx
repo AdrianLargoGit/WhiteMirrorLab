@@ -14,6 +14,9 @@ type PageProps = {
   params: Promise<{
     id: string
   }>
+  searchParams: Promise<{
+    payment_error?: string
+  }>
 }
 
 export const dynamic = 'force-dynamic'
@@ -34,6 +37,7 @@ const copy = {
     emptyGallery: 'Este pack solo tiene imagen de portada.',
     description: 'Descripcion',
     unavailable: 'Pronto disponible',
+    creatorPayoutsUnavailable: 'Este creador aun no tiene activada la capacidad para recibir pagos. Estamos revisando su cuenta antes de permitir la compra.',
   },
   en: {
     back: 'Back to marketplace',
@@ -50,6 +54,7 @@ const copy = {
     emptyGallery: 'This pack only has a cover image.',
     description: 'Description',
     unavailable: 'Available soon',
+    creatorPayoutsUnavailable: 'This creator cannot receive payments yet. We are reviewing their account before purchases are enabled.',
   },
 } satisfies Record<Locale, Record<string, string>>
 
@@ -62,8 +67,9 @@ function formatPrice(price: number, currency: string, lang: Locale, freeLabel: s
   }).format(price)
 }
 
-export default async function MarketplacePackPage({ params }: PageProps) {
+export default async function MarketplacePackPage({ params, searchParams }: PageProps) {
   const { id } = await params
+  const { payment_error: paymentError } = await searchParams
   const headerLocale = (await headers()).get('x-wml-locale')
   const lang: Locale = isLocale(headerLocale) ? headerLocale : DEFAULT_LOCALE
   const t = copy[lang]
@@ -117,6 +123,9 @@ export default async function MarketplacePackPage({ params }: PageProps) {
               </section>
             ) : null}
             <p className={styles.creatorEmail}>{t.email}: {product.creator_email}</p>
+            {paymentError === 'creator_payouts_unavailable' ? (
+              <p className={styles.paymentNotice}>{t.creatorPayoutsUnavailable}</p>
+            ) : null}
             <dl>
               <div>
                 <dt>{t.price}</dt>

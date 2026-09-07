@@ -161,6 +161,64 @@
   background: #ffccd8;
 }
 
+.searchForm {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.searchForm label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.searchForm > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content max-content;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.searchForm input {
+  min-width: 0;
+  min-height: 52px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: var(--cream);
+  box-shadow: 4px 4px 0 var(--ink);
+  color: var(--ink);
+  font: inherit;
+  padding: 0 16px;
+}
+
+.searchForm button,
+.searchForm a {
+  min-height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: var(--sun);
+  box-shadow: 4px 4px 0 var(--ink);
+  color: var(--ink);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 0 16px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.searchForm a {
+  background: var(--cream);
+}
+
 .notice,
 .empty {
   border: 2px solid var(--ink);
@@ -257,6 +315,22 @@
   background: var(--cream);
   padding: 7px 9px;
   font-size: 9px;
+}
+
+.featuredBadge {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--sun);
+  box-shadow: 3px 3px 0 var(--ink);
+  font-size: 22px;
+  line-height: 1;
 }
 
 .tone1 {
@@ -427,8 +501,14 @@
     display: grid;
   }
 
+  .searchForm > div {
+    grid-template-columns: 1fr;
+  }
+
   .uploadButton,
   .installButton,
+  .searchForm button,
+  .searchForm a,
   .empty a {
     width: 100%;
   }

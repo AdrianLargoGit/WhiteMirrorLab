@@ -30,6 +30,7 @@ type PublicMarketplaceProduct = Pick<
   | 'clothes_count'
   | 'download_blob_url'
   | 'stripe_account_id'
+  | 'featured_rank'
 >
 
 const copy = {
@@ -56,6 +57,13 @@ const copy = {
     payment: 'Pago seguro',
     import: 'Importable en WML',
     comingSoon: 'Apertura muy pronto',
+    searchLabel: 'Buscar por nombre',
+    searchPlaceholder: 'Nombre de la skin',
+    searchButton: 'Buscar',
+    clearSearch: 'Limpiar',
+    noResults: 'No hay skins con ese nombre',
+    noResultsText: 'Prueba con otro nombre o limpia la busqueda.',
+    featured: 'Destacado',
   },
   en: {
     title: 'Marketplace',
@@ -80,6 +88,13 @@ const copy = {
     payment: 'Secure payment',
     import: 'Importable in WML',
     comingSoon: 'Opening very soon',
+    searchLabel: 'Search by name',
+    searchPlaceholder: 'Skin name',
+    searchButton: 'Search',
+    clearSearch: 'Clear',
+    noResults: 'No skins match that name',
+    noResultsText: 'Try another name or clear the search.',
+    featured: 'Featured',
   },
 } satisfies Record<Locale, Record<string, string>>
 
@@ -96,16 +111,54 @@ function getTone(index: number) {
   return styles[`tone${(index % 4) + 1}` as keyof typeof styles]
 }
 
-async function getApprovedProducts() {
+function isMissingFeaturedRankError(message: string) {
+  return message.includes('featured_rank')
+}
+
+async function getApprovedProducts(query: string) {
   try {
     const supabase = createMarketplaceSupabaseClient({ useServiceRole: true })
-    const { data, error } = await supabase
+    const baseSelect = 'id,title,description,creator_name,creator_email,price,created_at,cover_image_url,pet_count,clothes_count,download_blob_url,stripe_account_id'
+    let request = supabase
       .from('products')
-      .select('id,title,description,creator_name,creator_email,price,created_at,cover_image_url,pet_count,clothes_count,download_blob_url,stripe_account_id')
+      .select(`${baseSelect},featured_rank`)
       .eq('status', 'approved')
+      .order('featured_rank', { ascending: true, nullsFirst: false })
       .order('created_at', { ascending: false })
 
+    if (query) {
+      request = request.ilike('title', `%${query}%`)
+    }
+
+    const { data, error } = await request
+
     if (error) {
+      if (isMissingFeaturedRankError(error.message)) {
+        let fallbackRequest = supabase
+          .from('products')
+          .select(baseSelect)
+          .eq('status', 'approved')
+          .order('created_at', { ascending: false })
+
+        if (query) {
+          fallbackRequest = fallbackRequest.ilike('title', `%${query}%`)
+        }
+
+        const fallback = await fallbackRequest
+
+        if (fallback.error) {
+          return { products: [] as PublicMarketplaceProduct[], error: fallback.error.message }
+        }
+
+        return {
+          products: (fallback.data ?? []).map((product) => ({
+            ...product,
+            featured_rank: null,
+          })) as PublicMarketplaceProduct[],
+          error: null,
+        }
+      }
+
       return { products: [] as PublicMarketplaceProduct[], error: error.message }
     }
 
@@ -116,14 +169,21 @@ async function getApprovedProducts() {
   }
 }
 
-export default async function MarketplacePage() {
+export default async function MarketplacePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>
+}) {
   const headerLocale = (await headers()).get('x-wml-locale')
   const lang: Locale = isLocale(headerLocale) ? headerLocale : DEFAULT_LOCALE
   const t = copy[lang]
   const availability = marketplaceAvailabilityCopy[lang]
   const currency = getMarketplaceCurrency()
+  const { q } = await searchParams
+  const searchQuery = String(q ?? '').trim()
+  const marketplaceHref = lang === 'en' ? '/en/marketplace' : '/marketplace'
   const { products, error } = MARKETPLACE_IS_AVAILABLE
-    ? await getApprovedProducts()
+    ? await getApprovedProducts(searchQuery)
     : { products: [] as PublicMarketplaceProduct[], error: null }
 
   return (
@@ -155,6 +215,23 @@ export default async function MarketplacePage() {
           <span>{t.import}</span>
         </section>
 
+        {MARKETPLACE_IS_AVAILABLE ? (
+          <form className={styles.searchForm} action={marketplaceHref}>
+            <label htmlFor="marketplace-search">{t.searchLabel}</label>
+            <div>
+              <input
+                id="marketplace-search"
+                name="q"
+                type="search"
+                defaultValue={searchQuery}
+                placeholder={t.searchPlaceholder}
+              />
+              <button type="submit">{t.searchButton}</button>
+              {searchQuery ? <Link href={marketplaceHref}>{t.clearSearch}</Link> : null}
+            </div>
+          </form>
+        ) : null}
+
         {!MARKETPLACE_IS_AVAILABLE ? (
           <section className={styles.notice}>
             <h2>{availability.title}</h2>
@@ -184,8 +261,8 @@ export default async function MarketplacePage() {
             />
             <div>
               <span>00 / DROP</span>
-              <h2>{MARKETPLACE_IS_AVAILABLE ? t.empty : availability.short}</h2>
-              <p>{MARKETPLACE_IS_AVAILABLE ? t.emptyText : availability.body}</p>
+              <h2>{searchQuery ? t.noResults : MARKETPLACE_IS_AVAILABLE ? t.empty : availability.short}</h2>
+              <p>{searchQuery ? t.noResultsText : MARKETPLACE_IS_AVAILABLE ? t.emptyText : availability.body}</p>
               <Link href={marketplaceSubmitPath(lang)}>{availability.prepareCta}</Link>
             </div>
           </section>
@@ -215,6 +292,11 @@ export default async function MarketplacePage() {
                       />
                     ) : null}
                     <span>{t.approved}</span>
+                    {product.featured_rank ? (
+                      <strong className={styles.featuredBadge} aria-label={`${t.featured} ${product.featured_rank}`}>
+                        🔥
+                      </strong>
+                    ) : null}
                   </div>
                   <div className={styles.body}>
                     <div className={styles.meta}>

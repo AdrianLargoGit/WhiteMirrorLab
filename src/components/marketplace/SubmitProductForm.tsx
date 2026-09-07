@@ -1,7 +1,7 @@
 'use client'
 
 import { FormEvent, useMemo, useState } from 'react'
-import { getMinimumMarketplacePrice } from '@/lib/marketplacePricing'
+import { getMarketplacePaidProductsEnabled, getMinimumMarketplacePrice } from '@/lib/marketplacePricing'
 import { summarizeMarketplaceZip, type MarketplaceZipSummary } from '@/lib/marketplaceZipSummary'
 import type { Locale } from '@/lib/i18n'
 import styles from './SubmitProductForm.module.css'
@@ -35,6 +35,7 @@ const copy = {
     freeLabel: 'Gratis para quien lo quiera',
     freeHint: 'No pediremos Stripe y cualquiera podra descargarlo cuando se apruebe.',
     priceChangeHint: 'Si luego quieres cambiar el precio, escribenos desde el correo de soporte que has puesto en este formulario.',
+    paidUnavailable: 'Actualmente no esta disponible vender packs de pago. Todos los envios deben ser gratis por ahora; volveremos a activar precio y Stripe Connect en el futuro.',
     descriptionLabel: 'Descripcion',
     descriptionPlaceholder: 'Cuenta que incluye el pack, estilo visual, variantes y requisitos de uso.',
     zipLabel: 'ZIP del pack',
@@ -53,6 +54,7 @@ const copy = {
     success: 'Skin enviada. La revisaremos antes de publicarla.',
     error: 'No hemos podido enviar la skin. Revisa los campos e intentalo de nuevo.',
     minHint: 'Precio minimo',
+    feeHint: 'A este importe se le aplicaran comisiones de Stripe y de plataforma; por eso existe este precio minimo.',
     previewHint: 'Hasta 6 imagenes PNG, JPG, WEBP o GIF.',
     required: 'Completa los campos obligatorios y adjunta ZIP y portada.',
     stripeHint: 'Debe empezar por acct_. Solo hace falta si el pack es de pago.',
@@ -73,6 +75,7 @@ const copy = {
     freeLabel: 'Free for anyone',
     freeHint: 'We will not ask for Stripe and anyone can download it once approved.',
     priceChangeHint: 'If you want to change the price later, email us from the support email you entered in this form.',
+    paidUnavailable: 'Paid marketplace packs are not available right now. All submissions must be free for now; price and Stripe Connect will be enabled again in the future.',
     descriptionLabel: 'Description',
     descriptionPlaceholder: 'Describe what is included, visual style, variants, and usage requirements.',
     zipLabel: 'Pack ZIP',
@@ -91,6 +94,7 @@ const copy = {
     success: 'Skin submitted. We will review it before publishing.',
     error: 'We could not submit the skin. Check the fields and try again.',
     minHint: 'Minimum price',
+    feeHint: 'Stripe and platform fees apply to this amount; that is why this minimum price exists.',
     previewHint: 'Up to 6 PNG, JPG, WEBP, or GIF images.',
     required: 'Complete the required fields and attach a ZIP and cover image.',
     stripeHint: 'Must start with acct_. Only required for paid packs.',
@@ -184,6 +188,7 @@ async function uploadFile(file: File, kind: 'zip' | 'cover' | 'preview') {
 export function SubmitProductForm({ lang }: SubmitProductFormProps) {
   const t = copy[lang]
   const minimumPrice = useMemo(() => getMinimumMarketplacePrice(), [])
+  const paidProductsEnabled = useMemo(() => getMarketplacePaidProductsEnabled(), [])
   const [formStartedAt] = useState(() => Date.now())
   const [state, setState] = useState<SubmitState>('idle')
   const [message, setMessage] = useState('')
@@ -191,7 +196,7 @@ export function SubmitProductForm({ lang }: SubmitProductFormProps) {
   const [zipSummary, setZipSummary] = useState<MarketplaceZipSummary | null>(null)
   const [coverFile, setCoverFile] = useState<File | null>(null)
   const [previewFiles, setPreviewFiles] = useState<File[]>([])
-  const [isFree, setIsFree] = useState(false)
+  const [isFree, setIsFree] = useState(() => !paidProductsEnabled)
   const [priceInput, setPriceInput] = useState(() => minimumPrice.toFixed(2))
 
   const isBusy = state === 'uploading' || state === 'submitting'
@@ -212,10 +217,11 @@ export function SubmitProductForm({ lang }: SubmitProductFormProps) {
     const creatorName = String(data.get('creator_name') ?? '').trim()
     const email = String(data.get('email') ?? '').trim()
     const stripeAccountId = String(data.get('stripe_account_id') ?? '').trim()
-    const price = isFree ? 0 : Number(priceInput)
+    const effectiveIsFree = !paidProductsEnabled || isFree
+    const price = effectiveIsFree ? 0 : Number(priceInput)
     const website = String(data.get('website') ?? '').trim()
 
-    if (!title || !description || !creatorName || !email || (!isFree && !stripeAccountId) || !zipFile || !coverFile || !zipSummary) {
+    if (!title || !description || !creatorName || !email || (!effectiveIsFree && !stripeAccountId) || !zipFile || !coverFile || !zipSummary) {
       setState('error')
       setMessage(t.required)
       return
@@ -240,7 +246,7 @@ export function SubmitProductForm({ lang }: SubmitProductFormProps) {
           description,
           creator_name: creatorName,
           email,
-          stripe_account_id: isFree ? null : stripeAccountId,
+          stripe_account_id: effectiveIsFree ? null : stripeAccountId,
           price,
           blob_url: blobUrl,
           cover_image_url: coverImageUrl,
@@ -260,7 +266,7 @@ export function SubmitProductForm({ lang }: SubmitProductFormProps) {
       setZipSummary(null)
       setCoverFile(null)
       setPreviewFiles([])
-      setIsFree(false)
+      setIsFree(!paidProductsEnabled)
       setPriceInput(minimumPrice.toFixed(2))
       setState('success')
       setMessage(t.success)
@@ -287,6 +293,8 @@ export function SubmitProductForm({ lang }: SubmitProductFormProps) {
   }
 
   function handleFreeChange(checked: boolean) {
+    if (!paidProductsEnabled) return
+
     setIsFree(checked)
     setPriceInput(checked ? '0.00' : minimumPrice.toFixed(2))
   }
@@ -315,40 +323,50 @@ export function SubmitProductForm({ lang }: SubmitProductFormProps) {
           <input name="email" type="email" maxLength={254} placeholder={t.emailPlaceholder} required disabled={isBusy} />
         </label>
 
-        <label className={styles.field}>
-          <span>{t.stripeLabel}</span>
-          <input name="stripe_account_id" type="text" pattern="acct_[A-Za-z0-9]+" placeholder={t.stripePlaceholder} required={!isFree} disabled={isBusy || isFree} />
-          <small>{t.stripeHint}</small>
-        </label>
+        {paidProductsEnabled ? (
+          <>
+            <label className={styles.field}>
+              <span>{t.stripeLabel}</span>
+              <input name="stripe_account_id" type="text" pattern="acct_[A-Za-z0-9]+" placeholder={t.stripePlaceholder} required={!isFree} disabled={isBusy || isFree} />
+              <small>{t.stripeHint}</small>
+            </label>
 
-        <label className={styles.field}>
-          <span>{t.priceLabel}</span>
-          <input
-            name="price"
-            type="number"
-            min={isFree ? 0 : minimumPrice}
-            step="0.01"
-            value={priceInput}
-            required
-            disabled={isBusy || isFree}
-            onChange={(event) => setPriceInput(event.target.value)}
-          />
-          <small>{isFree ? t.freeHint : `${t.minHint}: ${minimumPrice.toFixed(2)}`}</small>
-          <small>{t.priceChangeHint}</small>
-        </label>
+            <label className={styles.field}>
+              <span>{t.priceLabel}</span>
+              <input
+                name="price"
+                type="number"
+                min={isFree ? 0 : minimumPrice}
+                step="0.01"
+                value={priceInput}
+                required
+                disabled={isBusy || isFree}
+                onChange={(event) => setPriceInput(event.target.value)}
+              />
+              <small>{isFree ? t.freeHint : `${t.minHint}: ${minimumPrice.toFixed(2)}`}</small>
+              {!isFree ? <small>{t.feeHint}</small> : null}
+              <small>{t.priceChangeHint}</small>
+            </label>
 
-        <label className={styles.freeField}>
-          <input
-            type="checkbox"
-            checked={isFree}
-            disabled={isBusy}
-            onChange={(event) => handleFreeChange(event.target.checked)}
-          />
-          <span>
+            <label className={styles.freeField}>
+              <input
+                type="checkbox"
+                checked={isFree}
+                disabled={isBusy}
+                onChange={(event) => handleFreeChange(event.target.checked)}
+              />
+              <span>
+                <strong>{t.freeLabel}</strong>
+                <small>{t.freeHint}</small>
+              </span>
+            </label>
+          </>
+        ) : (
+          <div className={styles.paidNotice}>
             <strong>{t.freeLabel}</strong>
-            <small>{t.freeHint}</small>
-          </span>
-        </label>
+            <p>{t.paidUnavailable}</p>
+          </div>
+        )}
 
         <label className={`${styles.field} ${styles.descriptionField}`}>
           <span>{t.descriptionLabel}</span>

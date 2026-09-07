@@ -159,6 +159,35 @@
   line-height: 1.4;
 }
 
+.paidNotice {
+  min-height: var(--control-height);
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 8px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: #d6ff95;
+  box-shadow: 4px 4px 0 rgba(23, 18, 15, 0.2);
+  color: var(--ink);
+  padding: 16px 18px;
+}
+
+.paidNotice strong {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.paidNotice p {
+  color: rgba(23, 18, 15, 0.72);
+  font-size: 14px;
+  line-height: 1.55;
+  max-width: 720px;
+}
+
 .fileField input {
   height: 1px;
   margin: 0;

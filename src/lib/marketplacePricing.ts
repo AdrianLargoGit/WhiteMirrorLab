@@ -10,6 +10,15 @@ function readNumber(value: string | undefined) {
   return Number.isFinite(parsed) ? parsed : null
 }
 
+function readBoolean(value: string | undefined) {
+  return value === 'true'
+}
+
+export function getMarketplacePaidProductsEnabled() {
+  return readBoolean(process.env.NEXT_PUBLIC_MARKETPLACE_PAID_PRODUCTS_ENABLED) ||
+    readBoolean(process.env.MARKETPLACE_PAID_PRODUCTS_ENABLED)
+}
+
 export function getMarketplaceCurrency() {
   return (
     process.env.NEXT_PUBLIC_STRIPE_MARKETPLACE_CURRENCY ||
