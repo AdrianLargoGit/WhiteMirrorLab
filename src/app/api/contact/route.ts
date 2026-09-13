@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { isValidEmailAddress } from '@/lib/emailValidation'
 import { checkRateLimit, getClientIp, rateLimitHeaders } from '@/lib/rateLimit'
 
 const BREVO_SMTP_URL = 'https://api.brevo.com/v3/smtp/email'
@@ -47,7 +48,7 @@ export async function POST(req: Request) {
   const message = (payload.message ?? '').trim()
   const locale = payload.locale === 'en' ? 'en' : 'es'
 
-  if (!name || !subject || !message || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!name || !subject || !message || !isValidEmailAddress(email)) {
     return NextResponse.json({ error: 'Datos inválidos' }, { status: 422 })
   }
 

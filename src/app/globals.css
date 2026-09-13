@@ -7,7 +7,12 @@
   --deep: #0d0d0d;
   --mid: #1a1a1a;
   --surface: #111111;
-  --accent: #c8ff00;
+  --accent: #ffd84d;
+  --toy-red: #ff5a5f;
+  --toy-blue: #61d4ff;
+  --toy-pink: #ff7fa8;
+  --toy-green: #b7f15a;
+  --toy-shadow: rgba(255, 90, 95, 0.18);
   --muted: #5a5a5a;
   --border: rgba(255, 255, 255, 0.07);
   --px: clamp(20px, 5vw, 60px);
@@ -32,7 +37,10 @@ html {
 }
 
 body {
-  background: var(--black);
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255, 90, 95, 0.08), transparent 24%),
+    radial-gradient(circle at 84% 8%, rgba(97, 212, 255, 0.07), transparent 24%),
+    var(--black);
   color: var(--white);
   font-family: var(--font-body);
   font-weight: 300;
@@ -50,6 +58,19 @@ body::before {
   pointer-events: none;
   z-index: 1000;
   opacity: 0.4;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 216, 77, 0.025) 0 1px, transparent 1px 9px),
+    linear-gradient(90deg, rgba(255, 90, 95, 0.025), transparent 28%, rgba(97, 212, 255, 0.022));
+  mix-blend-mode: screen;
+  opacity: 0.55;
 }
 
 /* ── CUSTOM CURSOR — landing page only (desktop) ── */
@@ -140,7 +161,8 @@ body::before {
   padding: 16px 32px;
   background: var(--accent);
   color: var(--black);
-  border: none;
+  border: 1px solid rgba(8, 8, 8, 0.85);
+  box-shadow: 5px 5px 0 var(--toy-shadow);
   text-decoration: none;
   display: inline-block;
   position: relative;
@@ -168,7 +190,7 @@ body::before {
   z-index: 1;
 }
 .btn-primary:hover span {
-  color: var(--accent);
+  color: var(--toy-blue);
 }
 
 .btn-ghost {

@@ -7,6 +7,7 @@ import Navbar from '@/components/Navbar'
 import { downloadCopy } from '@/lib/copy'
 import { homePath, skinTemplatePath } from '@/lib/i18n'
 import { BREVO_COUNT_FALLBACK, fetchBrevoCount } from '@/lib/brevo-count'
+import { isValidEmailAddress } from '@/lib/emailValidation'
 import { useLocale } from '@/hooks/useLocale'
 import styles from './page.module.css'
 
@@ -212,7 +213,7 @@ export default function DownloadPage() {
 
   const handleSubscribe = async () => {
     const normalizedEmail = email.trim().toLowerCase()
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    if (!isValidEmailAddress(normalizedEmail)) {
       setSubmitState('error')
       setMessage(t.invalidEmail)
       return

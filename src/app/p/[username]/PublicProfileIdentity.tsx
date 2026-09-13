@@ -23,7 +23,7 @@ export default function PublicProfileIdentity({
   meta,
 }: PublicProfileIdentityProps) {
   const { user } = useAuth()
-  const profileHref = wmlPath(locale, `/profile/${profile.username}`)
+  const profileHref = wmlPath(locale)
   const canOpenInternalProfile = Boolean(user)
 
   const avatar = (

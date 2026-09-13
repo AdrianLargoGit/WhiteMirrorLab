@@ -2,15 +2,19 @@
 
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
+import Image from 'next/image'
 import Navbar from '@/components/Navbar'
 import Hero from '@/components/Hero'
 import CustomCursor from '@/components/CustomCursor'
 import { useLocale } from '@/hooks/useLocale'
 import { landingCopy } from '@/lib/copy'
+import { isValidEmailAddress } from '@/lib/emailValidation'
 import {
   localizedHashPath,
+  blogPath,
   legalPath,
   contactPath,
+  downloadPath,
   experimentsPath,
   faroPath,
   wmlPath,
@@ -57,6 +61,20 @@ const stepIcons = [
   makeIcon(<><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /><line x1="2" y1="20" x2="22" y2="20" /></>, 28),
 ]
 
+function DecorativeSticker({
+  src,
+  className,
+}: {
+  src: string
+  className: string
+}) {
+  return (
+    <div className={`${styles.decorativeSticker} ${className}`} aria-hidden="true">
+      <Image src={src} alt="" width={220} height={220} sizes="190px" />
+    </div>
+  )
+}
+
 function emphasize(text: string, bold: string) {
   const [before, after] = text.split(bold)
   return (
@@ -96,9 +114,17 @@ export default function Home() {
   }, [lang])
 
   const t = landingCopy[lang]
+  const experimentHref = (id: string) => {
+    if (id === 'wmlxx0') return downloadPath(lang)
+    if (id === 'blog') return blogPath(lang)
+    if (id === 'wml1archive') return wmlPath(lang)
+    return experimentsPath(lang)
+  }
 
   const handleSignup = async () => {
-    if (!emailVal || !emailVal.includes('@')) {
+    const normalizedEmail = emailVal.trim().toLowerCase()
+
+    if (!isValidEmailAddress(normalizedEmail)) {
       setEmailError(true)
       setTimeout(() => setEmailError(false), 1500)
       return
@@ -108,10 +134,13 @@ export default function Home() {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: emailVal, source: 'general' }),
+        body: JSON.stringify({ email: normalizedEmail, source: 'general' }),
       })
       if (!res.ok) throw new Error('Failed')
       setSubmitState('success')
+      window.setTimeout(() => {
+        window.location.assign(downloadPath(lang))
+      }, 700)
     } catch {
       setSubmitState('error')
       setTimeout(() => setSubmitState('idle'), 3000)
@@ -135,6 +164,7 @@ export default function Home() {
         </div>
 
         <section className={styles.sectionManifesto} id="manifesto">
+          <DecorativeSticker src="/wmlxx0/flower-face.png" className={styles.stickerManifesto} />
           <div className={`${styles.manifestoLeft} reveal-left`}>
             <div className="section-label">{t.manifestoLabel}</div>
             <h2 className={styles.manifestoTitle}>
@@ -164,6 +194,7 @@ export default function Home() {
         </section>
 
         <section className={styles.sectionExperiments} id="experiments">
+          <DecorativeSticker src="/wmlxx0/doll.png" className={styles.stickerExperiments} />
           <div className={`${styles.experimentsHeader} reveal`}>
             <div>
               <div className="section-label">{t.expLabel}</div>
@@ -176,8 +207,8 @@ export default function Home() {
               <a
                 key={exp.id}
                 className={`experiment-row ${styles.experimentRow} reveal`}
-                style={{ transitionDelay: `${i * 0.1}s`, cursor: exp.status === 'active' ? 'pointer' : 'default' }}
-                href={exp.status === 'active' ? wmlPath(lang, '/consent') : undefined}
+                style={{ transitionDelay: `${i * 0.1}s` }}
+                href={experimentHref(exp.id)}
                 aria-label={exp.title}
               >
                 <div className={styles.expNum}>{exp.num}</div>
@@ -196,6 +227,7 @@ export default function Home() {
         </section>
 
         <section className={styles.sectionHow} id="how">
+          <DecorativeSticker src="/wmlxx0/smiley.png" className={styles.stickerHow} />
           <div className={`${styles.howHeader} reveal`}>
             <div className="section-label">{t.howLabel}</div>
             <h2 className="section-h2">{t.howTitle}</h2>
@@ -217,6 +249,7 @@ export default function Home() {
         </section>
 
         <section className={styles.sectionApps} id="apps">
+          <DecorativeSticker src="/wmlxx0/flower-sit.png" className={styles.stickerApps} />
           <div className={`${styles.appsHeader} reveal`}>
             <div className="section-label">{t.areasLabel}</div>
             <h2 className="section-h2">{t.areasTitle}</h2>
@@ -243,6 +276,7 @@ export default function Home() {
         </section>
 
         <section className={styles.sectionEthics} id="ethics">
+          <DecorativeSticker src="/wmlxx0/figure.png" className={styles.stickerEthics} />
           <div className={styles.ethicsInner}>
             <div className={`${styles.ethicsLeft} reveal-left`}>
               <div className="section-label">{t.ethicsLabel}</div>
@@ -268,6 +302,7 @@ export default function Home() {
 
         <section className={styles.sectionCta} id="signup">
           <div className={styles.ctaGlow} aria-hidden="true" />
+          <DecorativeSticker src="/wmlxx0/paint-hedgehog.png" className={styles.stickerCta} />
           <div className="section-label" style={{ justifyContent: 'center' }}>{t.ctaLabel}</div>
           <h2 className={`${styles.ctaTitle} reveal`}>{t.ctaTitle}</h2>
           <p className={`${styles.ctaDesc} reveal`}>{t.ctaDesc}</p>
@@ -323,7 +358,7 @@ export default function Home() {
           <h4>{t.footerCompany}</h4>
           <ul>
             <li><a href={localizedHashPath(lang, '#manifesto')}>{t.navManifesto}</a></li>
-            <li><a href={wmlPath(lang, '/consent')}>{t.navWml}</a></li>
+            <li><a href={wmlPath(lang)}>{t.navWml}</a></li>
             <li><a href={contactPath(lang)}>{t.navContact}</a></li>
             <li><a href={faroPath(lang)}>{t.navFaro}</a></li>
           </ul>

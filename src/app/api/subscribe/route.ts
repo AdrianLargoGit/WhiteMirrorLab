@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { subscribeEmailToBrevo, type SubscribeSource } from '@/lib/brevo-subscribe'
+import { isValidEmailAddress } from '@/lib/emailValidation'
 import { checkRateLimit, getClientIp, rateLimitHeaders } from '@/lib/rateLimit'
 
 export async function POST(req: Request) {
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!isValidEmailAddress(email)) {
     return NextResponse.json({ error: 'Email inválido' }, { status: 422 })
   }
 

@@ -5,6 +5,7 @@ import { deleteMarketplaceObject, getMarketplaceObjectBuffer, isMarketplaceStora
 import { createMarketplaceSupabaseClient } from '@/lib/marketplaceSupabase'
 import { summarizeMarketplaceZip } from '@/lib/marketplaceZipSummary'
 import { sendMarketplaceStatusEmail } from '@/lib/marketplaceEmail'
+import { isValidEmailAddress } from '@/lib/emailValidation'
 import { checkRateLimit, getClientIp, rateLimitHeaders } from '@/lib/rateLimit'
 
 type SubmitProductBody = {
@@ -21,13 +22,6 @@ type SubmitProductBody = {
   clothes_count?: number
   website?: string
   form_started_at?: number
-}
-
-function isValidCreatorEmail(email: string) {
-  return (
-    email.length <= 254 &&
-    /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/i.test(email)
-  )
 }
 
 function isValidStripeAccountId(value: string) {
@@ -105,7 +99,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Creator name is required' }, { status: 422 })
   }
 
-  if (!email || !isValidCreatorEmail(email)) {
+  if (!email || !isValidEmailAddress(email)) {
     return NextResponse.json({ error: 'Valid email is required' }, { status: 422 })
   }
 

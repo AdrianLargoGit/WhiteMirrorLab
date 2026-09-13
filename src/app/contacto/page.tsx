@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from 'react'
 import { useLocale } from '@/hooks/useLocale'
+import { isValidEmailAddress } from '@/lib/emailValidation'
 import { captureEvent } from '@/lib/posthog'
 
 const copy = {
@@ -57,7 +58,7 @@ export default function ContactPage() {
       locale: lang,
     }
 
-    if (!payload.name || !payload.subject || !payload.message || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) {
+    if (!payload.name || !payload.subject || !payload.message || !isValidEmailAddress(payload.email)) {
       setError(t.invalid)
       return
     }

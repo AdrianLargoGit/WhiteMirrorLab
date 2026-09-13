@@ -1,6 +1,8 @@
 .page {
   min-height: 100vh;
   background:
+    radial-gradient(circle at 16% 22%, rgba(255, 127, 168, 0.1), transparent 28%),
+    radial-gradient(circle at 84% 18%, rgba(97, 212, 255, 0.08), transparent 30%),
     linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
     linear-gradient(0deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
     var(--black);
@@ -27,6 +29,7 @@
   letter-spacing: 0;
   line-height: 0.92;
   max-width: 760px;
+  text-shadow: 5px 5px 0 rgba(255, 90, 95, 0.14);
 }
 
 .lead {
@@ -84,8 +87,11 @@
   justify-content: space-between;
   gap: 18px;
   margin-top: 18px;
-  border: 1px solid rgba(217, 255, 107, 0.2);
-  background: rgba(217, 255, 107, 0.055);
+  border: 1px solid rgba(255, 216, 77, 0.24);
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 216, 77, 0.04) 0 8px, transparent 8px 16px),
+    rgba(255, 216, 77, 0.05);
+  box-shadow: 6px 6px 0 rgba(255, 127, 168, 0.14);
   padding: 16px;
 }
 
@@ -207,12 +213,12 @@
   scrollbar-gutter: stable;
   contain: layout paint style;
   will-change: scroll-position;
-  border: 1px solid rgba(217, 255, 107, 0.32);
-  border-radius: 34px;
+  border: 1px solid rgba(255, 216, 77, 0.32);
+  border-radius: 8px;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)),
     rgba(12, 12, 12, 0.96);
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.58);
+  box-shadow: 10px 10px 0 rgba(255, 90, 95, 0.16), 0 30px 90px rgba(0, 0, 0, 0.58);
   padding: clamp(20px, 3vw, 28px);
 }
 
@@ -266,7 +272,7 @@
   gap: 1px;
   margin-top: 16px;
   background: var(--border);
-  border-radius: 18px;
+  border-radius: 8px;
   overflow: hidden;
 }
 
@@ -375,7 +381,7 @@
   gap: 12px;
   position: relative;
   border: 1px solid var(--border);
-  border-radius: 18px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.035);
   color: var(--white);
   font-family: var(--font-mono);
@@ -462,9 +468,12 @@
 
 .panel {
   border: 1px solid var(--border);
-  background: rgba(17, 17, 17, 0.72);
+  background:
+    linear-gradient(135deg, rgba(255, 216, 77, 0.07), rgba(97, 212, 255, 0.04)),
+    rgba(17, 17, 17, 0.72);
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
+  box-shadow: 10px 10px 0 rgba(97, 212, 255, 0.1);
 }
 
 .panelTop {
@@ -481,7 +490,7 @@
 }
 
 .panelTop span:last-child {
-  color: var(--accent);
+  color: var(--toy-pink);
   font-family: var(--font-mono);
   font-size: 12px;
   letter-spacing: 0.16em;
@@ -555,9 +564,9 @@
 .downloadAdLoaded {
   max-height: 320px;
   margin-top: 26px;
-  border-color: rgba(217, 255, 107, 0.2);
+  border-color: rgba(255, 216, 77, 0.2);
   background:
-    linear-gradient(135deg, rgba(217, 255, 107, 0.055), rgba(255, 255, 255, 0.025)),
+    linear-gradient(135deg, rgba(255, 216, 77, 0.055), rgba(255, 127, 168, 0.025)),
     rgba(17, 17, 17, 0.66);
   opacity: 1;
   pointer-events: auto;

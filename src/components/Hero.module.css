@@ -7,6 +7,10 @@
   padding: clamp(100px, 15vh, 140px) var(--px) clamp(60px, 10vh, 100px);
   position: relative;
   overflow: hidden;
+  background:
+    radial-gradient(circle at 12% 78%, rgba(255, 90, 95, 0.11), transparent 24%),
+    radial-gradient(circle at 78% 22%, rgba(97, 212, 255, 0.1), transparent 26%),
+    linear-gradient(135deg, rgba(255, 216, 77, 0.035), transparent 34%);
 }
 
 /* Grid background */
@@ -17,6 +21,7 @@
     linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
   background-size: 60px 60px;
+  opacity: 0.8;
   -webkit-mask-image: radial-gradient(
     ellipse 80% 60% at 50% 50%,
     black 30%,
@@ -54,6 +59,18 @@
 .heroStats {
   /* visible by default — animation classes override when mounted */
   opacity: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.paintHero {
+  position: absolute;
+  right: clamp(24px, 7vw, 112px);
+  top: 50%;
+  z-index: 2;
+  width: clamp(190px, 26vw, 360px);
+  aspect-ratio: 1;
+  transform: translateY(-46%) rotate(4deg);
 }
 
 /* animate classes — added client-side after mount */
@@ -87,20 +104,26 @@
 .heroTitle {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(44px, 9vw, 120px);
+  font-size: clamp(42px, 8.2vw, 110px);
   line-height: 0.92;
   letter-spacing: -0.03em;
   margin-bottom: 32px;
+  max-width: min(900px, calc(100vw - var(--px) * 2 - clamp(210px, 28vw, 390px)));
 }
-.heroTitle span {
+.heroTitle > span {
   display: block;
 }
+.heroTitle .versionLine {
+  display: block;
+  white-space: nowrap;
+}
 .outline {
-  -webkit-text-stroke: 1px var(--white);
+  -webkit-text-stroke: 1px rgba(255, 216, 77, 0.72);
   color: transparent;
 }
 .accentWord {
-  color: var(--accent);
+  color: var(--toy-pink);
+  text-shadow: 3px 3px 0 rgba(97, 212, 255, 0.22);
 }
 
 /* Description */
@@ -156,7 +179,7 @@
 /* ── RESPONSIVE ── */
 @media (max-width: 400px) {
   .heroTitle {
-    font-size: 38px;
+    font-size: clamp(33px, 10vw, 38px);
   }
   .heroActions {
     flex-direction: column;
@@ -169,5 +192,48 @@
 @supports (padding-top: env(safe-area-inset-top)) {
   .hero {
     padding-top: calc(clamp(100px, 15vh, 140px) + env(safe-area-inset-top));
+  }
+}
+
+@media (max-width: 900px) {
+  .hero {
+    min-height: auto;
+    padding-bottom: clamp(48px, 10vh, 80px);
+  }
+
+  .heroTag {
+    order: 1;
+  }
+
+  .heroTitle {
+    order: 2;
+    max-width: 100%;
+    margin-bottom: clamp(16px, 4vw, 22px);
+  }
+
+  .heroDesc {
+    order: 3;
+  }
+
+  .heroActions {
+    order: 4;
+  }
+
+  .paintHero {
+    position: relative;
+    right: auto;
+    top: auto;
+    bottom: auto;
+    order: 6;
+    align-self: center;
+    width: clamp(220px, 68vw, 310px);
+    margin: clamp(30px, 8vw, 44px) auto clamp(50px, 12vw, 68px);
+    opacity: 1;
+    transform: rotate(3deg);
+  }
+
+  .heroStats {
+    order: 5;
+    margin-top: clamp(34px, 9vw, 48px);
   }
 }

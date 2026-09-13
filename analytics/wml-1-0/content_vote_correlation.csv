@@ -1,0 +1,7 @@
+profile_group,profiles,voted_profiles,votes,positive,negative,positive_pct,avg_votes_per_profile,median_votes_per_profile
+no_posts_or_pulses,274,38,40,37,3,92.5,0.15,0
+any_post_or_pulse,35,29,303,207,96,68.32,8.66,8
+posts,24,24,296,202,94,68.24,12.33,12
+pulses,19,13,124,101,23,81.45,6.53,1
+posts_and_pulses,8,8,117,96,21,82.05,14.63,13.5
+three_or_more_content_items,11,10,159,129,30,81.13,14.45,14

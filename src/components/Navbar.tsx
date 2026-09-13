@@ -60,7 +60,7 @@ export default function Navbar({ lang, onLangChange }: NavbarProps) {
     {
       section: t.navWmlOneSection,
       items: [
-        { href: wmlPath(lang, '/consent'), label: t.navWml },
+        { href: wmlPath(lang), label: t.navWml },
       ],
     },
     {
@@ -273,7 +273,7 @@ export default function Navbar({ lang, onLangChange }: NavbarProps) {
             </button>
           </div>
 
-          <Link href={wmlPath(lang, '/consent')} className={styles.navCta}>
+          <Link href={downloadPath(lang)} className={styles.navCta}>
             {t.navJoin}
           </Link>
 

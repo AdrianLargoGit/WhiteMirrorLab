@@ -6,7 +6,9 @@
   border-bottom: 1px solid var(--border);
   overflow: hidden;
   padding: 14px 0;
-  background: var(--surface);
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 216, 77, 0.06) 0 14px, transparent 14px 28px),
+    var(--surface);
 }
 
 .marqueeTrack {
@@ -40,6 +42,66 @@
   flex-shrink: 0;
 }
 
+.decorativeSticker {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.decorativeSticker img {
+  width: var(--sticker-size, 160px);
+  height: auto;
+  object-fit: contain;
+  opacity: var(--sticker-opacity, 0.62);
+  transform: rotate(var(--sticker-rotate, -6deg));
+  filter: drop-shadow(8px 12px 0 rgba(0, 0, 0, 0.36));
+}
+
+.stickerManifesto {
+  --sticker-size: clamp(92px, 11vw, 150px);
+  --sticker-rotate: 8deg;
+  right: clamp(22px, 7vw, 112px);
+  top: clamp(28px, 6vw, 72px);
+}
+
+.stickerExperiments {
+  --sticker-size: clamp(112px, 13vw, 190px);
+  --sticker-rotate: -8deg;
+  left: clamp(10px, 3vw, 42px);
+  bottom: clamp(18px, 4vw, 48px);
+}
+
+.stickerHow {
+  --sticker-size: clamp(72px, 8vw, 118px);
+  --sticker-rotate: 9deg;
+  right: clamp(20px, 8vw, 130px);
+  top: clamp(36px, 6vw, 72px);
+}
+
+.stickerApps {
+  --sticker-size: clamp(98px, 12vw, 168px);
+  --sticker-rotate: -5deg;
+  right: clamp(16px, 4vw, 64px);
+  bottom: clamp(18px, 5vw, 64px);
+}
+
+.stickerEthics {
+  --sticker-size: clamp(106px, 13vw, 178px);
+  --sticker-opacity: 0.42;
+  --sticker-rotate: 7deg;
+  left: clamp(18px, 4vw, 70px);
+  bottom: clamp(20px, 5vw, 72px);
+}
+
+.stickerCta {
+  --sticker-size: clamp(112px, 14vw, 184px);
+  --sticker-opacity: 0.5;
+  --sticker-rotate: -4deg;
+  right: clamp(18px, 7vw, 116px);
+  top: clamp(26px, 4vw, 58px);
+}
+
 /* ─────────────────────────────────────
    MANIFESTO
 ───────────────────────────────────── */
@@ -50,10 +112,14 @@
   gap: clamp(40px, 6vw, 80px);
   align-items: start;
   border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
 }
 
 .manifestoLeft h2,
 .manifestoTitle {
+  position: relative;
+  z-index: 1;
   font-family: var(--font-display);
   font-weight: 800;
   font-size: clamp(28px, 4vw, 52px);
@@ -70,6 +136,8 @@
 
 .manifestoRight {
   padding-top: clamp(0px, 5vw, 48px);
+  position: relative;
+  z-index: 1;
 }
 .manifestoRight p {
   font-size: clamp(14px, 1.8vw, 16px);
@@ -89,14 +157,19 @@
   gap: 1px;
   background: var(--border);
   margin-top: clamp(40px, 6vw, 80px);
+  position: relative;
+  z-index: 1;
 }
 
 .principleCard {
-  background: var(--black);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.035), transparent 52%),
+    var(--black);
   padding: clamp(28px, 4vw, 48px) clamp(24px, 3vw, 40px);
   position: relative;
   overflow: hidden;
   transition: background 0.3s;
+  box-shadow: inset 0 0 0 1px rgba(255, 216, 77, 0.03);
 }
 .principleCard:hover {
   background: var(--surface);
@@ -108,7 +181,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: var(--accent);
+  background: linear-gradient(90deg, var(--toy-red), var(--accent), var(--toy-blue));
   transform: scaleX(0);
   transition: transform 0.3s;
   transform-origin: left;
@@ -146,6 +219,8 @@
 .sectionExperiments {
   padding: clamp(80px, 12vw, 160px) var(--px);
   border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
 }
 
 .experimentsHeader {
@@ -155,6 +230,8 @@
   margin-bottom: clamp(40px, 6vw, 80px);
   gap: 20px;
   flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
 }
 
 .expSubtitle {
@@ -169,10 +246,14 @@
   flex-direction: column;
   gap: 1px;
   background: var(--border);
+  position: relative;
+  z-index: 1;
 }
 
 .experimentRow {
-  background: var(--black);
+  background:
+    linear-gradient(90deg, rgba(255, 216, 77, 0.035), transparent 45%),
+    var(--black);
   display: grid;
   grid-template-columns: 70px 1fr auto auto;
   align-items: center;
@@ -236,7 +317,7 @@
 .expTagActive {
   border-color: var(--accent);
   color: var(--accent);
-  background: rgba(200, 255, 0, 0.05);
+  background: rgba(255, 216, 77, 0.08);
 }
 .expTagUpcoming {
   border-color: rgba(245, 242, 238, 0.2);
@@ -271,12 +352,18 @@
 .sectionHow {
   padding: clamp(80px, 12vw, 160px) var(--px);
   border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  background:
+    radial-gradient(circle at 8% 22%, rgba(97, 212, 255, 0.08), transparent 26%),
+    var(--surface);
+  position: relative;
+  overflow: hidden;
 }
 
 .howHeader {
   max-width: 560px;
   margin-bottom: clamp(48px, 8vw, 100px);
+  position: relative;
+  z-index: 1;
 }
 .howHeader p {
   font-size: 15px;
@@ -290,10 +377,14 @@
   grid-template-columns: repeat(4, 1fr);
   gap: 1px;
   background: var(--border);
+  position: relative;
+  z-index: 1;
 }
 
 .howStep {
-  background: var(--surface);
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.018) 0 6px, transparent 6px 12px),
+    var(--surface);
   padding: clamp(28px, 4vw, 48px) clamp(20px, 3vw, 36px);
   position: relative;
 }
@@ -335,10 +426,14 @@
 .sectionApps {
   padding: clamp(80px, 12vw, 160px) var(--px);
   border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
 }
 
 .appsHeader {
   margin-bottom: clamp(40px, 6vw, 80px);
+  position: relative;
+  z-index: 1;
 }
 .appsHeader p {
   font-size: 15px;
@@ -352,10 +447,14 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
   background: var(--border);
+  position: relative;
+  z-index: 1;
 }
 
 .appCard {
-  background: var(--black);
+  background:
+    radial-gradient(circle at 86% 18%, rgba(255, 127, 168, 0.08), transparent 32%),
+    var(--black);
   padding: clamp(32px, 4vw, 52px) clamp(24px, 3vw, 44px);
   display: flex;
   flex-direction: column;
@@ -374,7 +473,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: var(--accent);
+  background: linear-gradient(90deg, var(--accent), var(--toy-pink), var(--toy-blue));
   transform: scaleX(0);
   transition: transform 0.4s;
   transform-origin: left;
@@ -444,8 +543,12 @@
 ───────────────────────────────────── */
 .sectionEthics {
   padding: clamp(80px, 12vw, 160px) var(--px);
-  background: var(--surface);
+  background:
+    linear-gradient(180deg, rgba(255, 90, 95, 0.045), transparent 42%),
+    var(--surface);
   border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
 }
 
 .ethicsInner {
@@ -453,6 +556,8 @@
   grid-template-columns: 1fr 1fr;
   gap: clamp(40px, 6vw, 80px);
   align-items: start;
+  position: relative;
+  z-index: 1;
 }
 
 .ethicsLeft p {
@@ -517,7 +622,9 @@
   width: 500px;
   height: 500px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(200, 255, 0, 0.06) 0%, transparent 70%);
+  background:
+    radial-gradient(circle, rgba(255, 216, 77, 0.08) 0%, transparent 54%),
+    radial-gradient(circle at 30% 70%, rgba(255, 127, 168, 0.08), transparent 46%);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -533,6 +640,7 @@
   line-height: 1.05;
   margin-bottom: 20px;
   position: relative;
+  z-index: 1;
 }
 
 .ctaDesc {
@@ -542,6 +650,7 @@
   max-width: 440px;
   margin: 0 auto 44px;
   position: relative;
+  z-index: 1;
 }
 
 .ctaForm {
@@ -549,6 +658,7 @@
   max-width: 460px;
   margin: 0 auto;
   position: relative;
+  z-index: 1;
 }
 .ctaForm input {
   flex: 1;
@@ -598,6 +708,7 @@
   letter-spacing: 0.08em;
   color: rgba(90, 90, 90, 0.7);
   position: relative;
+  z-index: 1;
 }
 
 .ctaSuccessMsg {
@@ -711,6 +822,25 @@
    RESPONSIVE
 ───────────────────────────────────── */
 @media (max-width: 900px) {
+  .decorativeSticker {
+    opacity: 0.45;
+  }
+
+  .stickerManifesto,
+  .stickerHow,
+  .stickerApps,
+  .stickerEthics,
+  .stickerCta {
+    display: none;
+  }
+
+  .stickerExperiments {
+    right: 16px;
+    left: auto;
+    top: 22px;
+    bottom: auto;
+  }
+
   .sectionManifesto {
     grid-template-columns: 1fr;
   }
@@ -742,6 +872,10 @@
 }
 
 @media (max-width: 600px) {
+  .stickerExperiments {
+    display: none;
+  }
+
   .experimentRow {
     grid-template-columns: 52px 1fr auto;
   }

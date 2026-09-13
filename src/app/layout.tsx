@@ -10,7 +10,7 @@ import CookieBanner from '@/components/CookieBanner'
 export const metadata: Metadata = {
   title: 'White Mirror Lab',
   description:
-    'Social experimentation lab. We design applications that explore the limits of collective behavior.',
+    'Digital product lab behind WML X.X.0, a local Windows desktop pet with clear privacy limits.',
   other: {
     'google-adsense-account': 'ca-pub-1100562858393483',
   },

@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useLocale } from '@/hooks/useLocale'
+import { isValidEmailAddress } from '@/lib/emailValidation'
 
 type FaroState = {
   dateKey: string
@@ -37,7 +38,7 @@ const copy = {
     signupPlaceholder: 'tu@email.com',
     signupButton: 'Apuntarme',
     signupSending: 'Guardando...',
-    signupSuccess: 'Correo guardado. FARO podria mirarte otro dia.',
+    signupSuccess: 'Correo guardado. FARO podria encenderse contigo otro dia.',
     signupError: 'No hemos podido guardar tu correo.',
     signupInvalid: 'Introduce un email valido.',
   },
@@ -64,7 +65,7 @@ const copy = {
     signupPlaceholder: 'you@email.com',
     signupButton: 'Join',
     signupSending: 'Saving...',
-    signupSuccess: 'Email saved. FARO may look at you another day.',
+    signupSuccess: 'Email saved. FARO may light up with you another day.',
     signupError: 'We could not save your email.',
     signupInvalid: 'Enter a valid email.',
   },
@@ -158,7 +159,7 @@ export default function FaroPage() {
     event.preventDefault()
     const cleanEmail = email.trim().toLowerCase()
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+    if (!isValidEmailAddress(cleanEmail)) {
       setSignupStatus('error')
       setSignupFeedback(t.signupInvalid)
       return

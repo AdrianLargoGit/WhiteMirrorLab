@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState } from 'react'
 import { getMarketplacePaidProductsEnabled, getMinimumMarketplacePrice } from '@/lib/marketplacePricing'
 import { summarizeMarketplaceZip, type MarketplaceZipSummary } from '@/lib/marketplaceZipSummary'
+import { isValidEmailAddress } from '@/lib/emailValidation'
 import type { Locale } from '@/lib/i18n'
 import styles from './SubmitProductForm.module.css'
 
@@ -58,6 +59,7 @@ const copy = {
     previewHint: 'Hasta 6 imagenes PNG, JPG, WEBP o GIF.',
     required: 'Completa los campos obligatorios y adjunta ZIP y portada.',
     stripeHint: 'Debe empezar por acct_. Solo hace falta si el pack es de pago.',
+    invalidEmail: 'Introduce un email valido.',
   },
   en: {
     badge: 'Form open',
@@ -98,6 +100,7 @@ const copy = {
     previewHint: 'Up to 6 PNG, JPG, WEBP, or GIF images.',
     required: 'Complete the required fields and attach a ZIP and cover image.',
     stripeHint: 'Must start with acct_. Only required for paid packs.',
+    invalidEmail: 'Enter a valid email.',
   },
 } satisfies Record<Locale, Record<string, string>>
 
@@ -221,9 +224,15 @@ export function SubmitProductForm({ lang }: SubmitProductFormProps) {
     const price = effectiveIsFree ? 0 : Number(priceInput)
     const website = String(data.get('website') ?? '').trim()
 
-    if (!title || !description || !creatorName || !email || (!effectiveIsFree && !stripeAccountId) || !zipFile || !coverFile || !zipSummary) {
+    if (!title || !description || !creatorName || (!effectiveIsFree && !stripeAccountId) || !zipFile || !coverFile || !zipSummary) {
       setState('error')
       setMessage(t.required)
+      return
+    }
+
+    if (!isValidEmailAddress(email)) {
+      setState('error')
+      setMessage(t.invalidEmail)
       return
     }
 

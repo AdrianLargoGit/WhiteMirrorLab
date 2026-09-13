@@ -17,7 +17,7 @@ export const ROUTES = {
     marketplace: '/marketplace',
     skinTemplate: '/plantilla-skins',
     marketplaceSubmit: '/marketplace/submit',
-    wml: '/web',
+    wml: '/wml-1-0',
     publicProfile: '/p',
     legal: '/legal',
   },
@@ -69,27 +69,6 @@ const ES_TO_EN_LEGAL_SLUG = new Map(
     LEGAL_SLUGS.en[page as LegalPage],
   ])
 )
-
-const WML_ROUTE_ALIASES = new Map([
-  ['/', '/'],
-  ['/consent', '/consent'],
-  ['/auth', '/auth'],
-  ['/feed', '/feed'],
-  ['/ranking', '/ranking'],
-  ['/upload', '/upload'],
-  ['/me', '/me'],
-  ['/profile', '/profile'],
-  ['/pulses', '/pulses'],
-])
-
-export const WML_ROUTES = {
-  feed:    '/web/feed',
-  pulses:  '/web/pulses',
-  ranking: '/web/ranking',
-  upload:  '/web/upload',
-  auth:    '/web/auth',
-  profile: (username: string) => `/web/profile/${username}`,
-} as const
 
 export function isLocale(value: unknown): value is Locale {
   return value === 'es' || value === 'en'
@@ -153,10 +132,6 @@ export function wmlPath(locale: Locale, path = ''): string {
   return suffix === '/' ? ROUTES[locale].wml : `${ROUTES[locale].wml}${suffix}`
 }
 
-export function wmlProfilePath(locale: Locale, username: string): string {
-  return wmlPath(locale, `/profile/${username}`)
-}
-
 export function publicProfilePath(locale: Locale, username: string): string {
   return `${ROUTES[locale].publicProfile}/${username}`
 }
@@ -194,13 +169,6 @@ export function toInternalPath(pathname: string): string {
     return pathname.replace(ROUTES.en.publicProfile, ROUTES.es.publicProfile)
   }
   if (pathname === ROUTES.en.wml) return ROUTES.es.wml
-  if (pathname.startsWith(`${ROUTES.en.wml}/`)) {
-    const wmlSuffix = pathname.slice(ROUTES.en.wml.length)
-    const [first, ...rest] = wmlSuffix.split('/').filter(Boolean)
-    const alias = WML_ROUTE_ALIASES.get(`/${first}`)
-    if (!alias) return pathname
-    return `${ROUTES.es.wml}${alias}${rest.length ? `/${rest.join('/')}` : ''}`
-  }
   return pathname
 }
 

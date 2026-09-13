@@ -54,7 +54,7 @@ function analyticsContext() {
   return {
     locale: getLocaleFromPathname(path),
     path,
-    route_area: path.includes('/wml-1-0') || path.startsWith('/web') ? 'wml_1_0' : 'landing',
+    route_area: path.includes('/wml-1-0') ? 'wml_1_0' : 'landing',
     viewport: window.innerWidth < 768 ? 'mobile' : window.innerWidth < 1120 ? 'tablet' : 'desktop',
   }
 }

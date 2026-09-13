@@ -1,9 +1,6 @@
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import { CONSENT_COOKIE } from '@/lib/consent'
 import { applySecurityHeaders } from '@/lib/securityHeaders'
 import {
-  DEFAULT_LOCALE,
   LOCALE_COOKIE,
   ROUTES,
   alternateLocalePath,
@@ -12,8 +9,6 @@ import {
   toInternalPath,
   type Locale,
 } from '@/lib/i18n'
-
-const PUBLIC_WEB_PATHS = ['/web/auth', '/web/consent']
 
 export async function proxy(request: NextRequest) {
   const originalPathname = request.nextUrl.pathname
@@ -27,6 +22,12 @@ export async function proxy(request: NextRequest) {
   const pathname = toInternalPath(originalPathname)
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-wml-locale', locale)
+
+  if (pathname.startsWith('/p/')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/wml-1-0'
+    return applySecurityHeaders(NextResponse.redirect(url))
+  }
 
   if (originalPathname === '/' && locale === 'en') {
     const url = request.nextUrl.clone()
@@ -85,75 +86,13 @@ export async function proxy(request: NextRequest) {
   }
 
   const responseInit = { request: { headers: requestHeaders } }
-  let supabaseResponse = hasEnglishUrl
+  const response = hasEnglishUrl
     ? NextResponse.rewrite(new URL(pathname + request.nextUrl.search, request.url), responseInit)
     : NextResponse.next(responseInit)
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_WML_1_0!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_WML_1_0!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
-          supabaseResponse = hasEnglishUrl
-            ? NextResponse.rewrite(new URL(pathname + request.nextUrl.search, request.url), responseInit)
-            : NextResponse.next(responseInit)
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
-        },
-      },
-    }
-  )
-
-  const { data: { user } } = await supabase.auth.getUser()
-  const hasConsent = request.cookies.get(CONSENT_COOKIE)?.value === '1'
-  const isPublicWeb = PUBLIC_WEB_PATHS.some((p) => pathname.startsWith(p))
-  const pathForLocale = (nextPathname: string) =>
-    locale === DEFAULT_LOCALE
-      ? nextPathname
-      : nextPathname.replace(ROUTES.es.wml, ROUTES.en.wml)
-
-  if (
-    pathname.startsWith('/web') &&
-    pathname !== '/web/consent' &&
-    !hasConsent
-  ) {
-    const url = request.nextUrl.clone()
-    url.pathname = pathForLocale('/web/consent')
-    return applySecurityHeaders(NextResponse.redirect(url))
-  }
-
-  if (pathname === '/web/consent' && hasConsent) {
-    const url = request.nextUrl.clone()
-    url.pathname = pathForLocale(user ? '/web/feed' : '/web/auth')
-    return applySecurityHeaders(NextResponse.redirect(url))
-  }
-
-  if (pathname.startsWith('/web') && !isPublicWeb) {
-    if (!user) {
-      const url = request.nextUrl.clone()
-      url.pathname = pathForLocale('/web/auth')
-      return applySecurityHeaders(NextResponse.redirect(url))
-    }
-  }
-
-  if (pathname === '/web/auth' && user) {
-    const url = request.nextUrl.clone()
-    url.pathname = pathForLocale('/web/feed')
-    return applySecurityHeaders(NextResponse.redirect(url))
-  }
-
-  supabaseResponse.cookies.set(LOCALE_COOKIE, locale, {
+  response.cookies.set(LOCALE_COOKIE, locale, {
     path: '/',
     maxAge: 60 * 60 * 24 * 365,
     sameSite: 'lax',
   })
-  return applySecurityHeaders(supabaseResponse)
+  return applySecurityHeaders(response)
 }

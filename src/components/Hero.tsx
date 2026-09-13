@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import PaintHedgehog from '@/components/PaintHedgehog'
 import { heroCopy } from '@/lib/copy'
-import { type Locale } from '@/lib/i18n'
+import { downloadPath, type Locale } from '@/lib/i18n'
 import { BUY_ME_A_COFFEE_URL } from '@/lib/links'
 import { BREVO_COUNT_FALLBACK, fetchBrevoCount } from '@/lib/brevo-count'
 import styles from './Hero.module.css'
@@ -78,6 +79,9 @@ export default function Hero({ lang }: HeroProps) {
     <section className={styles.hero}>
       <div className={styles.heroBgGrid} aria-hidden="true" />
       <div className={styles.heroScanLine} aria-hidden="true" />
+      <div className={`${styles.paintHero} ${styles.animate5}`}>
+        <PaintHedgehog />
+      </div>
 
       <p className={`${styles.heroTag} ${styles.animate1}`}>
         {t.tag}
@@ -86,7 +90,7 @@ export default function Hero({ lang }: HeroProps) {
       <h1 className={`${styles.heroTitle} ${styles.animate2}`}>
         <span>{t.line1}</span>
         <span className={styles.outline}>{t.line2}</span>
-        <span>
+        <span className={t.line3accent === 'X.X.0' ? styles.versionLine : undefined}>
           {t.line3pre}{' '}
           <span className={styles.accentWord}>{t.line3accent}</span>
         </span>
@@ -98,8 +102,8 @@ export default function Hero({ lang }: HeroProps) {
       </p>
 
       <div className={`${styles.heroActions} ${styles.animate4}`}>
-        <Link 
-  href={lang === 'en' ? '/en/wml-1-0/auth' : `/web/auth`} 
+        <Link
+  href={downloadPath(lang)}
   className="btn-primary"
 >
   <span>{t.ctaPrimary}</span>

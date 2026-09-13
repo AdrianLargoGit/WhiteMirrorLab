@@ -1,0 +1,163 @@
+{
+  "project": {
+    "name": "White Mirror Lab / WML 1.0",
+    "posthog_host": "https://eu.posthog.com",
+    "posthog_project_id": 196058,
+    "exported_at": "2026-09-09",
+    "date_range": {
+      "from": "2026-06-10T00:27:02.757Z",
+      "to": "2026-09-09T12:50:33.223Z"
+    }
+  },
+  "privacy_position": {
+    "recommended_product": "Aggregated analytics dataset and case-study report only",
+    "not_for_sale": [
+      "Raw event rows",
+      "distinct_id, person_id, session_id, device IDs or persistent identifiers",
+      "IP addresses, emails, usernames, names or profile URLs",
+      "Session recordings",
+      "Free-text searches, uploads, stories, post content, pulse content or profile content",
+      "Country/device/referrer cohorts below a k-anonymity threshold"
+    ],
+    "minimum_release_threshold": 10,
+    "preferred_release_threshold": 20
+  },
+  "overview": {
+    "total_events": 45077,
+    "distinct_users": 2253,
+    "sessions": 2979,
+    "pageviews": 7609,
+    "event_types": 36,
+    "events_per_session": 15.13,
+    "pageviews_per_session": 2.55,
+    "sessions_per_user": 1.32
+  },
+  "monthly_summary": [
+    { "month": "2026-06", "events": 6259, "pageviews": 2331, "users": 435, "sessions": 614, "consents": 26, "signups": 6, "votes": 47 },
+    { "month": "2026-07", "events": 1830, "pageviews": 394, "users": 55, "sessions": 116, "consents": 8, "signups": 2, "votes": 18 },
+    { "month": "2026-08", "events": 30671, "pageviews": 3991, "users": 1489, "sessions": 1867, "consents": 338, "signups": 110, "votes": 363 },
+    { "month": "2026-09", "events": 6317, "pageviews": 893, "users": 302, "sessions": 383, "consents": 58, "signups": 21, "votes": 15 }
+  ],
+  "sections": [
+    { "section": "WML 1.0 app/archive", "pageviews": 4237, "users": 829 },
+    { "section": "Landing", "pageviews": 1697, "users": 646 },
+    { "section": "Download", "pageviews": 1006, "users": 597 },
+    { "section": "Other", "pageviews": 335, "users": 107 },
+    { "section": "Marketplace", "pageviews": 156, "users": 50 },
+    { "section": "Creator skins", "pageviews": 103, "users": 62 },
+    { "section": "Experiments", "pageviews": 75, "users": 41 }
+  ],
+  "key_actions": {
+    "experiment_started": { "events": 568, "users": 223 },
+    "experiment_consent_given": { "events": 430, "users": 293 },
+    "auth_signup": { "events": 139, "users": 139 },
+    "vote_cast": { "events": 443, "users": 74 },
+    "profile_view": { "events": 384, "users": 113 },
+    "ranking_view": { "events": 359, "users": 100 },
+    "profile_shared": { "events": 46, "users": 34 },
+    "post_upload": { "events": 13, "users": 11 },
+    "pulse_upload": { "events": 7, "users": 7 },
+    "story_upload": { "events": 1, "users": 1 }
+  },
+  "supabase_experiment_tables": {
+    "profiles": 309,
+    "posts": 49,
+    "pulses": 47,
+    "stories": 0,
+    "votes": 343,
+    "vote_interpretation": {
+      "target": "profiles only",
+      "positive_votes": 244,
+      "negative_votes": 99,
+      "positive_pct": 71.14,
+      "negative_pct": 28.86,
+      "voted_profiles": 67,
+      "profiles_with_unanimously_positive_votes": 39,
+      "profiles_with_more_negative_than_positive_votes": 7,
+      "post_votes": 0,
+      "pulse_votes": 0
+    },
+    "content_interaction": {
+      "post_authors": 24,
+      "pulse_authors": 19,
+      "pulse_roots": 24,
+      "pulse_replies": 23,
+      "pulses_with_replies": 17,
+      "content_vote_correlation": {
+        "profiles_with_any_post_or_pulse": 35,
+        "profiles_with_any_post_or_pulse_votes": 303,
+        "profiles_with_any_post_or_pulse_positive_votes": 207,
+        "profiles_with_any_post_or_pulse_negative_votes": 96,
+        "profiles_with_any_post_or_pulse_positive_pct": 68.32,
+        "profiles_without_posts_or_pulses": 274,
+        "profiles_without_posts_or_pulses_votes": 40,
+        "profiles_without_posts_or_pulses_positive_votes": 37,
+        "profiles_without_posts_or_pulses_negative_votes": 3,
+        "profiles_without_posts_or_pulses_positive_pct": 92.5,
+        "profiles_with_posts": 24,
+        "profiles_with_posts_votes": 296,
+        "profiles_with_posts_positive_pct": 68.24,
+        "profiles_with_pulses": 19,
+        "profiles_with_pulses_votes": 124,
+        "profiles_with_pulses_positive_pct": 81.45,
+        "profiles_with_posts_and_pulses": 8,
+        "profiles_with_posts_and_pulses_votes": 117,
+        "profiles_with_posts_and_pulses_positive_pct": 82.05,
+        "profiles_with_three_or_more_content_items": 11,
+        "profiles_with_three_or_more_content_items_votes": 159,
+        "profiles_with_three_or_more_content_items_positive_pct": 81.13
+      }
+    }
+  },
+  "conversion_reference": {
+    "all_pageview_users": 1466,
+    "wml_archive_users": 829,
+    "consent_users": 293,
+    "signup_users": 139,
+    "voter_users": 74,
+    "consent_vs_all_pageview_users_pct": 19.99,
+    "signup_vs_all_pageview_users_pct": 9.48,
+    "voter_vs_all_pageview_users_pct": 5.05,
+    "consent_vs_wml_archive_users_pct": 35.34,
+    "signup_vs_wml_archive_users_pct": 16.77,
+    "voter_vs_wml_archive_users_pct": 8.93
+  },
+  "geo_regions": [
+    { "region": "Latin America", "events": 26145, "users": 1388 },
+    { "region": "Spain", "events": 17046, "users": 623 },
+    { "region": "United States", "events": 923, "users": 124 },
+    { "region": "Europe other", "events": 244, "users": 83 },
+    { "region": "Other/unknown", "events": 719, "users": 42 }
+  ],
+  "top_countries": [
+    { "country": "Spain", "events": 17046, "users": 623 },
+    { "country": "Mexico", "events": 4997, "users": 297 },
+    { "country": "Colombia", "events": 5080, "users": 233 },
+    { "country": "Argentina", "events": 2825, "users": 180 },
+    { "country": "Peru", "events": 3770, "users": 180 },
+    { "country": "United States", "events": 923, "users": 124 },
+    { "country": "Chile", "events": 2137, "users": 123 },
+    { "country": "Venezuela", "events": 1828, "users": 95 },
+    { "country": "Ecuador", "events": 1907, "users": 87 }
+  ],
+  "devices": [
+    { "device_type": "Desktop", "events": 32999, "users": 1622 },
+    { "device_type": "Mobile", "events": 11877, "users": 624 },
+    { "device_type": "Tablet", "events": 201, "users": 16 }
+  ],
+  "operating_systems": [
+    { "os": "Windows", "events": 32487, "users": 1561 },
+    { "os": "iOS", "events": 7140, "users": 357 },
+    { "os": "Android", "events": 4938, "users": 283 },
+    { "os": "Linux", "events": 202, "users": 49 },
+    { "os": "Mac OS X", "events": 294, "users": 10 }
+  ],
+  "referrers": [
+    { "referrer": "www.google.com", "events": 17722, "users": 1024 },
+    { "referrer": "$direct", "events": 21073, "users": 841 },
+    { "referrer": "www.tiktok.com", "events": 297, "users": 167 },
+    { "referrer": "www.bing.com", "events": 3015, "users": 150 },
+    { "referrer": "www.whitemirrorlab.com", "events": 592, "users": 50 },
+    { "referrer": "l.instagram.com", "events": 159, "users": 30 }
+  ]
+}
