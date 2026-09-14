@@ -20,6 +20,9 @@
 # production
 /build
 
+# paid analytics exports
+/analytics/
+
 # misc
 .DS_Store
 *.pem
