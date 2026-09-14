@@ -83,10 +83,6 @@ export default function Hero({ lang }: HeroProps) {
         <PaintHedgehog />
       </div>
 
-      <p className={`${styles.heroTag} ${styles.animate1}`}>
-        {t.tag}
-      </p>
-
       <h1 className={`${styles.heroTitle} ${styles.animate2}`}>
         <span>{t.line1}</span>
         <span className={styles.outline}>{t.line2}</span>
