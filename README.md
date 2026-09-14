@@ -25,7 +25,6 @@ WML 1.0 is no longer the active experiment. The old public module is closed from
 - [WML X.X.0 download page](https://www.whitemirrorlab.com/descargar)
 - [Creator skin template](https://www.whitemirrorlab.com/plantilla-skins)
 - [Marketplace](https://www.whitemirrorlab.com/marketplace)
-- [WML 1.0 results archive](https://www.whitemirrorlab.com/web/consent)
 - [Blog](https://www.whitemirrorlab.com/blog)
 - [Legal and ethics documentation](https://www.whitemirrorlab.com/legal/etica)
 - [Contact page](https://www.whitemirrorlab.com/contacto)
