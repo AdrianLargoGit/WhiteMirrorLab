@@ -55,6 +55,8 @@ function adsterraFrameHtml(locale: Locale) {
       html, body, body * { cursor: none !important; }
       html, body { width: 100%; height: 100%; margin: 0; background: transparent; overflow: hidden; }
       body { position: relative; display: grid; place-items: stretch; font-family: Arial, Helvetica, sans-serif; }
+      #wml-cursor { position: fixed; top: 0; left: 0; z-index: 2147483647; width: 32px; height: 32px; pointer-events: none; visibility: hidden; background: #fff; mix-blend-mode: difference; transform: translate3d(-100px, -100px, 0); contain: strict; will-change: transform; -webkit-mask: url('/cursor-hand.png') 0 0 / 32px 32px no-repeat; mask: url('/cursor-hand.png') 0 0 / 32px 32px no-repeat; }
+      #wml-cursor.visible { visibility: visible; }
       #container-54237a243e6e5ead86fd96dfae1f4fe7 { position: absolute; inset: 0; z-index: 2; width: 100%; min-height: 100%; display: grid; place-items: center; background: transparent; }
       body.ad-empty #container-54237a243e6e5ead86fd96dfae1f4fe7 { display: none; }
       .fallback { position: absolute; inset: 0; z-index: 1; display: grid; align-content: center; gap: 8px; padding: 16px; background: linear-gradient(135deg, rgba(255,255,255,.22), transparent 34%), repeating-linear-gradient(0deg, transparent 0 12px, rgba(0,0,0,.05) 13px 14px), #d8cdb5; color: #080808; }
@@ -65,6 +67,7 @@ function adsterraFrameHtml(locale: Locale) {
     </style>
   </head>
   <body>
+    <div id="wml-cursor" aria-hidden="true"></div>
     <div class="fallback" aria-hidden="true">
       <span>AD</span>
       <strong>${fallback.title}</strong>
@@ -76,6 +79,23 @@ function adsterraFrameHtml(locale: Locale) {
     <div id="container-54237a243e6e5ead86fd96dfae1f4fe7"></div>
     <script>
       (function () {
+        var cursor = document.getElementById('wml-cursor');
+        var isVisible = false;
+        function moveCursor(event) {
+          if (!cursor) return;
+          cursor.style.transform = 'translate3d(' + (event.clientX - 13) + 'px,' + event.clientY + 'px,0)';
+          if (!isVisible) {
+            cursor.classList.add('visible');
+            isVisible = true;
+          }
+        }
+        function hideCursor() {
+          isVisible = false;
+          if (cursor) cursor.classList.remove('visible');
+        }
+        window.addEventListener('onpointerrawupdate' in window ? 'pointerrawupdate' : 'pointermove', moveCursor, { passive: true });
+        window.addEventListener('blur', hideCursor);
+        document.addEventListener('pointerleave', hideCursor);
         var container = document.getElementById('container-54237a243e6e5ead86fd96dfae1f4fe7');
         function hasAdContent() {
           return Boolean(container && (container.children.length > 0 || container.textContent.trim().length > 0));

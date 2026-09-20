@@ -6,13 +6,6 @@
   color: var(--white);
 }
 
-@media (pointer: fine) {
-  .page,
-  .page * {
-    cursor: none !important;
-  }
-}
-
 .page::before {
   content: '';
   position: fixed;

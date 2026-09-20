@@ -3,81 +3,70 @@
 import { useEffect, useRef } from 'react'
 import styles from './CustomCursor.module.css'
 
-type CustomCursorProps = {
-  variant?: 'default' | 'magnifier'
+declare global {
+  interface Window {
+    __wmlCustomCursorMounted?: boolean
+  }
 }
 
-export default function CustomCursor({ variant = 'default' }: CustomCursorProps) {
-  const dotRef = useRef<HTMLDivElement>(null)
-  const ringRef = useRef<HTMLDivElement>(null)
+type CustomCursorProps = {
+  priority?: boolean
+}
+
+const HOTSPOT_X = 13
+const HOTSPOT_Y = 0
+
+export default function CustomCursor({ priority = false }: CustomCursorProps) {
+  if (!priority) return null
+
+  return <ActiveCursor />
+}
+
+function ActiveCursor() {
+  const cursorRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const isFine = window.matchMedia('(pointer: fine)').matches
-    if (!isFine) return
-    const shouldUseMagnifier = variant === 'magnifier'
+    if (!window.matchMedia('(pointer: fine)').matches) return
+    if (window.__wmlCustomCursorMounted) return
 
-    if (shouldUseMagnifier) {
-      document.documentElement.classList.add(styles.hideNativeCursor)
-      return () => {
-        document.documentElement.classList.remove(styles.hideNativeCursor)
+    window.__wmlCustomCursorMounted = true
+    document.documentElement.classList.add('custom-cursor-active')
+
+    let isVisible = false
+
+    const moveCursor = (event: Event) => {
+      if (!(event instanceof PointerEvent)) return
+
+      const cursor = cursorRef.current
+      if (!cursor) return
+
+      cursor.style.transform = `translate3d(${event.clientX - HOTSPOT_X}px, ${event.clientY - HOTSPOT_Y}px, 0)`
+
+      if (!isVisible) {
+        cursor.classList.add(styles.visible)
+        isVisible = true
       }
     }
 
-    let mx = 0,
-      my = 0,
-      rx = 0,
-      ry = 0
-    let rafId: number
-
-    const onMove = (e: MouseEvent) => {
-      mx = e.clientX
-      my = e.clientY
-      if (dotRef.current) {
-        dotRef.current.style.left = mx + 'px'
-        dotRef.current.style.top = my + 'px'
-      }
+    const hideCursor = () => {
+      isVisible = false
+      cursorRef.current?.classList.remove(styles.visible)
     }
 
-    const animRing = () => {
-      rx += (mx - rx) * 0.12
-      ry += (my - ry) * 0.12
-      if (ringRef.current) {
-        ringRef.current.style.left = rx + 'px'
-        ringRef.current.style.top = ry + 'px'
-      }
-      rafId = requestAnimationFrame(animRing)
-    }
+    const moveEvent = 'onpointerrawupdate' in window ? 'pointerrawupdate' : 'pointermove'
 
-    document.addEventListener('mousemove', onMove)
-    rafId = requestAnimationFrame(animRing)
-
-    const addActive = () => ringRef.current?.classList.add(styles.active)
-    const removeActive = () => ringRef.current?.classList.remove(styles.active)
-    const interactables = shouldUseMagnifier
-      ? []
-      : Array.from(document.querySelectorAll('a, button, .experiment-row, .app-card, .principle-card'))
-
-    interactables.forEach((el) => {
-      el.addEventListener('mouseenter', addActive)
-      el.addEventListener('mouseleave', removeActive)
-    })
+    window.addEventListener(moveEvent, moveCursor, { passive: true })
+    document.addEventListener('pointerleave', hideCursor)
+    window.addEventListener('blur', hideCursor)
 
     return () => {
-      document.removeEventListener('mousemove', onMove)
-      cancelAnimationFrame(rafId)
-      interactables.forEach((el) => {
-        el.removeEventListener('mouseenter', addActive)
-        el.removeEventListener('mouseleave', removeActive)
-      })
+      window.removeEventListener(moveEvent, moveCursor)
+      document.removeEventListener('pointerleave', hideCursor)
+      window.removeEventListener('blur', hideCursor)
+      document.documentElement.classList.remove('custom-cursor-active')
+      window.__wmlCustomCursorMounted = false
     }
-  }, [variant])
+  }, [])
 
-  if (variant === 'magnifier') return null
-
-  return (
-    <>
-      <div ref={dotRef} className={styles.cursor} id="cursor" />
-      <div ref={ringRef} className={styles.cursorRing} id="cursorRing" />
-    </>
-  )
+  return <div ref={cursorRef} className={styles.cursor} aria-hidden="true" />
 }

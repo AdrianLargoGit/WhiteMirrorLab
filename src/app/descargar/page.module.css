@@ -266,6 +266,89 @@
   line-height: 1.7;
 }
 
+.planBlock {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid rgba(255, 216, 77, 0.2);
+  background:
+    repeating-linear-gradient(135deg, rgba(255, 216, 77, 0.035) 0 8px, transparent 8px 16px),
+    rgba(255, 255, 255, 0.025);
+}
+
+.planBlock h3 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  letter-spacing: 0;
+}
+
+.planBlock p {
+  margin-top: 8px;
+  color: rgba(245, 242, 238, 0.58);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.planGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.planButton {
+  min-height: 112px;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--white);
+  cursor: pointer;
+  padding: 16px;
+  text-align: left;
+  transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.1s;
+}
+
+.planButton strong {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.planButton span {
+  color: rgba(245, 242, 238, 0.6);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.planButton:hover,
+.planButtonActive {
+  border-color: var(--accent);
+  background: rgba(217, 255, 107, 0.1);
+  color: var(--accent);
+}
+
+.planButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.planButton:disabled:hover {
+  border-color: var(--border);
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--white);
+}
+
+.planButtonActive span {
+  color: rgba(245, 242, 238, 0.76);
+}
+
+.planButton:active {
+  transform: scale(0.99);
+}
+
 .modalList {
   list-style: none;
   display: grid;
@@ -424,6 +507,31 @@
   background: currentColor;
   -webkit-mask: url('/downloads/linux-icon.png') center / contain no-repeat;
   mask: url('/downloads/linux-icon.png') center / contain no-repeat;
+}
+
+.proLicenseBlock {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 16px 0;
+  border: 1px solid rgba(217, 255, 107, 0.22);
+  background: rgba(217, 255, 107, 0.06);
+  padding: 14px;
+}
+
+.proStatus {
+  flex: 1 1 260px;
+  color: rgba(245, 242, 238, 0.68);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  line-height: 1.7;
+  text-transform: uppercase;
+}
+
+.proStatusError {
+  color: #ff5c35;
 }
 
 .modalActions {
@@ -664,6 +772,10 @@
   }
 
   .platformGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .planGrid {
     grid-template-columns: 1fr;
   }
 

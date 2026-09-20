@@ -62,7 +62,7 @@ export default function Hero({ lang }: HeroProps) {
               animateCounter(participantsRef.current, totalParticipants, '')
             }
             if (experimentsRef.current) {
-              animateCounter(experimentsRef.current, 1, '')
+              animateCounter(experimentsRef.current, 3, '')
             }
             // No hacemos disconnect() aquí para que sea más flexible
           }

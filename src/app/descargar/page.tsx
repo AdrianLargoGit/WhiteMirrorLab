@@ -19,10 +19,31 @@ const AD_SCRIPT_SRC = 'https://pl31053382.profitableratecpmnetwork.com/54237a243
 type DeviceType = 'computer' | 'mobile' | 'tv' | 'unknown'
 type Platform = 'windows' | 'linux'
 type DialogMode = 'download' | 'mobile'
+type DownloadPlan = 'free' | 'pro'
+type ProRequestState = 'idle' | 'loading' | 'active' | 'created' | 'pending' | 'error'
 type NavigatorWithUserAgentData = Navigator & {
   userAgentData?: {
     platform?: string
   }
+}
+
+type ProLicense = {
+  subject: string
+  plan: 'monthly'
+  issuedAt: string
+  expiresAt: string
+  offlineUntil: string
+  lastVerifiedAt: string
+  activationId: string
+  deviceId: string
+  signature: string
+}
+
+type RequestProLicenseResponse = {
+  ok?: boolean
+  status?: 'active' | 'created' | 'pending_review'
+  license?: ProLicense
+  error?: string
 }
 
 const getDeviceType = (): DeviceType => {
@@ -151,6 +172,20 @@ function DownloadAd({ label }: { label: string }) {
   )
 }
 
+function downloadLicenseFile(license: ProLicense) {
+  const blob = new Blob([`${JSON.stringify(license, null, 2)}\n`], {
+    type: 'application/json',
+  })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'pro-license.json'
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
+
 export default function DownloadPage() {
   const lang = useLocale()
   const t = downloadCopy[lang]
@@ -161,7 +196,12 @@ export default function DownloadPage() {
   const [acceptedWidgetTerms, setAcceptedWidgetTerms] = useState(false)
   const [showDownloadDialog, setShowDownloadDialog] = useState(false)
   const [dialogMode, setDialogMode] = useState<DialogMode>('download')
+  const [selectedPlan, setSelectedPlan] = useState<DownloadPlan>('free')
   const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(null)
+  const [proRequestState, setProRequestState] = useState<ProRequestState>('idle')
+  const [proLicense, setProLicense] = useState<ProLicense | null>(null)
+  const [proMessage, setProMessage] = useState('')
+  const [formStartedAt] = useState(() => Date.now())
   const [deviceType, setDeviceType] = useState<DeviceType>('unknown')
   const [downloadCount, setDownloadCount] = useState(BREVO_COUNT_FALLBACK)
   const canDownload = deviceType === 'computer'
@@ -242,6 +282,62 @@ export default function DownloadPage() {
     }
   }
 
+  const startInstallerDownload = () => {
+    setShowDownloadDialog(false)
+    setMessage(t.downloadThanksTitle)
+    const downloadWindow = window.open(DOWNLOAD_URL, '_blank')
+    if (downloadWindow) {
+      downloadWindow.opener = null
+    } else {
+      window.location.assign(DOWNLOAD_URL)
+    }
+  }
+
+  const requestProLicense = async () => {
+    const normalizedEmail = email.trim().toLowerCase()
+
+    if (!isValidEmailAddress(normalizedEmail)) {
+      setProRequestState('error')
+      setProMessage(t.invalidEmail)
+      setProLicense(null)
+      return
+    }
+
+    setProRequestState('loading')
+    setProMessage('')
+    setProLicense(null)
+
+    try {
+      const response = await fetch('/api/pro-license/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: normalizedEmail,
+          formStartedAt,
+          website: '',
+        }),
+      })
+      const payload = (await response.json()) as RequestProLicenseResponse
+
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error || 'request_failed')
+      }
+
+      if (payload.license) {
+        setProLicense(payload.license)
+        setProRequestState(payload.status === 'created' ? 'created' : 'active')
+        setProMessage(payload.status === 'created' ? t.proCreated : t.proActive)
+        return
+      }
+
+      setProRequestState('pending')
+      setProMessage(t.proPending)
+    } catch (error) {
+      setProRequestState('error')
+      setProMessage(error instanceof Error && error.message === 'invalid_email' ? t.invalidEmail : t.proError)
+    }
+  }
+
   const handleAcceptAndDownload = () => {
     if (!acceptedWidgetTerms) {
       setSubmitState('error')
@@ -261,14 +357,12 @@ export default function DownloadPage() {
       return
     }
 
-    setShowDownloadDialog(false)
-    setMessage(t.downloadThanksTitle)
-    const downloadWindow = window.open(DOWNLOAD_URL, '_blank')
-    if (downloadWindow) {
-      downloadWindow.opener = null
-    } else {
-      window.location.assign(DOWNLOAD_URL)
+    if (selectedPlan === 'pro') {
+      requestProLicense()
+      return
     }
+
+    startInstallerDownload()
   }
 
   const closeDialog = () => {
@@ -351,6 +445,37 @@ export default function DownloadPage() {
                   ) : (
                     <>
                       <p className={styles.modalLead}>{t.consentLead}</p>
+                      <div className={styles.planBlock}>
+                        <h3>{t.planTitle}</h3>
+                        <p>{t.planLead}</p>
+                        <div className={styles.planGrid}>
+                          <button
+                            type="button"
+                            className={`${styles.planButton} ${selectedPlan === 'free' ? styles.planButtonActive : ''}`}
+                            onClick={() => {
+                              setSelectedPlan('free')
+                              setProMessage('')
+                              setProLicense(null)
+                              setProRequestState('idle')
+                            }}
+                            aria-pressed={selectedPlan === 'free'}
+                          >
+                            <strong>{t.freePlanTitle}</strong>
+                            <span>{t.freePlanText}</span>
+                          </button>
+                          <button
+                            type="button"
+                            className={`${styles.planButton} ${selectedPlan === 'pro' ? styles.planButtonActive : ''}`}
+                            disabled
+                            aria-disabled="true"
+                            aria-pressed={selectedPlan === 'pro'}
+                          >
+                            <strong>{t.proPlanTitle}</strong>
+                            <span>{t.proPlanText}</span>
+                          </button>
+                        </div>
+                      </div>
+
                       <ul className={styles.modalList}>
                         {t.consentItems.map((item) => (
                           <li key={item}>
@@ -415,16 +540,43 @@ export default function DownloadPage() {
                         </div>
                       </div>
 
+                      {selectedPlan === 'pro' && (
+                        <div className={styles.proLicenseBlock} aria-live="polite">
+                          <p className={`${styles.proStatus} ${proRequestState === 'error' ? styles.proStatusError : ''}`}>
+                            {proMessage || t.proPlanText}
+                          </p>
+                          {proLicense && (
+                            <button type="button" className={styles.secondaryButton} onClick={() => downloadLicenseFile(proLicense)}>
+                              <IconDownload />
+                              <span>{t.proDownloadCta}</span>
+                            </button>
+                          )}
+                        </div>
+                      )}
+
                       <div className={styles.modalActions}>
                         <button
                           type="button"
                           className={styles.downloadButton}
                           onClick={handleAcceptAndDownload}
-                          disabled={!acceptedWidgetTerms || selectedPlatform !== 'windows'}
+                          disabled={!acceptedWidgetTerms || selectedPlatform !== 'windows' || proRequestState === 'loading'}
+                          aria-busy={proRequestState === 'loading'}
                         >
                           <IconDownload />
-                          <span>{t.consentCta}</span>
+                          <span>
+                            {selectedPlan === 'pro'
+                              ? proRequestState === 'loading'
+                                ? t.proSearching
+                                : t.proConsentCta
+                              : t.consentCta}
+                          </span>
                         </button>
+                        {selectedPlan === 'pro' && proLicense && (
+                          <button type="button" className={styles.secondaryButton} onClick={startInstallerDownload}>
+                            <IconDownload />
+                            <span>{t.proInstallCta}</span>
+                          </button>
+                        )}
                       </div>
                     </>
                   )}

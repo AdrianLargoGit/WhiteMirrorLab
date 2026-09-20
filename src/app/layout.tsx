@@ -6,6 +6,7 @@ import { PostHogProvider } from '@/lib/posthog'
 import { PostHogPageView } from './PostHogPageView'
 import { DEFAULT_LOCALE, isLocale, type Locale } from '@/lib/i18n'
 import CookieBanner from '@/components/CookieBanner'
+import CustomCursor from '@/components/CustomCursor'
 
 export const metadata: Metadata = {
   title: 'White Mirror Lab',
@@ -40,6 +41,7 @@ export default async function RootLayout({
           </Suspense>
           {children}
           <CookieBanner />
+          <CustomCursor priority />
         </PostHogProvider>
       </body>
     </html>

@@ -9,13 +9,6 @@
   color: #f5f2ee;
 }
 
-@media (pointer: fine) {
-  .page,
-  .page * {
-    cursor: none !important;
-  }
-}
-
 .shell {
   position: fixed;
   inset: 0;

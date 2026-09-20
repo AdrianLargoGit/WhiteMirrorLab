@@ -73,21 +73,6 @@ body::after {
   opacity: 0.55;
 }
 
-/* ── CUSTOM CURSOR — landing page only (desktop) ── */
-@media (pointer: fine) {
-  .landing-page {
-    cursor: none;
-  }
-
-  .landing-page a,
-  .landing-page button,
-  .landing-page [role='button'],
-  .landing-page input,
-  .landing-page label {
-    cursor: none;
-  }
-}
-
 @media (pointer: coarse) {
   .cursor,
   .cursor-ring {
