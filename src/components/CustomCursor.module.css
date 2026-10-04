@@ -1,20 +1,40 @@
 @media (pointer: fine) {
   .cursor {
-    width: 32px;
-    height: 32px;
+    width: 20px;
+    height: 20px;
     position: fixed;
     top: 0;
     left: 0;
     z-index: 2147483647;
     pointer-events: none;
-    background: #fff;
+    background: url('/cursor-glove.png') 0 0 / 20px 20px no-repeat, #f4f1e8;
+    background-blend-mode: multiply;
+    -webkit-mask: url('/cursor-glove.png') 0 0 / 20px 20px no-repeat;
+    mask: url('/cursor-glove.png') 0 0 / 20px 20px no-repeat;
     mix-blend-mode: difference;
     visibility: hidden;
     transform: translate3d(-100px, -100px, 0);
+    transform-origin: center;
     contain: strict;
     will-change: transform;
-    -webkit-mask: url('/cursor-hand.png') 0 0 / 32px 32px no-repeat;
-    mask: url('/cursor-hand.png') 0 0 / 32px 32px no-repeat;
+  }
+
+  .hover {
+    width: 24px;
+    height: 24px;
+    background: #f4f1e8;
+    background-blend-mode: normal;
+    -webkit-mask: url('/cursor-hand.png') 0 0 / 24px 24px no-repeat;
+    mask: url('/cursor-hand.png') 0 0 / 24px 24px no-repeat;
+  }
+
+  .brush {
+    width: 20px;
+    height: 20px;
+    background: #f4f1e8;
+    background-blend-mode: normal;
+    -webkit-mask: url('/cursor-brush.svg') 0 0 / 20px 20px no-repeat;
+    mask: url('/cursor-brush.svg') 0 0 / 20px 20px no-repeat;
   }
 
   .visible {

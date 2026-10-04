@@ -26,6 +26,12 @@ const ALLOWED_PREFIXES = [
   'marketplace-covers/',
   'marketplace-previews/',
 ]
+const MAX_ZIP_BYTES = 80 * 1024 * 1024
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024
+
+function maxObjectBytes(key: string) {
+  return key.startsWith('marketplace-submissions/') ? MAX_ZIP_BYTES : MAX_IMAGE_BYTES
+}
 
 const ALLOWED_ORIGINS = new Set([
   'https://whitemirrorlab.com',
@@ -62,7 +68,12 @@ function objectKeyFromRequest(request: Request) {
 
   if (!url.pathname.startsWith(prefix)) return null
 
-  const key = decodeURIComponent(url.pathname.slice(prefix.length))
+  let key
+  try {
+    key = decodeURIComponent(url.pathname.slice(prefix.length))
+  } catch {
+    return null
+  }
 
   if (
     !key ||
@@ -122,18 +133,22 @@ async function hmacHex(secret: string, value: string) {
 async function hasValidSignedUploadUrl(request: Request, env: Env, key: string) {
   const url = new URL(request.url)
   const expiresAt = Number(url.searchParams.get('expires'))
+  const size = Number(url.searchParams.get('size'))
+  const contentType = url.searchParams.get('contentType') || ''
   const signature = url.searchParams.get('signature') || ''
 
-  if (!Number.isFinite(expiresAt) || expiresAt < Math.floor(Date.now() / 1000)) {
+  if (!Number.isSafeInteger(expiresAt) || expiresAt < Math.floor(Date.now() / 1000) ||
+      !Number.isSafeInteger(size) || size <= 0 || size > maxObjectBytes(key) ||
+      !/^(?:application\/(?:zip|x-zip-compressed)|multipart\/x-zip|image\/(?:jpeg|png|webp|gif))$/.test(contentType)) {
     return false
   }
 
   const expectedSignature = await hmacHex(
     String(env.WML_UPLOAD_SECRET || '').trim(),
-    `${request.method.toUpperCase()}\n${key}\n${expiresAt}`,
+    `${request.method.toUpperCase()}\n${key}\n${expiresAt}\n${size}\n${contentType}`,
   )
 
-  return timingSafeEqual(signature, expectedSignature)
+  return timingSafeEqual(signature, expectedSignature) ? { size, contentType } : false
 }
 
 function hasValidSharedSecret(request: Request, env: Env) {
@@ -152,7 +167,7 @@ const worker = {
       return new Response(null, { status: 204, headers: cors })
     }
 
-    if (!env.WML_UPLOAD_SECRET) {
+    if (!env.WML_UPLOAD_SECRET?.trim()) {
       return response('Missing Worker secret WML_UPLOAD_SECRET', 500, request)
     }
 
@@ -167,19 +182,42 @@ const worker = {
     }
 
     const allowedBySecret = hasValidSharedSecret(request, env)
-    const allowedBySignedUrl = request.method === 'PUT' &&
+    const signedUpload = request.method === 'PUT' &&
       await hasValidSignedUploadUrl(request, env, key)
 
-    if (!allowedBySecret && !allowedBySignedUrl) {
+    if (!allowedBySecret && !signedUpload) {
       return response('Unauthorized', 401, request)
     }
 
     if (request.method === 'PUT') {
-      await env.MARKETPLACE_BUCKET.put(key, request.body, {
-        httpMetadata: {
-          contentType: request.headers.get('Content-Type') || 'application/octet-stream',
+      if (!request.body) return response('Missing upload body', 400, request)
+      const contentType = request.headers.get('Content-Type')?.split(';')[0].trim().toLowerCase() || 'application/octet-stream'
+      if (signedUpload && contentType !== signedUpload.contentType) return response('Invalid content type', 400, request)
+      const maxBytes = Math.min(maxObjectBytes(key), signedUpload ? signedUpload.size : Infinity)
+      const declaredLength = Number(request.headers.get('Content-Length'))
+      if (Number.isFinite(declaredLength) && declaredLength > maxBytes) return response('Upload too large', 413, request)
+      let received = 0
+      let exceeded = false
+      const boundedBody = request.body.pipeThrough(new TransformStream<Uint8Array, Uint8Array>({
+        transform(chunk, controller) {
+          received += chunk.byteLength
+          if (received > maxBytes) {
+            exceeded = true
+            throw new Error('Upload too large')
+          }
+          controller.enqueue(chunk)
         },
-      })
+      }))
+      try {
+        await env.MARKETPLACE_BUCKET.put(key, boundedBody, { httpMetadata: { contentType: signedUpload ? signedUpload.contentType : contentType } })
+      } catch (error) {
+        if (exceeded) return response('Upload too large', 413, request)
+        throw error
+      }
+      if (!received || (signedUpload && received !== signedUpload.size)) {
+        await env.MARKETPLACE_BUCKET.delete(key)
+        return response('Upload size mismatch', 400, request)
+      }
 
       return Response.json({ ok: true, key }, { headers: cors })
     }

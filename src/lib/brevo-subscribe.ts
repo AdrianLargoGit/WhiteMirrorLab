@@ -34,6 +34,7 @@ export const getBrevoListId = (source: SubscribeSource) => {
 const getExistingListIds = async (email: string, apiKey: string) => {
   const res = await fetch(`${BREVO_CONTACTS_URL}/${encodeURIComponent(email)}`, {
     method: 'GET',
+    signal: AbortSignal.timeout(15000),
     headers: { 'api-key': apiKey },
   })
 
@@ -63,6 +64,7 @@ export const subscribeEmailToBrevo = async (email: string, source: SubscribeSour
 
   const res = await fetch(BREVO_CONTACTS_URL, {
     method: 'POST',
+    signal: AbortSignal.timeout(15000),
     headers: {
       'Content-Type': 'application/json',
       'api-key': apiKey,
@@ -95,6 +97,7 @@ export const getBrevoListCount = async (source: SubscribeSource = 'general') => 
 
   const res = await fetch(`${BREVO_LISTS_URL}/${listId}/contacts?limit=1&offset=0`, {
     method: 'GET',
+    signal: AbortSignal.timeout(15000),
     headers: { 'api-key': apiKey },
     cache: 'no-store',
   })
@@ -127,6 +130,7 @@ export const getBrevoListContactEmails = async (listId: number) => {
   while (offset < 10000) {
     const res = await fetch(`${BREVO_LISTS_URL}/${listId}/contacts?limit=${limit}&offset=${offset}`, {
       method: 'GET',
+      signal: AbortSignal.timeout(15000),
       headers: { 'api-key': apiKey },
       cache: 'no-store',
     })
@@ -173,6 +177,7 @@ export const sendBrevoEmail = async ({
 
   const res = await fetch(BREVO_SMTP_URL, {
     method: 'POST',
+    signal: AbortSignal.timeout(15000),
     headers: {
       'Content-Type': 'application/json',
       'api-key': apiKey,

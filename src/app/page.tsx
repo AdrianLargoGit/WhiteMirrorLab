@@ -5,7 +5,6 @@ import type { ReactNode } from 'react'
 import Image from 'next/image'
 import Navbar from '@/components/Navbar'
 import Hero from '@/components/Hero'
-import CustomCursor from '@/components/CustomCursor'
 import { useLocale } from '@/hooks/useLocale'
 import { landingCopy } from '@/lib/copy'
 import { isValidEmailAddress } from '@/lib/emailValidation'
@@ -17,6 +16,7 @@ import {
   downloadPath,
   experimentsPath,
   faroPath,
+  safefilePath,
   wmlPath,
   type Locale,
 } from '@/lib/i18n'
@@ -94,27 +94,28 @@ export default function Home() {
   const [emailError, setEmailError] = useState(false)
 
   useEffect(() => {
+    let observer: IntersectionObserver | undefined
     const id = setTimeout(() => {
       const els = document.querySelectorAll('.reveal:not(.visible), .reveal-left:not(.visible), .reveal-right:not(.visible)')
-      const observer = new IntersectionObserver(
+      observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
               entry.target.classList.add('visible')
-              observer.unobserve(entry.target)
+              observer?.unobserve(entry.target)
             }
           })
         },
         { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
       )
-      els.forEach((el) => observer.observe(el))
-      return () => observer.disconnect()
+      els.forEach((el) => observer?.observe(el))
     }, 50)
-    return () => clearTimeout(id)
+    return () => { clearTimeout(id); observer?.disconnect() }
   }, [lang])
 
   const t = landingCopy[lang]
   const experimentHref = (id: string) => {
+    if (id === 'safefile') return safefilePath(lang)
     if (id === 'wmlxx0') return downloadPath(lang)
     if (id === 'blog') return blogPath(lang)
     if (id === 'wml1archive') return wmlPath(lang)
@@ -149,7 +150,6 @@ export default function Home() {
 
   return (
     <div className="landing-page">
-      <CustomCursor />
       <Navbar lang={lang} />
 
       <main>

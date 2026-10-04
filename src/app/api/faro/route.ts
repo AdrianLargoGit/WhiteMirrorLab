@@ -1,3 +1,4 @@
+import { validateJsonFields } from '@/lib/requestValidation'
 import { NextResponse } from 'next/server'
 import {
   getFaroPublicState,
@@ -44,6 +45,7 @@ export async function POST(req: Request) {
 
   try {
     body = await req.json()
+    validateJsonFields(body, { strings: ['password', 'adminSecret', 'message', 'author'] })
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }

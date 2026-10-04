@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
-import CustomCursor from '@/components/CustomCursor'
 import Navbar from '@/components/Navbar'
 import { DEFAULT_LOCALE, isLocale, type Locale } from '@/lib/i18n'
 import RoguelikeGame from './RoguelikeGame'
@@ -17,7 +16,7 @@ export default async function BlogRoguelikePage() {
 
   return (
     <main className={styles.page}>
-      <CustomCursor />
+
       <Navbar lang={lang} />
       <RoguelikeGame locale={lang} />
     </main>

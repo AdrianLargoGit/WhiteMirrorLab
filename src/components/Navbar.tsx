@@ -9,11 +9,13 @@ import {
   alternateLocalePath,
   blogPath,
   contactPath,
+  coderPath,
   downloadPath,
   experimentsPath,
   faroPath,
   localizedHashPath,
   marketplacePath,
+  safefilePath,
   skinTemplatePath,
   wmlPath,
   type Locale,
@@ -43,35 +45,34 @@ interface NavbarProps {
 export default function Navbar({ lang, onLangChange }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
-  const [wmlMenuOpen, setWmlMenuOpen] = useState(false)
+  const [openGroup, setOpenGroup] = useState<'archive' | 'tools' | null>(null)
   const progressRef = useRef<HTMLDivElement>(null)
-  const wmlMenuRef = useRef<HTMLLIElement>(null)
+  const groupsRef = useRef<HTMLUListElement>(null)
   const pathname = usePathname()
   const t = landingCopy[lang]
 
   const navLinks = [
-    { href: blogPath(lang), label: t.navBlog },
-    { href: experimentsPath(lang), label: t.navExperiments },
     { href: contactPath(lang), label: t.navContact },
-    { href: faroPath(lang), label: t.navFaro },
+    { href: experimentsPath(lang), label: t.navExperiments },
+    { href: blogPath(lang), label: t.navBlog },
   ]
-
-  const wmlLinks = [
-    {
-      section: t.navWmlOneSection,
-      items: [
-        { href: wmlPath(lang), label: t.navWml },
-      ],
-    },
-    {
-      section: t.navWmlExperimentalSection,
-      items: [
-        { href: downloadPath(lang), label: t.navDownload },
+  const navigationGroups = [
+    { id: 'archive', label: lang === 'es' ? 'Archivo' : 'Archive', sections: [
+      { section: lang === 'es' ? 'Experimentos finalizados' : 'Completed experiments', items: [{ href: wmlPath(lang), label: 'WML 1.0' }] },
+    ] },
+    { id: 'tools', label: 'TOOLS', sections: [
+      { section: 'WML X.X.0', items: [
+        { href: downloadPath(lang), label: 'WML X.X.0' },
         { href: marketplacePath(lang), label: t.navMarketplace },
         { href: skinTemplatePath(lang), label: t.navCreators },
-      ],
-    },
-  ]
+      ] },
+      { section: lang === 'es' ? 'Herramientas' : 'Tools', items: [
+        { href: safefilePath(lang), label: 'SafeFile' },
+        { href: faroPath(lang), label: 'FARO' },
+        { href: coderPath(lang), label: 'Coder' },
+      ] },
+    ] },
+  ] as const
 
   useEffect(() => {
     const onScroll = () => {
@@ -87,23 +88,25 @@ export default function Navbar({ lang, onLangChange }: NavbarProps) {
   }, [])
 
   useEffect(() => {
-    document.body.style.overflow = menuOpen ? 'hidden' : ''
+    if (!menuOpen) return
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
     return () => {
-      document.body.style.overflow = ''
+      document.body.style.overflow = previousOverflow
     }
   }, [menuOpen])
 
   useEffect(() => {
-    if (!wmlMenuOpen || menuOpen) return
+    if (!openGroup && !menuOpen) return
 
     const handlePointerDown = (event: PointerEvent) => {
-      if (!wmlMenuRef.current?.contains(event.target as Node)) {
-        setWmlMenuOpen(false)
+      if (!menuOpen && !groupsRef.current?.contains(event.target as Node)) {
+        setOpenGroup(null)
       }
     }
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setWmlMenuOpen(false)
+      if (event.key === 'Escape') { setOpenGroup(null); setMenuOpen(false) }
     }
 
     window.addEventListener('pointerdown', handlePointerDown)
@@ -113,11 +116,11 @@ export default function Navbar({ lang, onLangChange }: NavbarProps) {
       window.removeEventListener('pointerdown', handlePointerDown)
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [menuOpen, wmlMenuOpen])
+  }, [menuOpen, openGroup])
 
   const closeMenu = () => {
     setMenuOpen(false)
-    setWmlMenuOpen(false)
+    setOpenGroup(null)
   }
 
   const changeLang = (nextLang: Locale) => {
@@ -136,8 +139,9 @@ export default function Navbar({ lang, onLangChange }: NavbarProps) {
       <div
         className={`${styles.mobileMenu} ${menuOpen ? styles.mobileMenuOpen : ''}`}
         aria-hidden={!menuOpen}
+        inert={!menuOpen}
       >
-        <nav aria-label={lang === 'es' ? 'Navegacion movil' : 'Mobile navigation'}>
+        <nav aria-label={lang === 'es' ? 'Navegación móvil' : 'Mobile navigation'}>
           {navLinks.map((item) => (
             <Link
               key={item.href}
@@ -148,34 +152,13 @@ export default function Navbar({ lang, onLangChange }: NavbarProps) {
               {item.label}
             </Link>
           ))}
-          <div className={styles.mobileWmlGroup}>
-            <button
-              type="button"
-              className={styles.mobileWmlToggle}
-              aria-expanded={wmlMenuOpen}
-              onClick={() => setWmlMenuOpen((value) => !value)}
-            >
-              {t.navWmlMenu}
-              <span className={styles.chevron} aria-hidden="true" />
-            </button>
-            <div className={`${styles.mobileWmlPanel} ${wmlMenuOpen ? styles.mobileWmlPanelOpen : ''}`}>
-              {wmlLinks.map((group) => (
-                <div key={group.section} className={styles.mobileWmlSection}>
-                  <span>{group.section}</span>
-                  {group.items.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={styles.mobileWmlLink}
-                      onClick={closeMenu}
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
+          {navigationGroups.map(group => <div key={group.id} className={styles.mobileWmlGroup}>
+            <button type="button" className={styles.mobileWmlToggle} aria-expanded={openGroup === group.id} aria-controls={'mobile-' + group.id} onClick={() => setOpenGroup(value => value === group.id ? null : group.id)}>{group.label}<span className={styles.chevron} aria-hidden="true" /></button>
+            {openGroup === group.id && <div id={'mobile-' + group.id} className={styles.mobileGroupContent}>
+              {group.sections.map(section => <div key={section.section} className={styles.mobileWmlSection}><span>{section.section}</span>{section.items.map(item => <Link key={item.href} href={item.href} className={`${styles.mobileWmlLink} ${group.id === 'tools' && item.href === downloadPath(lang) ? styles.featuredTool : ''}`} onClick={closeMenu}>{item.label}</Link>)}</div>)}
+            </div>}
+          </div>)}
+
         </nav>
 
         <div className={styles.mobileLang}>
@@ -208,7 +191,7 @@ export default function Navbar({ lang, onLangChange }: NavbarProps) {
           White Mirror Lab
         </Link>
 
-        <ul className={styles.desktopLinks} role="list">
+        <ul className={styles.desktopLinks} role="list" ref={groupsRef}>
           {navLinks.map((item) => (
             <li key={item.href}>
               <Link href={item.href} className={styles.navLink}>
@@ -216,41 +199,13 @@ export default function Navbar({ lang, onLangChange }: NavbarProps) {
               </Link>
             </li>
           ))}
-          <li
-            className={styles.wmlMenu}
-            ref={wmlMenuRef}
-            onMouseEnter={() => setWmlMenuOpen(true)}
-            onMouseLeave={() => setWmlMenuOpen(false)}
-          >
-            <button
-              type="button"
-              className={styles.navLinkButton}
-              aria-expanded={wmlMenuOpen}
-              aria-haspopup="menu"
-              onClick={() => setWmlMenuOpen((value) => !value)}
-            >
-              {t.navWmlMenu}
-              <span className={styles.chevron} aria-hidden="true" />
-            </button>
-            <div className={`${styles.wmlDropdown} ${wmlMenuOpen ? styles.wmlDropdownOpen : ''}`} role="menu">
-              {wmlLinks.map((group) => (
-                <div key={group.section} className={styles.wmlDropdownSection}>
-                  <span>{group.section}</span>
-                  {group.items.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={styles.wmlDropdownLink}
-                      role="menuitem"
-                      onClick={() => setWmlMenuOpen(false)}
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-              ))}
+          {navigationGroups.map(group => <li key={group.id} className={`${styles.wmlMenu} ${group.sections.length === 1 ? styles.wmlMenuSingleColumn : ''} ${openGroup === group.id ? styles.wmlMenuOpen : ''}`} onMouseLeave={() => setOpenGroup(null)} onFocus={() => setOpenGroup(group.id)} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setOpenGroup(null) }}>
+            <button type="button" className={styles.navLinkButton} onMouseEnter={() => setOpenGroup(group.id)} aria-expanded={openGroup === group.id} aria-controls={'desktop-' + group.id} onClick={() => setOpenGroup(group.id)}>{group.label}<span className={styles.chevron} aria-hidden="true" /></button>
+            <div id={'desktop-' + group.id} className={styles.wmlDropdown + (openGroup === group.id ? ' ' + styles.wmlDropdownOpen : '')} inert={openGroup !== group.id} aria-hidden={openGroup !== group.id}>
+              {group.sections.map(section => <div key={section.section} className={styles.wmlDropdownSection}><span>{section.section}</span>{section.items.map(item => <Link key={item.href} href={item.href} className={`${styles.wmlDropdownLink} ${group.id === 'tools' && item.href === downloadPath(lang) ? styles.featuredTool : ''}`} onClick={closeMenu}>{item.label}</Link>)}</div>)}
             </div>
-          </li>
+          </li>)}
+
         </ul>
 
         <div className={styles.navRight}>
@@ -280,11 +235,11 @@ export default function Navbar({ lang, onLangChange }: NavbarProps) {
           <button
             type="button"
             className={styles.hamburger}
-            aria-label={menuOpen ? (lang === 'es' ? 'Cerrar menu' : 'Close menu') : (lang === 'es' ? 'Abrir menu' : 'Open menu')}
+            aria-label={menuOpen ? (lang === 'es' ? 'Cerrar menú' : 'Close menu') : (lang === 'es' ? 'Abrir menú' : 'Open menu')}
             aria-expanded={menuOpen}
             onClick={() => {
               setMenuOpen((v) => !v)
-              setWmlMenuOpen(false)
+              setOpenGroup(null)
             }}
           >
             {menuOpen ? <IconClose /> : <IconMenu />}

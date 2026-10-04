@@ -3,7 +3,6 @@
 import { FormEvent, useState } from 'react'
 import { useLocale } from '@/hooks/useLocale'
 import { isValidEmailAddress } from '@/lib/emailValidation'
-import { captureEvent } from '@/lib/posthog'
 
 const copy = {
   es: {
@@ -77,7 +76,6 @@ export default function ContactPage() {
 
       setStatus('success')
       setForm({ name: '', email: '', subject: '', message: '' })
-      captureEvent('contact_form_submitted', { locale: lang })
     } catch {
       setStatus('error')
       setError(t.error)

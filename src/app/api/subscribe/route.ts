@@ -1,3 +1,4 @@
+import { validateJsonFields } from '@/lib/requestValidation'
 import { NextResponse } from 'next/server'
 import { subscribeEmailToBrevo, type SubscribeSource } from '@/lib/brevo-subscribe'
 import { isValidEmailAddress } from '@/lib/emailValidation'
@@ -23,7 +24,8 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json()
-    email = (body.email ?? '').trim().toLowerCase()
+    validateJsonFields(body, { strings: ['email', 'source'] })
+    email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
     source = body.source === 'tech' || body.source === 'social' || body.source === 'faro' ? body.source : 'general'
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })

@@ -81,16 +81,27 @@
 }
 
 .wmlMenu {
+  --dropdown-width: 520px;
   position: relative;
+}
+
+.wmlMenuSingleColumn {
+  --dropdown-width: 280px;
 }
 
 .wmlMenu::after {
   content: '';
   position: absolute;
   top: 100%;
-  left: -18px;
-  right: -18px;
+  left: 50%;
+  width: min(var(--dropdown-width), calc(100vw - 40px));
+  transform: translateX(-50%);
   height: 18px;
+  pointer-events: none;
+}
+
+.wmlMenuOpen::after {
+  pointer-events: auto;
 }
 
 .navLinkButton {
@@ -127,8 +138,7 @@
   transition: transform 0.18s;
 }
 
-.navLinkButton[aria-expanded='true'] .chevron,
-.wmlMenu:hover .chevron {
+.navLinkButton[aria-expanded='true'] .chevron {
   transform: translateY(1px) rotate(225deg);
 }
 
@@ -136,7 +146,7 @@
   position: absolute;
   top: calc(100% + 18px);
   left: 50%;
-  width: min(520px, calc(100vw - 40px));
+  width: min(var(--dropdown-width), calc(100vw - 40px));
   transform: translateX(-50%) translateY(-6px);
   pointer-events: none;
   opacity: 0;
@@ -149,7 +159,6 @@
   backdrop-filter: blur(16px);
 }
 
-.wmlMenu:hover .wmlDropdown,
 .wmlDropdownOpen {
   pointer-events: auto;
   opacity: 1;
@@ -160,6 +169,10 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1px;
+}
+
+.wmlMenuSingleColumn .wmlDropdown {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .wmlDropdownSection {
@@ -361,21 +374,9 @@
   transform: translateY(1px) rotate(225deg);
 }
 
-.mobileWmlPanel {
-  max-height: 0;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  overflow: hidden;
-  opacity: 0;
-  transition: max-height 0.22s ease, opacity 0.18s ease, padding-top 0.22s ease;
-}
 
-.mobileWmlPanelOpen {
-  max-height: 220px;
-  opacity: 1;
-  padding-top: 10px;
-}
+.mobileGroupContent { display: grid; gap: 10px; margin-top: 10px; }
+.mobileGroupContent[hidden] { display: none; }
 
 .mobileWmlSection {
   display: grid;
@@ -412,6 +413,21 @@
 .mobileWmlLink:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+.wmlDropdownLink.featuredTool,
+.mobileWmlLink.featuredTool {
+  color: var(--accent);
+  font-weight: 700;
+  text-shadow: 0 0 12px rgba(255, 216, 77, 0.32);
+}
+
+.wmlDropdownLink.featuredTool:hover,
+.mobileWmlLink.featuredTool:hover,
+.wmlDropdownLink.featuredTool:focus-visible,
+.mobileWmlLink.featuredTool:focus-visible {
+  color: #ffe790;
+  text-shadow: 0 0 16px rgba(255, 216, 77, 0.58);
 }
 
 /* Selector de idioma móvil */
@@ -454,13 +470,7 @@
     padding-right: 16px;
   }
 
-  .mobileWmlPanel {
-    grid-template-columns: 1fr;
-  }
 
-  .mobileWmlPanelOpen {
-    max-height: 360px;
-  }
 }
 
 @media (max-height: 680px) {

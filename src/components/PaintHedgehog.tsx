@@ -164,6 +164,7 @@ export default function PaintHedgehog() {
       <canvas
         ref={canvasRef}
         className={styles.drawCanvas}
+        data-cursor={isReady ? 'brush' : undefined}
         aria-label="Paint canvas"
         onPointerDown={startDrawing}
         onPointerMove={keepDrawing}

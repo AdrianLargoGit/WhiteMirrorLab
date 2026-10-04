@@ -54,16 +54,15 @@ export default function PrivacidadPage() {
           escrito en otras apps ni contenido de ventanas a la IA local.
         </p>
 
-        <h3>2.4. Analitica y logs tecnicos</h3>
+        <h3>2.4. Logs tecnicos</h3>
         <p>
-          PostHog puede tratar paginas vistas y eventos de interaccion solo segun el consentimiento
-          de analitica. Los logs tecnicos y de seguridad pueden incluir IP, navegador, sistema
+          Los logs tecnicos y de seguridad pueden incluir IP, navegador, sistema
           operativo y metadatos de solicitud para mantenimiento, prevencion de fraude y seguridad.
         </p>
 
         <h2>3. Destinatarios y transferencias</h2>
         <p>
-          Usamos encargados como Supabase, PostHog, Brevo, Vercel, Cloudflare/R2 y proveedores de
+          Usamos encargados como Supabase, Brevo, Vercel, Cloudflare/R2 y proveedores de
           pago o checkout cuando proceda. Si hay transferencias fuera del Espacio Economico Europeo,
           se aplican garantias adecuadas.
         </p>

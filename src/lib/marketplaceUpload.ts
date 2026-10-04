@@ -19,18 +19,23 @@ export type UploadRequestBody = {
   size?: number
 }
 
-export function validateMarketplaceUpload(input: UploadRequestBody) {
+export function validateMarketplaceUpload(input: UploadRequestBody | null | undefined) {
+  if (!input || typeof input.pathname !== 'string' || typeof input.contentType !== 'string' || typeof input.size !== 'number') {
+    return { ok: false as const, error: 'Invalid upload metadata' }
+  }
   const pathname = input.pathname?.trim()
   const contentType = input.contentType?.trim().toLowerCase()
   const size = Number(input.size)
-  const maxZipBytes = Number(process.env.MARKETPLACE_MAX_ZIP_BYTES ?? DEFAULT_MAX_ZIP_BYTES)
-  const maxImageBytes = Number(process.env.MARKETPLACE_MAX_IMAGE_BYTES ?? DEFAULT_MAX_IMAGE_BYTES)
+  const configuredZipBytes = Number(process.env.MARKETPLACE_MAX_ZIP_BYTES)
+  const configuredImageBytes = Number(process.env.MARKETPLACE_MAX_IMAGE_BYTES)
+  const maxZipBytes = Number.isSafeInteger(configuredZipBytes) && configuredZipBytes > 0 ? configuredZipBytes : DEFAULT_MAX_ZIP_BYTES
+  const maxImageBytes = Number.isSafeInteger(configuredImageBytes) && configuredImageBytes > 0 ? configuredImageBytes : DEFAULT_MAX_IMAGE_BYTES
 
-  if (!pathname || pathname.includes('..') || pathname.startsWith('/') || pathname.includes('\\')) {
+  if (!pathname || pathname.includes('..') || /[\x00-\x1f\x7f]/.test(pathname) || pathname.startsWith('/') || pathname.includes('\\')) {
     return { ok: false as const, error: 'Invalid upload pathname' }
   }
 
-  if (!contentType || !Number.isFinite(size) || size <= 0) {
+  if (!contentType || !Number.isSafeInteger(size) || size <= 0) {
     return { ok: false as const, error: 'Invalid upload metadata' }
   }
 

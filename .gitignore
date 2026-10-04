@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -12,13 +12,17 @@
 
 # testing
 /coverage
+playwright-report/
+test-results/
+blob-report/
 
 # next.js
-/.next/
+.next/
 /out/
 
 # production
 /build
+dist/
 
 # paid analytics exports
 /analytics/
@@ -26,16 +30,44 @@
 # misc
 .DS_Store
 *.pem
+.pro-keys/
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*pro-license*.json
+family-pro-*.json
+pro-private/
+.npmrc
+
+# local captures, alternate checkouts and cloud tooling state
+/.codex-screenshots/
+/.kilo/
+.wrangler/
+/.supabase/
+/supabase/.temp/
+/supabase/.branches/
+
+# generated desktop installers
+*.exe
+*.msi
+*.msix
+*.dmg
+*.AppImage
 
 # debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+*.log
 
-# env files (can opt-in for committing if needed)
+# all environment files stay local, including prefixed names such as pro.env
 .env*
-!.env.example
+*.env
+*.env.*
+.dev.vars*
 
 # vercel
 .vercel
@@ -43,3 +75,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# OS and editor temporary files
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~

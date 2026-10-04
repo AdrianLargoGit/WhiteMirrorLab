@@ -7,6 +7,7 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { NodeHttpHandler } from '@smithy/node-http-handler'
 import { createHmac } from 'node:crypto'
+import { readUploadBody } from './uploadBody'
 
 type R2ObjectBody = {
   transformToByteArray?: () => Promise<Uint8Array>
@@ -62,7 +63,7 @@ function r2WorkerConfig() {
   }
 }
 
-function createWorkerUploadSignature(method: string, key: string, expiresAt: number) {
+function createWorkerUploadSignature(method: string, key: string, expiresAt: number, size: number, contentType: string) {
   const config = r2WorkerConfig()
 
   if (!config) {
@@ -70,11 +71,11 @@ function createWorkerUploadSignature(method: string, key: string, expiresAt: num
   }
 
   return createHmac('sha256', config.secret)
-    .update(`${method.toUpperCase()}\n${key}\n${expiresAt}`)
+    .update(`${method.toUpperCase()}\n${key}\n${expiresAt}\n${size}\n${contentType}`)
     .digest('hex')
 }
 
-function createSignedWorkerUploadUrl(key: string) {
+function createSignedWorkerUploadUrl(key: string, contentType: string, size: number) {
   const config = r2WorkerConfig()
 
   if (!config) {
@@ -84,7 +85,9 @@ function createSignedWorkerUploadUrl(key: string) {
   const expiresAt = Math.floor(Date.now() / 1000) + 900
   const uploadUrl = new URL(`${config.url}/object/${encodeR2ObjectKey(key)}`)
   uploadUrl.searchParams.set('expires', String(expiresAt))
-  uploadUrl.searchParams.set('signature', createWorkerUploadSignature('PUT', key, expiresAt))
+  uploadUrl.searchParams.set('size', String(size))
+  uploadUrl.searchParams.set('contentType', contentType)
+  uploadUrl.searchParams.set('signature', createWorkerUploadSignature('PUT', key, expiresAt, size, contentType))
 
   return uploadUrl.toString()
 }
@@ -140,11 +143,11 @@ export function isR2Url(value: string | null | undefined) {
   return Boolean(r2KeyFromUrl(value))
 }
 
-export async function createR2UploadUrl(key: string, contentType: string) {
+export async function createR2UploadUrl(key: string, contentType: string, size: number) {
   if (r2WorkerConfig()) {
     return {
       provider: 'r2-worker' as const,
-      uploadUrl: createSignedWorkerUploadUrl(key),
+      uploadUrl: createSignedWorkerUploadUrl(key, contentType, size),
       fileUrl: toR2Url(key),
     }
   }
@@ -167,8 +170,9 @@ export async function uploadR2ObjectStream(input: {
   key: string
   contentType: string
   body: ReadableStream<Uint8Array>
+  size: number
 }) {
-  const bytes = await new Response(input.body).arrayBuffer()
+  const bytes = await readUploadBody(input.body, input.size)
 
   if (r2WorkerConfig()) {
     await uploadR2ObjectWithWorker(input.key, input.contentType, bytes)
@@ -253,6 +257,7 @@ export async function getR2Object(fileUrl: string) {
       Key: key,
     }))
   } catch (error) {
+    if (error instanceof Error && (error.name === 'NoSuchKey' || error.name === 'NotFound')) return null
     throw error
   }
 
@@ -287,12 +292,6 @@ export async function getR2ObjectBuffer(fileUrl: string) {
     bytes: new Uint8Array(await new Response(stream).arrayBuffer()),
     contentType: object.contentType,
   }
-}
-
-export function toArrayBuffer(bytes: Uint8Array) {
-  const copy = new ArrayBuffer(bytes.byteLength)
-  new Uint8Array(copy).set(bytes)
-  return copy
 }
 
 export function r2ObjectToWebStream(body: R2ObjectBody) {

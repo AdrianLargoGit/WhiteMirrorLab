@@ -1,3 +1,4 @@
+import { UploadSizeError } from '@/lib/uploadBody'
 import { NextRequest, NextResponse } from 'next/server'
 import { MARKETPLACE_SUBMISSIONS_ARE_OPEN } from '@/lib/marketplaceAvailability'
 import {
@@ -43,17 +44,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Missing upload body' }, { status: 400 })
   }
 
+  const slash = valid.pathname.lastIndexOf('/')
+  const uniquePath = `${valid.pathname.slice(0, slash + 1)}${crypto.randomUUID()}-${valid.pathname.slice(slash + 1)}`
   try {
     const upload = await uploadMarketplaceObjectStream({
-      path: valid.pathname,
+      path: uniquePath,
       contentType: valid.contentType,
       body: request.body,
+      size: valid.size,
     })
 
     return NextResponse.json(upload, {
       headers: rateLimitHeaders(rateLimit),
     })
   } catch (error) {
+    if (error instanceof UploadSizeError) return NextResponse.json({ error: error.message }, { status: 413 })
     console.error('Marketplace relay upload error:', error)
     const message = formatServerError(error, 'Upload failed')
     return NextResponse.json({ error: message }, { status: 502 })

@@ -1,11 +1,8 @@
 import type { Metadata, Viewport } from 'next'
-import { Suspense } from 'react'
 import { headers } from 'next/headers'
 import './globals.css'
-import { PostHogProvider } from '@/lib/posthog'
-import { PostHogPageView } from './PostHogPageView'
 import { DEFAULT_LOCALE, isLocale, type Locale } from '@/lib/i18n'
-import CookieBanner from '@/components/CookieBanner'
+import { LocaleProvider } from '@/lib/localeContext'
 import CustomCursor from '@/components/CustomCursor'
 
 export const metadata: Metadata = {
@@ -35,14 +32,10 @@ export default async function RootLayout({
   return (
     <html lang={lang}>
       <body>
-        <PostHogProvider>
-          <Suspense fallback={null}>
-            <PostHogPageView />
-          </Suspense>
+        <LocaleProvider locale={lang}>
           {children}
-          <CookieBanner />
           <CustomCursor priority />
-        </PostHogProvider>
+        </LocaleProvider>
       </body>
     </html>
   )

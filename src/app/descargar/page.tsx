@@ -1,82 +1,27 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { adsterraFrameHtml } from '@/lib/adsterra'
+import { useAdLoaded } from '@/hooks/useAdLoaded'
+
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import CustomCursor from '@/components/CustomCursor'
 import Navbar from '@/components/Navbar'
 import { downloadCopy } from '@/lib/copy'
 import { homePath, skinTemplatePath } from '@/lib/i18n'
 import { BREVO_COUNT_FALLBACK, fetchBrevoCount } from '@/lib/brevo-count'
 import { isValidEmailAddress } from '@/lib/emailValidation'
+import { getDeviceType, type DeviceType } from '@/lib/deviceType'
 import { useLocale } from '@/hooks/useLocale'
+import { proCopy } from '@/lib/proCopy'
+import { WIDGET_DOWNLOAD_URL as DOWNLOAD_URL } from '@/lib/widgetDownload'
+import type { ProBillingPlan } from '@/lib/proConfig'
 import styles from './page.module.css'
 
-const DOWNLOAD_URL = 'https://github.com/AdrianLargoGit/WhiteMirrorLab/releases/download/v1.0.2/wml-xx0-1.0.2-setup.exe'
-const AD_MESSAGE_TYPE = 'wml-adsterra-status'
-const AD_CONTAINER_ID = 'container-54237a243e6e5ead86fd96dfae1f4fe7'
-const AD_SCRIPT_SRC = 'https://pl31053382.profitableratecpmnetwork.com/54237a243e6e5ead86fd96dfae1f4fe7/invoke.js'
-
-type DeviceType = 'computer' | 'mobile' | 'tv' | 'unknown'
 type Platform = 'windows' | 'linux'
 type DialogMode = 'download' | 'mobile'
 type DownloadPlan = 'free' | 'pro'
-type ProRequestState = 'idle' | 'loading' | 'active' | 'created' | 'pending' | 'error'
-type NavigatorWithUserAgentData = Navigator & {
-  userAgentData?: {
-    platform?: string
-  }
-}
+type ProRequestState = 'idle' | 'loading' | 'error'
 
-type ProLicense = {
-  subject: string
-  plan: 'monthly'
-  issuedAt: string
-  expiresAt: string
-  offlineUntil: string
-  lastVerifiedAt: string
-  activationId: string
-  deviceId: string
-  signature: string
-}
-
-type RequestProLicenseResponse = {
-  ok?: boolean
-  status?: 'active' | 'created' | 'pending_review'
-  license?: ProLicense
-  error?: string
-}
-
-const getDeviceType = (): DeviceType => {
-  const ua = navigator.userAgent.toLowerCase()
-  const userAgentData = (navigator as NavigatorWithUserAgentData).userAgentData
-  const platform = userAgentData?.platform?.toLowerCase() || navigator.platform.toLowerCase()
-  const hasCoarsePointer = window.matchMedia('(any-pointer: coarse)').matches
-  const hasFinePointer = window.matchMedia('(any-pointer: fine)').matches
-  const isTouchOnly = hasCoarsePointer && !hasFinePointer
-  const isTablet =
-    /ipad|tablet|kindle|silk/.test(ua) ||
-    (/android/.test(ua) && !/mobi/.test(ua)) ||
-    (platform === 'macintel' && navigator.maxTouchPoints > 1) ||
-    (/win/.test(platform) && isTouchOnly)
-
-  if (/smart-tv|smarttv|hbbtv|appletv|google tv|googletv|tizen|webos|netcast|viera|aquos|bravia|roku|aftt|aftm|fire tv/.test(ua)) {
-    return 'tv'
-  }
-
-  if (isTablet || /mobi|iphone|ipod|android/.test(ua)) {
-    return 'mobile'
-  }
-
-  if (/win|mac|linux|cros|x11/.test(platform) && !isTouchOnly) {
-    return 'computer'
-  }
-
-  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches && !hasCoarsePointer) {
-    return 'computer'
-  }
-
-  return 'unknown'
-}
 
 const IconDownload = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
@@ -98,62 +43,10 @@ const IconWindows = () => (
   </svg>
 )
 
-function adsterraFrameHtml(slotId: string) {
-  return `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
-      * { box-sizing: border-box; }
-      html, body { width: 100%; height: 100%; margin: 0; background: transparent; overflow: hidden; }
-      body { position: relative; font-family: Arial, Helvetica, sans-serif; }
-      #${AD_CONTAINER_ID} { position: absolute; inset: 0; width: 100%; min-height: 100%; display: grid; place-items: center; background: transparent; }
-    </style>
-  </head>
-  <body>
-    <script async="async" data-cfasync="false" src="${AD_SCRIPT_SRC}"></script>
-    <div id="${AD_CONTAINER_ID}"></div>
-    <script>
-      (function () {
-        var container = document.getElementById('${AD_CONTAINER_ID}');
-        function hasAdContent() {
-          return Boolean(container && (container.children.length > 0 || container.textContent.trim().length > 0));
-        }
-        function update() {
-          window.parent.postMessage({
-            type: '${AD_MESSAGE_TYPE}',
-            slotId: '${slotId}',
-            loaded: hasAdContent()
-          }, '*');
-        }
-        if (container && 'MutationObserver' in window) {
-          new MutationObserver(update).observe(container, { childList: true, subtree: true, characterData: true });
-        }
-        window.addEventListener('load', update);
-        window.setTimeout(update, 1200);
-        window.setTimeout(update, 2200);
-        window.setTimeout(update, 5200);
-      })();
-    </script>
-  </body>
-</html>`
-}
 
 function DownloadAd({ label }: { label: string }) {
   const slotId = 'download-primary'
-  const [loaded, setLoaded] = useState(false)
-
-  useEffect(() => {
-    function onMessage(event: MessageEvent) {
-      const data = event.data as { type?: string; slotId?: string; loaded?: boolean } | null
-      if (!data || data.type !== AD_MESSAGE_TYPE || data.slotId !== slotId) return
-      setLoaded(Boolean(data.loaded))
-    }
-
-    window.addEventListener('message', onMessage)
-    return () => window.removeEventListener('message', onMessage)
-  }, [])
+  const loaded = useAdLoaded(slotId)
 
   return (
     <aside className={`${styles.downloadAd} ${loaded ? styles.downloadAdLoaded : ''}`} aria-label={label}>
@@ -172,23 +65,10 @@ function DownloadAd({ label }: { label: string }) {
   )
 }
 
-function downloadLicenseFile(license: ProLicense) {
-  const blob = new Blob([`${JSON.stringify(license, null, 2)}\n`], {
-    type: 'application/json',
-  })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = 'pro-license.json'
-  document.body.appendChild(link)
-  link.click()
-  link.remove()
-  URL.revokeObjectURL(url)
-}
-
 export default function DownloadPage() {
   const lang = useLocale()
   const t = downloadCopy[lang]
+  const p = proCopy[lang]
   const [email, setEmail] = useState('')
   const [submitState, setSubmitState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [message, setMessage] = useState('')
@@ -199,9 +79,9 @@ export default function DownloadPage() {
   const [selectedPlan, setSelectedPlan] = useState<DownloadPlan>('free')
   const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(null)
   const [proRequestState, setProRequestState] = useState<ProRequestState>('idle')
-  const [proLicense, setProLicense] = useState<ProLicense | null>(null)
+  const [billingPlan, setBillingPlan] = useState<ProBillingPlan>('monthly')
   const [proMessage, setProMessage] = useState('')
-  const [formStartedAt] = useState(() => Date.now())
+  const proCheckoutBusy = useRef(false)
   const [deviceType, setDeviceType] = useState<DeviceType>('unknown')
   const [downloadCount, setDownloadCount] = useState(BREVO_COUNT_FALLBACK)
   const canDownload = deviceType === 'computer'
@@ -209,10 +89,11 @@ export default function DownloadPage() {
   useEffect(() => {
     const detectDevice = window.setTimeout(() => {
       setDeviceType(getDeviceType())
+      if (new URLSearchParams(window.location.search).get('pro') === 'cancelled') setMessage(p.cancelled)
     }, 0)
 
     return () => window.clearTimeout(detectDevice)
-  }, [])
+  }, [p.cancelled])
 
   useEffect(() => {
     let isMounted = true
@@ -293,48 +174,50 @@ export default function DownloadPage() {
     }
   }
 
-  const requestProLicense = async () => {
+  const startProCheckout = async () => {
+    if (proCheckoutBusy.current) return
     const normalizedEmail = email.trim().toLowerCase()
 
     if (!isValidEmailAddress(normalizedEmail)) {
       setProRequestState('error')
       setProMessage(t.invalidEmail)
-      setProLicense(null)
       return
     }
 
     setProRequestState('loading')
+    proCheckoutBusy.current = true
     setProMessage('')
-    setProLicense(null)
 
     try {
-      const response = await fetch('/api/pro-license/request', {
+      const response = await fetch('/api/pro/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: normalizedEmail,
-          formStartedAt,
-          website: '',
+          plan: billingPlan,
+          locale: lang,
+          acceptedTerms: acceptedWidgetTerms,
         }),
       })
-      const payload = (await response.json()) as RequestProLicenseResponse
+      const payload = (await response.json()) as { ok?: boolean; url?: string; recovery?: boolean; error?: string }
 
       if (!response.ok || !payload.ok) {
         throw new Error(payload.error || 'request_failed')
       }
-
-      if (payload.license) {
-        setProLicense(payload.license)
-        setProRequestState(payload.status === 'created' ? 'created' : 'active')
-        setProMessage(payload.status === 'created' ? t.proCreated : t.proActive)
+      if (payload.recovery) {
+        setProRequestState('idle')
+        setProMessage(p.licenseRecovery)
         return
       }
 
-      setProRequestState('pending')
-      setProMessage(t.proPending)
+      if (!payload.url || new URL(payload.url).protocol !== 'https:' ||
+          !['checkout.stripe.com', 'billing.stripe.com'].includes(new URL(payload.url).hostname)) throw new Error('invalid_checkout_url')
+      window.location.assign(payload.url)
     } catch (error) {
       setProRequestState('error')
-      setProMessage(error instanceof Error && error.message === 'invalid_email' ? t.invalidEmail : t.proError)
+      setProMessage(error instanceof Error && error.message === 'invalid_email' ? t.invalidEmail : p.checkoutError)
+    } finally {
+      proCheckoutBusy.current = false
     }
   }
 
@@ -358,7 +241,7 @@ export default function DownloadPage() {
     }
 
     if (selectedPlan === 'pro') {
-      requestProLicense()
+      void startProCheckout()
       return
     }
 
@@ -371,7 +254,7 @@ export default function DownloadPage() {
 
   return (
     <div className="landing-page">
-      <CustomCursor />
+
       <Navbar lang={lang} />
 
       <main className={styles.page}>
@@ -455,29 +338,53 @@ export default function DownloadPage() {
                             onClick={() => {
                               setSelectedPlan('free')
                               setProMessage('')
-                              setProLicense(null)
                               setProRequestState('idle')
                             }}
                             aria-pressed={selectedPlan === 'free'}
                           >
                             <strong>{t.freePlanTitle}</strong>
                             <span>{t.freePlanText}</span>
+                            <b>{p.freePrice}</b>
+                            <span className={styles.planFeatures}>
+                              {p.freeFeatures.map(feature => <span key={feature}>{feature}</span>)}
+                            </span>
                           </button>
                           <button
                             type="button"
                             className={`${styles.planButton} ${selectedPlan === 'pro' ? styles.planButtonActive : ''}`}
-                            disabled
-                            aria-disabled="true"
+                            onClick={() => {
+                              setSelectedPlan('pro')
+                              setProMessage('')
+                              setProRequestState('idle')
+                            }}
                             aria-pressed={selectedPlan === 'pro'}
                           >
                             <strong>{t.proPlanTitle}</strong>
-                            <span>{t.proPlanText}</span>
+                            <span>{p.includesFree}</span>
+                            <b>{p.monthly} · {p.annual}</b>
+                            <span className={styles.planFeatures}>
+                              {p.features.map(feature => <span key={feature}>{feature}</span>)}
+                            </span>
                           </button>
                         </div>
+                        {selectedPlan === 'pro' && (
+                          <>
+                            <div className={styles.billingGrid} role="group" aria-label={lang === 'es' ? 'Periodo de pago' : 'Billing period'}>
+                              {(['monthly', 'annual'] as const).map(plan => (
+                                <button key={plan} type="button" className={`${styles.planButton} ${billingPlan === plan ? styles.planButtonActive : ''}`} onClick={() => setBillingPlan(plan)} aria-pressed={billingPlan === plan}>
+                                  <strong>{p[plan]}</strong>
+                                </button>
+                              ))}
+                            </div>
+                            <p>{p.annualSaving}</p>
+                            <p>{p.renewal}</p>
+                            <p>{p.licenseConnection}</p>
+                          </>
+                        )}
                       </div>
 
                       <ul className={styles.modalList}>
-                        {t.consentItems.map((item) => (
+                        {[...t.consentItems, ...(selectedPlan === 'pro' ? p.proConsent : [])].map((item) => (
                           <li key={item}>
                             <IconCheck />
                             <span>{item}</span>
@@ -511,6 +418,20 @@ export default function DownloadPage() {
                             </li>
                           ))}
                         </ul>
+                        {selectedPlan === 'pro' && (
+                          <div className={styles.proModelRequirements}>
+                            <h4>{t.proModelsTitle}</h4>
+                            <div className={styles.proModelGrid}>
+                              {t.proModels.map((model) => (
+                                <div className={styles.proModelRow} key={model.name}>
+                                  <strong>{model.name}</strong>
+                                  <b>{model.ram} RAM</b>
+                                </div>
+                              ))}
+                            </div>
+                            <p>{t.proModelsNote}</p>
+                          </div>
+                        )}
                       </div>
 
                       <div className={styles.platformBlock} aria-disabled={!acceptedWidgetTerms}>
@@ -541,16 +462,9 @@ export default function DownloadPage() {
                       </div>
 
                       {selectedPlan === 'pro' && (
-                        <div className={styles.proLicenseBlock} aria-live="polite">
-                          <p className={`${styles.proStatus} ${proRequestState === 'error' ? styles.proStatusError : ''}`}>
-                            {proMessage || t.proPlanText}
-                          </p>
-                          {proLicense && (
-                            <button type="button" className={styles.secondaryButton} onClick={() => downloadLicenseFile(proLicense)}>
-                              <IconDownload />
-                              <span>{t.proDownloadCta}</span>
-                            </button>
-                          )}
+                        <div className={styles.proLicenseBlock} role="alert">
+                          <p>{p.licensePersonal}</p>
+                          {proMessage && <p className={`${styles.proStatus} ${proRequestState === 'error' ? styles.proStatusError : ''}`}>{proMessage}</p>}
                         </div>
                       )}
 
@@ -566,17 +480,11 @@ export default function DownloadPage() {
                           <span>
                             {selectedPlan === 'pro'
                               ? proRequestState === 'loading'
-                                ? t.proSearching
-                                : t.proConsentCta
+                                ? p.loading
+                                : `${p.checkout} · ${p[billingPlan]}`
                               : t.consentCta}
                           </span>
                         </button>
-                        {selectedPlan === 'pro' && proLicense && (
-                          <button type="button" className={styles.secondaryButton} onClick={startInstallerDownload}>
-                            <IconDownload />
-                            <span>{t.proInstallCta}</span>
-                          </button>
-                        )}
                       </div>
                     </>
                   )}
@@ -605,6 +513,7 @@ export default function DownloadPage() {
                 <p>{t.mobileText}</p>
               </div>
             ) : null}
+            <a className={styles.subscriptionLink} href="/api/pro/portal">{p.manage}</a>
           </div>
 
           <div className={styles.sideColumn}>

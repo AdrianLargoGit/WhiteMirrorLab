@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="210" height="210" viewBox="0 0 210 210">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#b6eeaa"/><stop offset="1" stop-color="#5f9a76"/></linearGradient><filter id="s"><feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#000" flood-opacity=".3"/></filter></defs>
+  <circle cx="105" cy="105" r="88" fill="#afe2af" opacity=".09"/>
+  <rect x="51" y="26" width="108" height="154" rx="7" fill="url(#g)" filter="url(#s)" transform="rotate(-7 105 103)"/>
+  <rect x="61" y="39" width="88" height="128" rx="3" fill="#edf9e9" transform="rotate(-7 105 103)"/>
+  <g transform="rotate(-7 105 103)" fill="#3b7153"><rect x="75" y="58" width="34" height="5" rx="2"/><rect x="75" y="75" width="61" height="3" rx="1" opacity=".6"/><rect x="75" y="86" width="58" height="3" rx="1" opacity=".6"/><rect x="75" y="97" width="61" height="3" rx="1" opacity=".6"/><rect x="75" y="108" width="48" height="3" rx="1" opacity=".6"/><rect x="75" y="130" width="61" height="3" rx="1" opacity=".4"/><rect x="75" y="141" width="49" height="3" rx="1" opacity=".4"/></g>
+  <circle cx="151" cy="149" r="26" fill="#162b22" stroke="#b6eeaa" stroke-width="2"/><path d="m151 132 14 7v10c0 10-7 17-14 20-7-3-14-10-14-20v-10l14-7Z" fill="none" stroke="#b6eeaa" stroke-width="2"/><path d="m144 150 5 5 9-10" fill="none" stroke="#b6eeaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

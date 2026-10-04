@@ -28,15 +28,17 @@ export default function AutoMarketplaceDownload({
   }, [productId, sessionId])
 
   useEffect(() => {
-    if (!downloadUrl || status !== 'idle') return
+    if (!downloadUrl) return
 
+    const controller = new AbortController()
     let objectUrl: string | null = null
+    let revokeTimer: ReturnType<typeof setTimeout> | undefined
 
     const download = async () => {
       setStatus('loading')
 
       try {
-        const response = await fetch(downloadUrl, { cache: 'no-store' })
+        const response = await fetch(downloadUrl, { cache: 'no-store', signal: controller.signal })
 
         if (!response.ok) {
           const payload = await response.json().catch(() => null)
@@ -48,6 +50,7 @@ export default function AutoMarketplaceDownload({
         }
 
         const blob = await response.blob()
+        if (controller.signal.aborted) return
         const disposition = response.headers.get('content-disposition') ?? ''
         const fileName = disposition.match(/filename="([^"]+)"/)?.[1] ?? 'wml-creator-pack.zip'
         objectUrl = URL.createObjectURL(blob)
@@ -59,7 +62,12 @@ export default function AutoMarketplaceDownload({
         link.click()
         link.remove()
         setStatus('done')
+        revokeTimer = setTimeout(() => {
+          if (objectUrl) URL.revokeObjectURL(objectUrl)
+          objectUrl = null
+        }, 60000)
       } catch (downloadError) {
+        if (controller.signal.aborted) return
         setError(downloadError instanceof Error ? downloadError.message : 'Download failed')
         setStatus('error')
       }
@@ -68,9 +76,11 @@ export default function AutoMarketplaceDownload({
     download()
 
     return () => {
+      controller.abort()
+      if (revokeTimer) clearTimeout(revokeTimer)
       if (objectUrl) URL.revokeObjectURL(objectUrl)
     }
-  }, [downloadUrl, status])
+  }, [downloadUrl])
 
   return (
     <p className={styles.downloadStatus}>

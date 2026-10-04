@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import { useLocale } from '@/hooks/useLocale'
-import { blogPath, downloadPath, faroPath, type Locale } from '@/lib/i18n'
+import { blogPath, downloadPath, faroPath, safefilePath, type Locale } from '@/lib/i18n'
 import styles from './page.module.css'
 
 const copy = {
@@ -40,12 +40,12 @@ const copy = {
         tone: 'blue',
       },
       {
-        title: '¿Y mañana?',
-        label: 'Después',
-        meta: 'Casilla sin anunciar',
-        body: 'Quién sabe lo que va a pasar mañana. Todavía no tiene forma pública.',
-        hrefKey: 'download',
-        image: '/wmlxx0/figure.png',
+        title: 'SafeFile',
+        label: 'Prototipo',
+        meta: 'Documentos en el navegador',
+        body: 'Cifra archivos con contraseña o prepara copias visibles con zonas censuradas. Todo en tu navegador.',
+        hrefKey: 'safefile',
+        image: '/safefile-card.svg',
         tone: 'ghost',
       },
     ],
@@ -82,12 +82,12 @@ const copy = {
         tone: 'blue',
       },
       {
-        title: 'Tomorrow?',
-        label: 'Next',
-        meta: 'Unannounced square',
-        body: 'Who knows what tomorrow will do. It has no public shape yet.',
-        hrefKey: 'download',
-        image: '/wmlxx0/figure.png',
+        title: 'SafeFile',
+        label: 'Prototype',
+        meta: 'Documents in your browser',
+        body: 'Encrypt files with a password or prepare visible copies with redacted areas. All in your browser.',
+        hrefKey: 'safefile',
+        image: '/safefile-card.svg',
         tone: 'ghost',
       },
     ],
@@ -100,6 +100,7 @@ type HrefKey = Card['hrefKey']
 function hrefFor(lang: Locale, key: HrefKey) {
   if (key === 'download') return downloadPath(lang)
   if (key === 'blog') return blogPath(lang)
+  if (key === 'safefile') return safefilePath(lang)
   return faroPath(lang)
 }
 

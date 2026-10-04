@@ -1,8 +1,8 @@
 import type { NextResponse } from 'next/server'
 
-export function applySecurityHeaders(response: NextResponse) {
+export function applySecurityHeaders(response: NextResponse, allowSameOriginFrame = false) {
   response.headers.set('X-Content-Type-Options', 'nosniff')
-  response.headers.set('X-Frame-Options', 'DENY')
+  response.headers.set('X-Frame-Options', allowSameOriginFrame ? 'SAMEORIGIN' : 'DENY')
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
   response.headers.set(
     'Permissions-Policy',

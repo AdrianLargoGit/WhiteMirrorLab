@@ -1,6 +1,6 @@
 'use client'
 
-import { FormEvent, useMemo, useState } from 'react'
+import { FormEvent, useMemo, useRef, useState } from 'react'
 import { getMarketplacePaidProductsEnabled, getMinimumMarketplacePrice } from '@/lib/marketplacePricing'
 import { summarizeMarketplaceZip, type MarketplaceZipSummary } from '@/lib/marketplaceZipSummary'
 import { isValidEmailAddress } from '@/lib/emailValidation'
@@ -192,7 +192,9 @@ export function SubmitProductForm({ lang }: SubmitProductFormProps) {
   const t = copy[lang]
   const minimumPrice = useMemo(() => getMinimumMarketplacePrice(), [])
   const paidProductsEnabled = useMemo(() => getMarketplacePaidProductsEnabled(), [])
-  const [formStartedAt] = useState(() => Date.now())
+  const [formStartedAt, setFormStartedAt] = useState(() => Date.now())
+  const zipReadVersion = useRef(0)
+  const submitting = useRef(false)
   const [state, setState] = useState<SubmitState>('idle')
   const [message, setMessage] = useState('')
   const [zipFile, setZipFile] = useState<File | null>(null)
@@ -211,6 +213,7 @@ export function SubmitProductForm({ lang }: SubmitProductFormProps) {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (submitting.current) return
     setMessage('')
 
     const form = event.currentTarget
@@ -236,6 +239,7 @@ export function SubmitProductForm({ lang }: SubmitProductFormProps) {
       return
     }
 
+    submitting.current = true
     try {
       setState('uploading')
       const [blobUrl, coverImageUrl] = await Promise.all([
@@ -271,6 +275,8 @@ export function SubmitProductForm({ lang }: SubmitProductFormProps) {
       }
 
       form.reset()
+      zipReadVersion.current++
+      setFormStartedAt(Date.now())
       setZipFile(null)
       setZipSummary(null)
       setCoverFile(null)
@@ -282,10 +288,13 @@ export function SubmitProductForm({ lang }: SubmitProductFormProps) {
     } catch (error) {
       setState('error')
       setMessage(error instanceof Error && error.message ? error.message : t.error)
+    } finally {
+      submitting.current = false
     }
   }
 
   async function handleZipChange(file: File | null) {
+    const version = ++zipReadVersion.current
     setZipFile(file)
     setZipSummary(null)
     setMessage('')
@@ -293,9 +302,12 @@ export function SubmitProductForm({ lang }: SubmitProductFormProps) {
     if (!file) return
 
     try {
-      setZipSummary(summarizeMarketplaceZip(await file.arrayBuffer()))
+      const summary = summarizeMarketplaceZip(await file.arrayBuffer())
+      if (version !== zipReadVersion.current) return
+      setZipSummary(summary)
       setState((current) => current === 'error' ? 'idle' : current)
     } catch (error) {
+      if (version !== zipReadVersion.current) return
       setState('error')
       setMessage(error instanceof Error && error.message ? error.message : 'Invalid ZIP file')
     }

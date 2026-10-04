@@ -4,23 +4,15 @@ import { revalidatePath } from 'next/cache'
 import { sendMarketplaceStatusEmail } from '@/lib/marketplaceEmail'
 import { deleteMarketplaceObject } from '@/lib/marketplaceStorage'
 import { createMarketplaceSupabaseClient } from '@/lib/marketplaceSupabase'
+import { isMarketplaceAdmin } from '@/lib/marketplaceAdmin'
 import { isFreeMarketplacePrice } from '@/lib/marketplacePricing'
 
-function requireAdminToken(formData: FormData) {
-  const expectedToken = process.env.MARKETPLACE_ADMIN_TOKEN
-  const submittedToken = String(formData.get('adminToken') ?? '')
-
-  if (!expectedToken) {
-    throw new Error('Missing MARKETPLACE_ADMIN_TOKEN')
-  }
-
-  if (submittedToken !== expectedToken) {
-    throw new Error('Invalid admin token')
-  }
+async function requireAdminSession() {
+  if (!await isMarketplaceAdmin()) throw new Error('Invalid admin session')
 }
 
 export async function approveProduct(formData: FormData) {
-  requireAdminToken(formData)
+  await requireAdminSession()
 
   const productId = String(formData.get('productId') ?? '')
 
@@ -51,7 +43,7 @@ export async function approveProduct(formData: FormData) {
     throw new Error('Product has no Stripe Connect account id')
   }
 
-  const { error: updateError } = await supabase
+  const { data: approved, error: updateError } = await supabase
     .from('products')
     .update({
       status: 'approved',
@@ -59,7 +51,11 @@ export async function approveProduct(formData: FormData) {
       download_blob_url: product.blob_url,
     })
     .eq('id', product.id)
+    .eq('status', 'pending')
+    .select('id')
+    .maybeSingle()
 
+  if (!approved && !updateError) throw new Error('Product status has changed; reload the review')
   if (updateError) {
     throw new Error(updateError.message)
   }
@@ -79,7 +75,7 @@ export async function approveProduct(formData: FormData) {
 }
 
 export async function rejectProduct(formData: FormData) {
-  requireAdminToken(formData)
+  await requireAdminSession()
 
   const productId = String(formData.get('productId') ?? '')
 
@@ -97,6 +93,19 @@ export async function rejectProduct(formData: FormData) {
   if (productError || !product) {
     throw new Error(productError?.message ?? 'Product not found')
   }
+
+  // Hide the product before removing assets; preserve their references if cleanup fails.
+  const { data: rejected, error: rejectError } = await supabase
+    .from('products')
+    .update({ status: 'rejected', featured_rank: null })
+    .eq('id', product.id)
+    .eq('status', product.status)
+    .select('id')
+    .maybeSingle()
+  if (rejectError || !rejected) throw new Error(rejectError?.message ?? 'Product status has changed; reload the review')
+  revalidatePath('/admin')
+  revalidatePath('/marketplace')
+  revalidatePath(`/marketplace/${product.id}`)
 
   if (product.blob_url) {
     await deleteMarketplaceObject(product.blob_url)
@@ -138,7 +147,7 @@ export async function rejectProduct(formData: FormData) {
 }
 
 export async function setFeaturedProduct(formData: FormData) {
-  requireAdminToken(formData)
+  await requireAdminSession()
 
   const productId = String(formData.get('productId') ?? '')
   const rawRank = String(formData.get('featuredRank') ?? '')

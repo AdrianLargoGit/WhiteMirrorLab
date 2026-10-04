@@ -13,6 +13,8 @@ export const ROUTES = {
     experiments: '/experimentos',
     contact: '/contacto',
     faro: '/faro',
+    safefile: '/safefile',
+    coder: '/coder',
     download: '/descargar',
     marketplace: '/marketplace',
     skinTemplate: '/plantilla-skins',
@@ -27,6 +29,8 @@ export const ROUTES = {
     experiments: '/en/experiments',
     contact: '/en/contact',
     faro: '/en/faro',
+    safefile: '/en/safefile',
+    coder: '/en/coder',
     download: '/en/download',
     marketplace: '/en/marketplace',
     skinTemplate: '/en/skin-template',
@@ -103,6 +107,14 @@ export function faroPath(locale: Locale): string {
   return ROUTES[locale].faro
 }
 
+export function safefilePath(locale: Locale): string {
+  return ROUTES[locale].safefile
+}
+
+export function coderPath(locale: Locale): string {
+  return ROUTES[locale].coder
+}
+
 export function blogPath(locale: Locale): string {
   return ROUTES[locale].blog
 }
@@ -152,12 +164,13 @@ export function toInternalPath(pathname: string): string {
   if (pathname === ROUTES.en.experiments) return ROUTES.es.experiments
   if (pathname === ROUTES.en.contact) return ROUTES.es.contact
   if (pathname === ROUTES.en.faro) return ROUTES.es.faro
+  if (pathname === ROUTES.en.safefile) return ROUTES.es.safefile
+  if (pathname === ROUTES.en.coder) return ROUTES.es.coder
   if (pathname === ROUTES.en.download) return ROUTES.es.download
   if (pathname === ROUTES.en.marketplace || pathname.startsWith(`${ROUTES.en.marketplace}/`)) {
     return pathname.replace(ROUTES.en.marketplace, ROUTES.es.marketplace)
   }
   if (pathname === ROUTES.en.skinTemplate) return ROUTES.es.skinTemplate
-  if (pathname === ROUTES.en.marketplaceSubmit) return ROUTES.es.marketplaceSubmit
   if (pathname === ROUTES.en.legal) return ROUTES.es.legal
   if (pathname.startsWith(`${ROUTES.en.legal}/`)) {
     const suffix = pathname.slice(ROUTES.en.legal.length + 1)
@@ -168,7 +181,9 @@ export function toInternalPath(pathname: string): string {
   if (pathname.startsWith(`${ROUTES.en.publicProfile}/`)) {
     return pathname.replace(ROUTES.en.publicProfile, ROUTES.es.publicProfile)
   }
-  if (pathname === ROUTES.en.wml) return ROUTES.es.wml
+  if (pathname === ROUTES.en.wml || pathname.startsWith(`${ROUTES.en.wml}/`)) {
+    return pathname.replace(ROUTES.en.wml, ROUTES.es.wml)
+  }
   return pathname
 }
 
@@ -182,12 +197,13 @@ export function alternateLocalePath(pathname: string, nextLocale: Locale): strin
   if (internal === ROUTES.es.experiments) return ROUTES.en.experiments
   if (internal === ROUTES.es.contact) return ROUTES.en.contact
   if (internal === ROUTES.es.faro) return ROUTES.en.faro
+  if (internal === ROUTES.es.safefile) return ROUTES.en.safefile
+  if (internal === ROUTES.es.coder) return ROUTES.en.coder
   if (internal === ROUTES.es.download) return ROUTES.en.download
   if (internal === ROUTES.es.marketplace || internal.startsWith(`${ROUTES.es.marketplace}/`)) {
     return internal.replace(ROUTES.es.marketplace, ROUTES.en.marketplace)
   }
   if (internal === ROUTES.es.skinTemplate) return ROUTES.en.skinTemplate
-  if (internal === ROUTES.es.marketplaceSubmit) return ROUTES.en.marketplaceSubmit
   if (internal === ROUTES.es.legal) return ROUTES.en.legal
   if (internal.startsWith(`${ROUTES.es.legal}/`)) {
     const suffix = internal.slice(ROUTES.es.legal.length + 1)

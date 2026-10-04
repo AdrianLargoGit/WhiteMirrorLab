@@ -1,10 +1,12 @@
+import { validateJsonFields } from '@/lib/requestValidation'
 import { NextResponse } from 'next/server'
 import { MARKETPLACE_SUBMISSIONS_ARE_OPEN } from '@/lib/marketplaceAvailability'
 import { getMarketplacePaidProductsEnabled, getMinimumMarketplacePrice, isFreeMarketplacePrice } from '@/lib/marketplacePricing'
-import { deleteMarketplaceObject, getMarketplaceObjectBuffer, isMarketplaceStorageUrl } from '@/lib/marketplaceStorage'
+import { getMarketplaceObjectBuffer, isMarketplaceStorageUrl } from '@/lib/marketplaceStorage'
 import { createMarketplaceSupabaseClient } from '@/lib/marketplaceSupabase'
 import { summarizeMarketplaceZip } from '@/lib/marketplaceZipSummary'
 import { sendMarketplaceStatusEmail } from '@/lib/marketplaceEmail'
+import { isStripeConnectAccountId } from '@/lib/stripeMarketplace'
 import { isValidEmailAddress } from '@/lib/emailValidation'
 import { checkRateLimit, getClientIp, rateLimitHeaders } from '@/lib/rateLimit'
 
@@ -22,10 +24,6 @@ type SubmitProductBody = {
   clothes_count?: number
   website?: string
   form_started_at?: number
-}
-
-function isValidStripeAccountId(value: string) {
-  return /^acct_[A-Za-z0-9]+$/.test(value)
 }
 
 export async function POST(request: Request) {
@@ -51,6 +49,7 @@ export async function POST(request: Request) {
 
   try {
     body = (await request.json()) as SubmitProductBody
+    validateJsonFields(body, { strings: ['title', 'description', 'creator_name', 'email', 'stripe_account_id', 'blob_url', 'cover_image_url', 'website'], numbers: ['price', 'form_started_at'], stringArrays: ['preview_image_urls'] })
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
@@ -103,7 +102,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Valid email is required' }, { status: 422 })
   }
 
-  if (paidProductsEnabled && !isFree && (!stripeAccountId || !isValidStripeAccountId(stripeAccountId))) {
+  if (paidProductsEnabled && !isFree && (!stripeAccountId || !isStripeConnectAccountId(stripeAccountId))) {
     return NextResponse.json({ error: 'Valid Stripe Connect account ID is required' }, { status: 422 })
   }
 
@@ -150,7 +149,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'ZIP file not found' }, { status: 422 })
     }
 
-    const zipSummary = summarizeMarketplaceZip(zipObject.bytes)
+    let zipSummary
+    try {
+      zipSummary = summarizeMarketplaceZip(zipObject.bytes)
+    } catch (error) {
+      return NextResponse.json({ error: error instanceof Error ? error.message : 'Invalid ZIP file' }, { status: 422 })
+    }
 
     if (zipSummary.petCount > 1500 || zipSummary.clothesCount > 1500) {
       return NextResponse.json({ error: 'Invalid ZIP summary' }, { status: 422 })
@@ -177,9 +181,8 @@ export async function POST(request: Request) {
       })
 
     if (error) {
-      await deleteMarketplaceObject(blobUrl)
-      await deleteMarketplaceObject(coverImageUrl)
-      await Promise.all(previewImageUrls.map((url) => deleteMarketplaceObject(url)))
+      // These URLs are supplied by the caller. A failed insert does not prove
+      // ownership, so deleting them here could destroy another pack's assets.
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 

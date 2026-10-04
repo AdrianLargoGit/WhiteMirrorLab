@@ -77,11 +77,11 @@ function PrivacyEn() {
       <h3>2.3. WML X.X.0 widget</h3>
       <p>The website explains the widget before download. The widget is designed to work locally with device signals such as activity, battery, points, common apps and basic safe-process information. It does not send personal files, typed text in other apps or window contents to local AI.</p>
 
-      <h3>2.4. Analytics and technical logs</h3>
-      <p>PostHog may process page views and interaction events only according to analytics consent. Server and security logs may include IP address, device/browser information and request metadata for maintenance, fraud prevention and security.</p>
+      <h3>2.4. Technical logs</h3>
+      <p>Server and security logs may include IP address, device/browser information and request metadata for maintenance, fraud prevention and security.</p>
 
       <h2>3. Recipients and transfers</h2>
-      <p>We use processors such as Supabase, PostHog, Brevo, Vercel, Cloudflare/R2 and payment or checkout providers where applicable. Where data is transferred outside the European Economic Area, appropriate safeguards are used.</p>
+      <p>We use processors such as Supabase, Brevo, Vercel, Cloudflare/R2 and payment or checkout providers where applicable. Where data is transferred outside the European Economic Area, appropriate safeguards are used.</p>
 
       <h2>4. Your rights</h2>
       <p>You may exercise access, rectification, deletion, restriction, portability, objection and withdrawal of consent by emailing <strong>{contact}</strong>. You may lodge a complaint with the Spanish Data Protection Agency at <a href="https://www.aepd.es" target="_blank" rel="noopener noreferrer">www.aepd.es</a>.</p>
@@ -103,22 +103,17 @@ function CookiesEn() {
   return (
     <>
       <h1>Cookie policy</h1>
-      <p className="legal-updated">Last updated: September 7, 2026 - ePrivacy Directive and AEPD cookie guidance.</p>
-      <p>This policy explains how White Mirror Lab uses cookies and similar local storage technologies. Strictly necessary cookies do not require consent; analytics cookies require prior consent.</p>
+      <p className="legal-updated">Last updated: October 2, 2026.</p>
+      <p>This policy explains how White Mirror Lab uses cookies and similar local storage technologies.</p>
 
       <h2>1. Technologies we use</h2>
       <ul>
         <li><strong>wml_locale:</strong> remembers language preference.</li>
-        <li><strong>wml_cookie_consent:</strong> stores cookie and analytics preferences.</li>
-        <li><strong>ph_*:</strong> PostHog analytics cookies, only if analytics consent is granted.</li>
         <li><strong>Provider cookies:</strong> checkout, marketplace, advertising or embedded services may set cookies when their features are loaded.</li>
       </ul>
 
-      <h2>2. Managing consent</h2>
-      <p>The cookie banner lets you accept or reject non-essential analytics. You may withdraw analytics consent through cookie preferences or browser settings.</p>
-
-      <h2>3. Browser controls and opt-out</h2>
-      <p>You can block or delete cookies in Chrome, Firefox, Safari, Edge and other browsers. You can also reject analytics in the cookie panel or use PostHog&apos;s opt-out mechanism described at <a href="https://posthog.com/docs/libraries/js#opt-out" target="_blank" rel="noopener noreferrer">posthog.com</a>.</p>
+      <h2>2. Browser controls</h2>
+      <p>You can block or delete cookies in Chrome, Firefox, Safari, Edge and other browsers.</p>
 
       <div className="legal-contact-box">
         <p><strong>Cookie questions:</strong> {contact}</p>

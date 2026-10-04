@@ -101,10 +101,12 @@ export function createMarketplaceSupabaseClient(options?: {
   useServiceRole?: boolean
 }) {
   const { url, anonKey, serviceRoleKey } = getMarketplaceSupabaseConfig()
-  const key = options?.useServiceRole ? serviceRoleKey ?? anonKey : anonKey ?? serviceRoleKey
+  const key = options?.useServiceRole ? serviceRoleKey : anonKey ?? serviceRoleKey
 
   if (!key) {
-    throw new Error('Missing marketplace Supabase key')
+    throw new Error(options?.useServiceRole
+      ? 'Missing MARKETPLACE_SUPABASE_SERVICE_ROLE_KEY'
+      : 'Missing marketplace Supabase key')
   }
 
   return createClient<MarketplaceDatabase>(url, key, {

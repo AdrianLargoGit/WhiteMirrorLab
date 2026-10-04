@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PointerEvent } from 'react'
+import { isValidRoguelikeSave } from '@/lib/roguelikeSave'
+import { browserStorage } from '@/lib/browserStorage'
 import type { Locale } from '@/lib/i18n'
 import styles from './roguelike.module.css'
 
@@ -1481,7 +1483,7 @@ function drawGame(canvas: HTMLCanvasElement, game: Game, skin: Skin, effects: Fx
 }
 
 function sanitizeSavedGame(saved: Game) {
-  return {
+  const normalized = {
     ...saved,
     player: { ...basePlayer(), ...saved.player, sight: saved.player.sight ?? 7, vampire: saved.player.vampire ?? 0, score: saved.player.score ?? 0 },
     upgrades: saved.upgrades ?? [],
@@ -1491,6 +1493,8 @@ function sanitizeSavedGame(saved: Game) {
     maxLevelReached: saved.maxLevelReached ?? saved.level ?? 1,
     floorMemory: cloneFloorMemory(saved.floorMemory),
   }
+  if (!isValidRoguelikeSave(normalized)) throw new Error('Invalid saved game')
+  return normalized
 }
 
 function isEditingText(target: EventTarget | null) {
@@ -1521,9 +1525,9 @@ export default function RoguelikeGame({ locale }: { locale: Locale }) {
 
   const persist = useCallback((next: Game) => {
     if (next.phase === 'dead') {
-      window.localStorage.removeItem(saveKey)
+      browserStorage.removeItem(saveKey)
     } else {
-      window.localStorage.setItem(saveKey, JSON.stringify(next))
+      browserStorage.setItem(saveKey, JSON.stringify(next))
     }
     setGame(next)
   }, [])
@@ -1533,7 +1537,7 @@ export default function RoguelikeGame({ locale }: { locale: Locale }) {
   }, [])
 
   const start = useCallback(() => {
-    window.localStorage.removeItem(saveKey)
+    browserStorage.removeItem(saveKey)
     renderStateRef.current.ready = false
     setGame(makeLevel(1))
   }, [])
@@ -1619,18 +1623,19 @@ export default function RoguelikeGame({ locale }: { locale: Locale }) {
   const saveProfile = useCallback(() => {
     const cleanName = draftName.trim().slice(0, 20) || 'Runner'
     const next = { ...profile, name: cleanName }
-    window.localStorage.setItem(profileKey, JSON.stringify(next))
+    browserStorage.setItem(profileKey, JSON.stringify(next))
     setProfile(next)
     setDraftName(cleanName)
   }, [draftName, profile])
 
   const changeSkin = useCallback((skin: Skin) => {
     const next = { ...profile, skin }
-    window.localStorage.setItem(profileKey, JSON.stringify(next))
+    browserStorage.setItem(profileKey, JSON.stringify(next))
     setProfile(next)
   }, [profile])
 
-  const submitScore = useCallback((targetGame = game) => {
+  const submitScore = useCallback((targetGame = gameRef.current) => {
+    if (!targetGame) return
     const score = targetGame.player.score + targetGame.level * 100 + targetGame.player.shards * 20 + targetGame.player.keys * 120
     fetch('/api/blog/roguelike-score', {
       method: 'POST',
@@ -1642,13 +1647,13 @@ export default function RoguelikeGame({ locale }: { locale: Locale }) {
         if (data?.leaderboard) setLeaderboard(data.leaderboard)
       })
       .catch(() => undefined)
-  }, [game, profile.id, profile.name])
+  }, [profile.id, profile.name])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      const fallbackId = window.localStorage.getItem(playerIdKey) ?? `P-${randomId()}`
-      window.localStorage.setItem(playerIdKey, fallbackId)
-      const rawProfile = window.localStorage.getItem(profileKey)
+      const fallbackId = browserStorage.getItem(playerIdKey) ?? `P-${randomId()}`
+      browserStorage.setItem(playerIdKey, fallbackId)
+      const rawProfile = browserStorage.getItem(profileKey)
       if (rawProfile) {
         try {
           const savedProfile = JSON.parse(rawProfile) as Partial<Profile>
@@ -1657,28 +1662,30 @@ export default function RoguelikeGame({ locale }: { locale: Locale }) {
           setProfile(next)
           setDraftName(next.name)
         } catch {
-          window.localStorage.removeItem(profileKey)
+          browserStorage.removeItem(profileKey)
         }
       } else {
         const next = { id: fallbackId, name: 'Runner', skin: 'mirror' as Skin }
-        window.localStorage.setItem(profileKey, JSON.stringify(next))
+        browserStorage.setItem(profileKey, JSON.stringify(next))
         setProfile(next)
       }
-      const raw = window.localStorage.getItem(saveKey)
+      const raw = browserStorage.getItem(saveKey)
       if (!raw) return
       try {
         const saved = JSON.parse(raw) as Game
         if (saved?.tiles?.length && saved?.player) setGame(sanitizeSavedGame(saved))
       } catch {
-        window.localStorage.removeItem(saveKey)
+        browserStorage.removeItem(saveKey)
       }
     }, 0)
     return () => window.clearTimeout(timer)
   }, [])
 
   useEffect(() => {
-    submitScore(game)
-  }, [game.level, game.phase, submitScore, game])
+    // Debounce score changes; movement previously sent one request per tick.
+    const timer = window.setTimeout(() => submitScore(), 1000)
+    return () => window.clearTimeout(timer)
+  }, [points, game.level, game.phase, submitScore])
 
   useEffect(() => {
     if (game.phase !== 'playing') return
@@ -1686,7 +1693,7 @@ export default function RoguelikeGame({ locale }: { locale: Locale }) {
       setGame((current) => {
         const next = enemyTick(current)
         if (next === current) return current
-        window.localStorage.setItem(saveKey, JSON.stringify(next))
+        browserStorage.setItem(saveKey, JSON.stringify(next))
         return next
       })
     }, Math.max(720, 1450 - game.level * 12))
@@ -1707,7 +1714,7 @@ export default function RoguelikeGame({ locale }: { locale: Locale }) {
           { id: `auto-hit-${born}`, kind: 'float', x: victim.x, y: victim.y, text: `-${hit}`, color: '#ff5f77', born },
         ])
         const next = autoAttackGame(current)
-        if (next !== current) window.localStorage.setItem(saveKey, JSON.stringify(next))
+        if (next !== current) browserStorage.setItem(saveKey, JSON.stringify(next))
         return next
       })
     }, autoAttackMs)
@@ -1725,9 +1732,19 @@ export default function RoguelikeGame({ locale }: { locale: Locale }) {
     const onKeyUp = (event: KeyboardEvent) => {
       pressedKeysRef.current.delete(event.key.toLowerCase())
     }
+    const resetInput = () => {
+      pressedKeysRef.current.clear()
+      joystickPointerRef.current = null
+      joystickRef.current = { x: 0, y: 0 }
+      setJoystick({ x: 0, y: 0 })
+    }
+    window.addEventListener('blur', resetInput)
+    document.addEventListener('visibilitychange', resetInput)
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup', onKeyUp)
     return () => {
+      window.removeEventListener('blur', resetInput)
+      document.removeEventListener('visibilitychange', resetInput)
       window.removeEventListener('keydown', onKeyDown)
       window.removeEventListener('keyup', onKeyUp)
     }
@@ -1754,7 +1771,7 @@ export default function RoguelikeGame({ locale }: { locale: Locale }) {
   useEffect(() => {
     if (game.phase !== 'dead') return
     submitScore(game)
-    window.localStorage.removeItem(saveKey)
+    browserStorage.removeItem(saveKey)
     pressedKeysRef.current.clear()
     const timer = window.setTimeout(() => {
       renderStateRef.current.ready = false

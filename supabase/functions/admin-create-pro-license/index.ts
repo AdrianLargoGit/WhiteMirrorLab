@@ -1,3 +1,4 @@
+import { addMonths, addDays, isValidLicenseEmail } from '../_shared/licenseValidation.ts'
 import {
   corsHeaders,
   jsonResponse,
@@ -20,22 +21,6 @@ type AdminCreateLicenseBody = {
   notes?: string
 }
 
-function isValidEmail(subject: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(subject) && subject.length <= 254
-}
-
-function addMonths(date: Date, months: number) {
-  const next = new Date(date)
-  next.setUTCMonth(next.getUTCMonth() + months)
-  return next
-}
-
-function addDays(date: Date, days: number) {
-  const next = new Date(date)
-  next.setUTCDate(next.getUTCDate() + days)
-  return next
-}
-
 Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   if (request.method !== 'POST') return jsonResponse({ ok: false, error: 'method_not_allowed' }, 405)
@@ -51,6 +36,7 @@ Deno.serve(async (request) => {
 
   try {
     body = await request.json()
+    if (!body || typeof body !== 'object' || Array.isArray(body)) throw new Error('Invalid JSON object')
   } catch {
     return jsonResponse({ ok: false, error: 'invalid_json' }, 400)
   }
@@ -60,7 +46,7 @@ Deno.serve(async (request) => {
   const maxDevices = Math.max(1, Math.min(10, Math.floor(Number(body.maxDevices) || 1)))
   const notes = typeof body.notes === 'string' ? body.notes.trim().slice(0, 1000) : null
 
-  if (!isValidEmail(subject)) {
+  if (!isValidLicenseEmail(subject)) {
     return jsonResponse({ ok: false, error: 'invalid_email' }, 422)
   }
 

@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import Link from 'next/link'
-import CustomCursor from '@/components/CustomCursor'
 import Navbar from '@/components/Navbar'
 import { blogPath, DEFAULT_LOCALE, isLocale, type Locale } from '@/lib/i18n'
 import AdPosterBackground from './AdPosterBackground'
@@ -35,7 +34,7 @@ export default async function BlogPage() {
 
   return (
     <main className={styles.page}>
-      <CustomCursor />
+
       <Navbar lang={lang} />
       <AdPosterBackground locale={lang} />
 

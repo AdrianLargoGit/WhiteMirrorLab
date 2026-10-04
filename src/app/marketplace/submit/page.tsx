@@ -1,5 +1,4 @@
 import { headers } from 'next/headers'
-import CustomCursor from '@/components/CustomCursor'
 import Navbar from '@/components/Navbar'
 import { SubmitProductForm } from '@/components/marketplace/SubmitProductForm'
 import { DEFAULT_LOCALE, isLocale, skinTemplatePath, type Locale } from '@/lib/i18n'
@@ -54,7 +53,7 @@ export default async function SubmitProductPage() {
 
   return (
     <div className="landing-page">
-      <CustomCursor />
+
       <Navbar lang={lang} />
 
       <main className={styles.page}>

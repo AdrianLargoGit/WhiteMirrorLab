@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getMarketplaceObject, marketplaceObjectToWebStream } from '@/lib/marketplaceStorage'
 import { createMarketplaceSupabaseClient } from '@/lib/marketplaceSupabase'
+import { isMarketplaceAdmin } from '@/lib/marketplaceAdmin'
 
 function safeFileName(value: string) {
   return value
@@ -11,10 +12,9 @@ function safeFileName(value: string) {
 }
 
 export async function GET(request: NextRequest) {
-  const token = request.nextUrl.searchParams.get('token')
   const productId = request.nextUrl.searchParams.get('product')
 
-  if (!process.env.MARKETPLACE_ADMIN_TOKEN || token !== process.env.MARKETPLACE_ADMIN_TOKEN) {
+  if (!await isMarketplaceAdmin()) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

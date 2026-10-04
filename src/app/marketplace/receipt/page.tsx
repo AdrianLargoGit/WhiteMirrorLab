@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { headers } from 'next/headers'
-import CustomCursor from '@/components/CustomCursor'
 import Navbar from '@/components/Navbar'
 import { DEFAULT_LOCALE, downloadPath, isLocale, marketplacePath, type Locale } from '@/lib/i18n'
 import AutoMarketplaceDownload from './AutoMarketplaceDownload'
@@ -26,7 +25,7 @@ export default async function MarketplaceReceiptPage({ searchParams }: Marketpla
 
   return (
     <div className="landing-page">
-      <CustomCursor />
+
       <Navbar lang={lang} />
 
       <main className={styles.page}>

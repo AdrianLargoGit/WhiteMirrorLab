@@ -30,6 +30,12 @@ export async function POST(request: Request) {
   } | null
 
   if (body?.type === 'score' && body.score) {
+    if (typeof body.score.id !== 'string' || !body.score.id.trim() ||
+        typeof body.score.name !== 'string' ||
+        !Number.isSafeInteger(body.score.points) || body.score.points < 0 ||
+        !Number.isSafeInteger(body.score.floor) || body.score.floor < 1) {
+      return NextResponse.json({ error: 'Invalid score' }, { status: 422 })
+    }
     const safeScore = {
       id: String(body.score.id ?? 'unknown').slice(0, 24),
       name: String(body.score.name ?? 'Runner').slice(0, 20),

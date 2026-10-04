@@ -4,7 +4,7 @@ import { getBrevoListCount, type SubscribeSource } from '@/lib/brevo-subscribe'
 import { checkRateLimit, getClientIp, rateLimitHeaders } from '@/lib/rateLimit'
 
 const toSource = (value: string | null): SubscribeSource => (
-  value === 'tech' || value === 'social' ? value : 'general'
+  value === 'tech' || value === 'social' || value === 'faro' ? value : 'general'
 )
 
 export async function GET(req: Request) {

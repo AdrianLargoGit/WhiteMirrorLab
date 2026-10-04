@@ -2,12 +2,11 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Fragment } from 'react'
 import { headers } from 'next/headers'
-import CustomCursor from '@/components/CustomCursor'
 import MarketplaceAdCard from '@/components/marketplace/MarketplaceAdBanner'
 import Navbar from '@/components/Navbar'
 import { DEFAULT_LOCALE, downloadPath, isLocale, marketplaceSubmitPath, type Locale } from '@/lib/i18n'
 import { MARKETPLACE_IS_AVAILABLE, marketplaceAvailabilityCopy } from '@/lib/marketplaceAvailability'
-import { getMarketplaceCurrency, isFreeMarketplacePrice } from '@/lib/marketplacePricing'
+import { getMarketplaceCurrency, isFreeMarketplacePrice, formatMarketplacePrice as formatPrice } from '@/lib/marketplacePricing'
 import { createMarketplaceSupabaseClient, type MarketplaceProduct } from '@/lib/marketplaceSupabase'
 import styles from './page.module.css'
 
@@ -102,15 +101,6 @@ const copy = {
 
 const MARKETPLACE_AD_SLOTS = ['marketplace-1', 'marketplace-2', 'marketplace-3', 'marketplace-4']
 
-function formatPrice(price: number, currency: string, lang: Locale, freeLabel: string) {
-  if (isFreeMarketplacePrice(price)) return freeLabel
-
-  return new Intl.NumberFormat(lang === 'es' ? 'es-ES' : 'en-US', {
-    style: 'currency',
-    currency,
-  }).format(price)
-}
-
 function getTone(index: number) {
   return styles[`tone${(index % 4) + 1}` as keyof typeof styles]
 }
@@ -199,7 +189,7 @@ export default async function MarketplacePage({
 
   return (
     <div className="landing-page">
-      <CustomCursor />
+
       <Navbar lang={lang} />
 
       <main className={styles.page}>

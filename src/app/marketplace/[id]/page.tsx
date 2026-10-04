@@ -2,11 +2,10 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
-import CustomCursor from '@/components/CustomCursor'
 import Navbar from '@/components/Navbar'
 import { DEFAULT_LOCALE, isLocale, marketplacePath, type Locale } from '@/lib/i18n'
 import { MARKETPLACE_IS_AVAILABLE, marketplaceAvailabilityCopy } from '@/lib/marketplaceAvailability'
-import { getMarketplaceCurrency, isFreeMarketplacePrice } from '@/lib/marketplacePricing'
+import { getMarketplaceCurrency, isFreeMarketplacePrice, formatMarketplacePrice as formatPrice } from '@/lib/marketplacePricing'
 import { createMarketplaceSupabaseClient } from '@/lib/marketplaceSupabase'
 import styles from './page.module.css'
 
@@ -58,15 +57,6 @@ const copy = {
   },
 } satisfies Record<Locale, Record<string, string>>
 
-function formatPrice(price: number, currency: string, lang: Locale, freeLabel: string) {
-  if (isFreeMarketplacePrice(price)) return freeLabel
-
-  return new Intl.NumberFormat(lang === 'es' ? 'es-ES' : 'en-US', {
-    style: 'currency',
-    currency,
-  }).format(price)
-}
-
 export default async function MarketplacePackPage({ params, searchParams }: PageProps) {
   const { id } = await params
   const { payment_error: paymentError } = await searchParams
@@ -93,7 +83,7 @@ export default async function MarketplacePackPage({ params, searchParams }: Page
 
   return (
     <div className="landing-page">
-      <CustomCursor />
+
       <Navbar lang={lang} />
 
       <main className={styles.page}>

@@ -26,6 +26,7 @@ function requireEnv(name: string) {
 
 async function stripeRequest<T>(endpoint: string, init: RequestInit) {
   const response = await fetch(`${STRIPE_API_BASE}${endpoint}`, {
+    signal: AbortSignal.timeout(15000),
     ...init,
     headers: {
       Authorization: `Bearer ${requireEnv('STRIPE_SECRET_KEY')}`,
@@ -42,7 +43,7 @@ async function stripeRequest<T>(endpoint: string, init: RequestInit) {
 }
 
 export function isStripeCheckoutSessionId(value: string | null | undefined) {
-  return Boolean(value && /^cs_(test|live)_[A-Za-z0-9]+/.test(value))
+  return Boolean(value && /^cs_(test|live)_[A-Za-z0-9]+$/.test(value))
 }
 
 export function isStripeConnectAccountId(value: string | null | undefined) {

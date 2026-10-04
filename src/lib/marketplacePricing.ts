@@ -41,6 +41,13 @@ export function isFreeMarketplacePrice(price: number | string) {
   return Number.isFinite(parsed) && parsed <= 0
 }
 
+export function formatMarketplacePrice(price: number, currency: string, lang: 'es' | 'en', freeLabel: string) {
+  if (isFreeMarketplacePrice(price)) return freeLabel
+  return new Intl.NumberFormat(lang === 'es' ? 'es-ES' : 'en-US', {
+    style: 'currency', currency,
+  }).format(price)
+}
+
 export function toMinorCurrencyUnit(price: number) {
   return Math.round(price * 100)
 }

@@ -1,3 +1,5 @@
+import { escapeHtml } from './escapeHtml'
+
 type MarketplaceEmailStatus = 'submitted' | 'approved' | 'rejected'
 
 const BREVO_SMTP_URL = 'https://api.brevo.com/v3/smtp/email'
@@ -36,15 +38,6 @@ const copy = {
   footer: string
 }>
 
-function escapeHtml(value: string) {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;')
-}
-
 export async function sendMarketplaceStatusEmail(input: {
   to: string
   productTitle: string
@@ -66,45 +59,51 @@ export async function sendMarketplaceStatusEmail(input: {
   const message = copy[input.status]
   const safeTitle = escapeHtml(input.productTitle)
 
-  const response = await fetch(BREVO_SMTP_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'api-key': apiKey,
-    },
-    body: JSON.stringify({
-      sender: { name: senderName, email: senderEmail },
-      to: [{ email: input.to }],
-      subject: message.subject,
-      htmlContent: `
-        <div style="font-family: Arial, sans-serif; color: #111; line-height: 1.55;">
-          <h2>${message.title}</h2>
-          <p><strong>Producto:</strong> ${safeTitle}</p>
-          <p>${message.body}</p>
-          <p>${message.footer}</p>
-          <hr />
-          <p style="color:#555;font-size:12px;">White Mirror Lab</p>
-        </div>
-      `,
-      textContent: [
-        message.title,
-        '',
-        `Producto: ${input.productTitle}`,
-        '',
-        message.body,
-        message.footer,
-        '',
-        'White Mirror Lab',
-      ].join('\n'),
-    }),
-  })
+  try {
+    const response = await fetch(BREVO_SMTP_URL, {
+      signal: AbortSignal.timeout(15000),
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'api-key': apiKey,
+      },
+      body: JSON.stringify({
+        sender: { name: senderName, email: senderEmail },
+        to: [{ email: input.to }],
+        subject: message.subject,
+        htmlContent: `
+          <div style="font-family: Arial, sans-serif; color: #111; line-height: 1.55;">
+            <h2>${message.title}</h2>
+            <p><strong>Producto:</strong> ${safeTitle}</p>
+            <p>${message.body}</p>
+            <p>${message.footer}</p>
+            <hr />
+            <p style="color:#555;font-size:12px;">White Mirror Lab</p>
+          </div>
+        `,
+        textContent: [
+          message.title,
+          '',
+          `Producto: ${input.productTitle}`,
+          '',
+          message.body,
+          message.footer,
+          '',
+          'White Mirror Lab',
+        ].join('\n'),
+      }),
+    })
 
-  const data = await response.json().catch(() => null)
+    const data = await response.json().catch(() => null)
 
-  if (!response.ok) {
-    console.error('Brevo marketplace status email error:', data)
+    if (!response.ok) {
+      console.error('Brevo marketplace status email error:', data)
+      return { ok: false, error: 'Unable to send marketplace status email' }
+    }
+
+    return { ok: true }
+  } catch (error) {
+    console.error('Marketplace email service unavailable:', error)
     return { ok: false, error: 'Unable to send marketplace status email' }
   }
-
-  return { ok: true }
 }

@@ -45,6 +45,7 @@ function levenshteinDistance(a: string, b: string) {
 }
 
 function looksLikeMisspelledCommonDomain(domain: string) {
+  if (COMMON_EMAIL_DOMAINS.some(commonDomain => domain === commonDomain)) return false
   return COMMON_EMAIL_DOMAINS.some((commonDomain) => {
     if (domain === commonDomain) return false
     if (Math.abs(domain.length - commonDomain.length) > 2) return false
@@ -59,6 +60,7 @@ export function isValidEmailAddress(email: string) {
     return false
   }
 
-  const domain = normalizedEmail.split('@').at(-1)
+  const [local, domain] = normalizedEmail.split('@')
+  if (local.length > 64 || local.startsWith('.') || local.endsWith('.') || local.includes('..')) return false
   return Boolean(domain && !looksLikeMisspelledCommonDomain(domain))
 }

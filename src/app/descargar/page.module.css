@@ -349,6 +349,28 @@
   transform: scale(0.99);
 }
 
+.planFeatures {
+  display: grid;
+  gap: 7px;
+  margin-top: 4px;
+}
+
+.planFeatures > span {
+  position: relative;
+  display: block;
+  padding-left: 14px;
+}
+
+.planFeatures > span::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+}
+
+.billingGrid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+.billingGrid .planButton { min-height: 52px; align-content: center; }
+
 .modalList {
   list-style: none;
   display: grid;
@@ -428,6 +450,54 @@
   color: var(--accent);
   flex: 0 0 auto;
   margin-top: 2px;
+}
+
+.proModelRequirements {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(245, 242, 238, 0.12);
+}
+
+.proModelRequirements h4 {
+  margin: 0 0 10px;
+  font-size: 15px;
+}
+
+.proModelGrid {
+  display: grid;
+  gap: 7px;
+}
+
+.proModelRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  background: rgba(255, 255, 255, 0.045);
+  font-size: 12px;
+}
+
+.proModelRequirements p {
+  color: rgba(245, 242, 238, 0.68);
+}
+
+.proModelRow b {
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.proModelRequirements p {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 560px) {
+  .proModelRow {
+    grid-template-columns: 1fr auto;
+  }
+
 }
 
 .platformBlock {
@@ -726,6 +796,21 @@
   line-height: 1.7;
 }
 
+.subscriptionLink {
+  display: inline-block;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 11px;
+  text-decoration-color: rgba(245, 242, 238, 0.22);
+  text-underline-offset: 3px;
+}
+
+.subscriptionLink:hover,
+.subscriptionLink:focus-visible {
+  color: var(--white);
+  text-decoration-color: currentColor;
+}
+
 @media (max-width: 900px) {
   .hero {
     grid-template-columns: 1fr;
@@ -783,4 +868,5 @@
     grid-template-columns: 1fr;
     gap: 8px;
   }
+
 }

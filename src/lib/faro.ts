@@ -153,6 +153,12 @@ export const validateFaroMessage = (message: string) => {
   return { ok: true as const, message: clean }
 }
 
+export function faroPublishTimestamp(dateKey: string) {
+  const utcTime = Date.parse(dateKey + 'T20:00:00Z')
+  const madridHour = normalizeDateParts(new Date(utcTime)).hour
+  return new Date(utcTime - (madridHour - FARO_PUBLISH_HOUR) * 60 * 60 * 1000).toISOString()
+}
+
 export const getFaroPublicState = (): FaroPublicState => {
   const today = normalizeDateParts()
   const state = getStateStore(today.dateKey)
@@ -171,7 +177,7 @@ export const getFaroPublicState = (): FaroPublicState => {
     dateKey: publicDateKey,
     message: liveMessage ?? DEFAULT_MESSAGE,
     status,
-    publishedAt: liveMessage ? liveState?.adminUpdatedAt ?? `${publicDateKey}T20:00:00+01:00` : null,
+    publishedAt: liveMessage ? liveState?.adminUpdatedAt ?? faroPublishTimestamp(publicDateKey) : null,
     canSubmit: isFaroSubmissionOpen() && !state.pendingMessage,
   }
 }

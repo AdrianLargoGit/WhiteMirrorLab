@@ -35,6 +35,7 @@ Deno.serve(async (request) => {
 
   try {
     body = await request.json()
+    if (!body || typeof body !== 'object' || Array.isArray(body)) throw new Error('Invalid JSON object')
   } catch {
     return jsonResponse({ ok: false, error: 'invalid_json' }, 400)
   }
@@ -52,6 +53,7 @@ Deno.serve(async (request) => {
     return jsonResponse({ ok: false, error: 'invalid_request' }, 400)
   }
 
+  try {
   const signatureIsValid = await verifyLicenseSignature(incomingLicense)
   if (!signatureIsValid) {
     await recordEvent('license_invalid_signature', { subject, operation, licenseHash: body.licenseHash })
@@ -77,7 +79,7 @@ Deno.serve(async (request) => {
     return jsonResponse({ ok: false, revoked: true, error: 'license_revoked' }, 403)
   }
 
-  if (new Date(license.expires_at).getTime() <= Date.now()) {
+  if (license.status === 'expired' || new Date(license.expires_at).getTime() <= Date.now()) {
     await supabaseRest(`pro_licenses?id=eq.${license.id}`, {
       method: 'PATCH',
       body: JSON.stringify({ status: 'expired' }),
@@ -150,4 +152,9 @@ Deno.serve(async (request) => {
   await recordEvent(operation, { subject, deviceId, licenseHash: body.licenseHash }, license.id, activation.id)
 
   return jsonResponse({ ok: true, license: signedLicense })
+  } catch (error) {
+    console.error('License operation failed:', error)
+    const message = error instanceof Error ? error.message : ''
+    return jsonResponse({ ok: false, error: message.includes('device_limit_reached') ? 'device_limit_reached' : 'license_service_unavailable' }, message.includes('device_limit_reached') ? 403 : 503)
+  }
 })

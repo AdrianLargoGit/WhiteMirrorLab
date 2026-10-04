@@ -1,3 +1,4 @@
+import { validateJsonFields } from '@/lib/requestValidation'
 import { NextResponse } from 'next/server'
 import { MARKETPLACE_SUBMISSIONS_ARE_OPEN } from '@/lib/marketplaceAvailability'
 import {
@@ -31,6 +32,7 @@ export async function POST(request: Request) {
 
   try {
     body = (await request.json()) as UploadRequestBody
+    validateJsonFields(body, { strings: ['pathname', 'contentType'], numbers: ['size'] })
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
@@ -41,8 +43,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: valid.error }, { status: 422 })
   }
 
+  const slash = valid.pathname.lastIndexOf('/')
+  const uniquePath = `${valid.pathname.slice(0, slash + 1)}${crypto.randomUUID()}-${valid.pathname.slice(slash + 1)}`
   try {
-    const upload = await createMarketplaceUploadUrl(valid.pathname, valid.contentType)
+    const upload = await createMarketplaceUploadUrl(uniquePath, valid.contentType, valid.size)
 
     return NextResponse.json(upload, {
       headers: rateLimitHeaders(rateLimit),

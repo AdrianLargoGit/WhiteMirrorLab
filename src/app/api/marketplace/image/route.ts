@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getMarketplaceObjectBuffer } from '@/lib/marketplaceStorage'
 import { createMarketplaceSupabaseClient } from '@/lib/marketplaceSupabase'
+import { escapeHtml as escapeXml } from '@/lib/escapeHtml'
+import { isMarketplaceAdmin } from '@/lib/marketplaceAdmin'
 
 const SUPPORTED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
 const IMAGE_TYPES_BY_EXTENSION: Record<string, string> = {
@@ -22,15 +24,6 @@ function inferImageContentType(imageUrl: string) {
   return extension ? IMAGE_TYPES_BY_EXTENSION[extension] : undefined
 }
 
-function escapeXml(value: string) {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;')
-}
-
 function toBase64(bytes: Uint8Array) {
   let binary = ''
   const chunkSize = 0x8000
@@ -46,7 +39,6 @@ export async function GET(request: NextRequest) {
   const productId = request.nextUrl.searchParams.get('product')
   const kind = request.nextUrl.searchParams.get('kind') ?? 'cover'
   const index = Number(request.nextUrl.searchParams.get('index') ?? 0)
-  const token = request.nextUrl.searchParams.get('token')
 
   if (!productId) {
     return NextResponse.json({ error: 'Missing product id' }, { status: 400 })
@@ -63,7 +55,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Product not found' }, { status: 404 })
   }
 
-  const isAdmin = Boolean(process.env.MARKETPLACE_ADMIN_TOKEN && token === process.env.MARKETPLACE_ADMIN_TOKEN)
+  const isAdmin = await isMarketplaceAdmin()
   if (product.status !== 'approved' && !isAdmin) {
     return NextResponse.json({ error: 'Image not available' }, { status: 404 })
   }

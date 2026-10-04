@@ -193,7 +193,7 @@ export async function findActiveLicense(subject: string) {
 
 export async function findLicenseBySubject(subject: string) {
   const rows = await supabaseRest<LicenseRecord[]>(
-    `pro_licenses?select=*&subject=eq.${encodeURIComponent(subject)}&limit=1`,
+    `pro_licenses?select=*&subject=eq.${encodeURIComponent(subject)}&order=issued_at.desc&limit=1`,
   )
 
   return rows[0] ?? null

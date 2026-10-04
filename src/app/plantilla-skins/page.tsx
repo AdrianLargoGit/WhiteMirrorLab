@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import CustomCursor from '@/components/CustomCursor'
 import Navbar from '@/components/Navbar'
+import { getDeviceType, type DeviceType } from '@/lib/deviceType'
 import { useLocale } from '@/hooks/useLocale'
 import { skinTemplateCopy } from '@/lib/copy'
 import { downloadPath, homePath, marketplaceSubmitPath } from '@/lib/i18n'
@@ -15,12 +15,6 @@ const TEMPLATE_URL = 'https://github.com/AdrianLargoGit/WhiteMirrorLab/releases/
 const BMC_CREATOR_ID = 'whitemirrorlab'
 const BMC_WIDGET_URL = `https://www.buymeacoffee.com/widget/page/${BMC_CREATOR_ID}?description=Support%20the%20WML%20creator%20kit&color=%23f7d65a`
 
-type DeviceType = 'computer' | 'mobile' | 'tv' | 'unknown'
-type NavigatorWithUserAgentData = Navigator & {
-  userAgentData?: {
-    platform?: string
-  }
-}
 
 const characters = [
   { src: '/skins/chrome-character.png', alt: 'Chrome creator character', className: styles.chromeFigure },
@@ -58,38 +52,6 @@ const IconCheck = () => (
   </svg>
 )
 
-const getDeviceType = (): DeviceType => {
-  const ua = navigator.userAgent.toLowerCase()
-  const userAgentData = (navigator as NavigatorWithUserAgentData).userAgentData
-  const platform = userAgentData?.platform?.toLowerCase() || navigator.platform.toLowerCase()
-  const hasCoarsePointer = window.matchMedia('(any-pointer: coarse)').matches
-  const hasFinePointer = window.matchMedia('(any-pointer: fine)').matches
-  const isTouchOnly = hasCoarsePointer && !hasFinePointer
-  const isTablet =
-    /ipad|tablet|kindle|silk/.test(ua) ||
-    (/android/.test(ua) && !/mobi/.test(ua)) ||
-    (platform === 'macintel' && navigator.maxTouchPoints > 1) ||
-    (/win/.test(platform) && isTouchOnly)
-
-  if (/smart-tv|smarttv|hbbtv|appletv|google tv|googletv|tizen|webos|netcast|viera|aquos|bravia|roku|aftt|aftm|fire tv/.test(ua)) {
-    return 'tv'
-  }
-
-  if (isTablet || /mobi|iphone|ipod|android/.test(ua)) {
-    return 'mobile'
-  }
-
-  if (/win|mac|linux|cros|x11/.test(platform) && !isTouchOnly) {
-    return 'computer'
-  }
-
-  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches && !hasCoarsePointer) {
-    return 'computer'
-  }
-
-  return 'unknown'
-}
-
 export default function SkinTemplatePage() {
   const lang = useLocale()
   const t = skinTemplateCopy[lang]
@@ -109,7 +71,7 @@ export default function SkinTemplatePage() {
 
   return (
     <div className="landing-page">
-      <CustomCursor />
+
       <Navbar lang={lang} />
 
       <main className={styles.page}>

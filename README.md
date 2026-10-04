@@ -2,6 +2,8 @@
 
 White Mirror Lab is a digital product and experimentation lab.
 
+WML Pro billing and licenses use Stripe without Supabase. See [PRO_STRIPE_SETUP.md](PRO_STRIPE_SETUP.md) for prices, secrets, webhooks, the Pro widget build and launch checks.
+
 The current public focus is WML X.X.0: a Windows desktop pet that works with local device signals, local AI, points, skins and creator packs. The product is intentionally retro, playful and unsettling in tone, but its privacy position is explicit: minimal data, local-first behavior and confirmed actions.
 
 ## WML X.X.0
@@ -36,4 +38,4 @@ npm install
 npm run dev
 ```
 
-The app is built with Next.js and uses Supabase, Brevo, PostHog and marketplace storage/payment integrations where configured.
+The app is built with Next.js and uses Supabase, Brevo and marketplace storage/payment integrations where configured.

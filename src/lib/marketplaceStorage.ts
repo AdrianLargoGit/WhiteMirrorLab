@@ -17,19 +17,21 @@ export function isMarketplaceStorageUrl(value: string | null | undefined) {
   return isR2Url(value)
 }
 
-export async function createMarketplaceUploadUrl(path: string, contentType: string) {
-  return createR2UploadUrl(path, contentType)
+export async function createMarketplaceUploadUrl(path: string, contentType: string, size: number) {
+  return createR2UploadUrl(path, contentType, size)
 }
 
 export async function uploadMarketplaceObjectStream(input: {
   path: string
   contentType: string
   body: ReadableStream<Uint8Array>
+  size: number
 }) {
   return uploadR2ObjectStream({
     key: input.path,
     contentType: input.contentType,
     body: input.body,
+    size: input.size,
   })
 }
 
