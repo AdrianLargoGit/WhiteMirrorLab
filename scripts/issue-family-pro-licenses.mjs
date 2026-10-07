@@ -39,7 +39,7 @@ async function stripe(endpoint, params, idempotencyKey) {
 
 const pricePage = await stripe('/prices?limit=100')
 if (pricePage.has_more) throw new Error('Price list incomplete')
-const prices = pricePage.data.filter(p => p.active && p.currency === 'eur' && p.unit_amount === 4599 && p.recurring?.interval === 'year' && p.recurring.interval_count === 1)
+const prices = pricePage.data.filter(p => p.active && p.currency === 'eur' && p.unit_amount === 2999 && p.recurring?.interval === 'year' && p.recurring.interval_count === 1)
 if (prices.length !== 1) throw new Error(`Expected one active annual Pro price, found ${prices.length}`)
 const priceId = prices[0].id
 const countOption = process.argv.find(arg => arg.startsWith('--count='))

@@ -3,11 +3,11 @@ import { WIDGET_DOWNLOAD_URL } from './widgetDownload'
 export type ProBillingPlan = 'monthly' | 'annual'
 
 export const PRO_PLANS = {
-  monthly: { amount: 499, interval: 'month' },
-  annual: { amount: 4599, interval: 'year' },
+  monthly: { amount: 299, interval: 'month' },
+  annual: { amount: 2999, interval: 'year' },
 } as const
 
-export const PRO_PRICE_LOOKUP_VERSION = 'v2'
+export const PRO_PRICE_LOOKUP_VERSION = 'v3'
 
 export class ProError extends Error {
   constructor(public code: string, public status = 503) {

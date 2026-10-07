@@ -24,6 +24,14 @@ test('Pro uses the shared widget release URL and follows updates without separat
   }
 })
 
+test('public Pro price check reports the amounts served by checkout', async () => {
+  const route = loadTypescript('src/app/api/pro/checkout/route.ts', { 'next/headers': { cookies: async () => ({ get: () => undefined }) } })
+  const response = await route.GET()
+  assert.equal(response.status, 200)
+  assert.deepEqual(await response.json(), { monthly: 299, annual: 2999, priceVersion: 'v3' })
+  assert.equal(response.headers.get('cache-control'), 'no-store')
+})
+
 test('automatic Stripe provisioning and the complete purchase/activation/renewal flow work for both plans', async t => {
   for (const plan of ['monthly', 'annual']) {
     const jar = new Map()
@@ -55,13 +63,13 @@ test('automatic Stripe provisioning and the complete purchase/activation/renewal
       if (url.pathname === '/v1/products') { product = { id: 'wml_pro_v1' }; return json(product) }
       if (url.pathname === '/v1/prices') {
         if (!params) {
-          assert.equal(url.searchParams.get('lookup_keys[]'), `wml-pro-${plan}-eur-v2`)
+          assert.equal(url.searchParams.get('lookup_keys[]'), `wml-pro-${plan}-eur-v3`)
           return json({ data: price ? [price] : [] })
         }
         assert.equal(params.get('product'), product.id)
-        assert.equal(params.get('lookup_key'), `wml-pro-${plan}-eur-v2`)
-        assert.equal(Number(params.get('unit_amount')), plan === 'annual' ? 4599 : 499)
-        price = { id: `price_${plan}`, active: true, currency: params.get('currency'), unit_amount: Number(params.get('unit_amount')), recurring: { interval: params.get('recurring[interval]'), interval_count: 1 } }
+        assert.equal(params.get('lookup_key'), `wml-pro-${plan}-eur-v3`)
+        assert.equal(Number(params.get('unit_amount')), plan === 'annual' ? 2999 : 299)
+        price = { id: `price_${plan}`, active: true, product: product.id, currency: params.get('currency'), unit_amount: Number(params.get('unit_amount')), recurring: { interval: params.get('recurring[interval]'), interval_count: 1 } }
         return json(price)
       }
       if (url.pathname === '/v1/checkout/sessions') {
@@ -99,7 +107,7 @@ test('automatic Stripe provisioning and the complete purchase/activation/renewal
     assert.equal(fulfilled.status, 200, JSON.stringify(await fulfilled.clone().json()))
     const receipt = await fulfilled.json()
     assert.equal(receipt.plan, plan)
-    assert.equal(receipt.amountPaid, plan === 'annual' ? 4599 : 499)
+    assert.equal(receipt.amountPaid, plan === 'annual' ? 2999 : 299)
     const installer = await route('installer').GET()
     assert.equal(installer.status, 303)
     assert.equal(installer.headers.get('location'), loadTypescript('src/lib/widgetDownload.ts').WIDGET_DOWNLOAD_URL)
@@ -162,13 +170,13 @@ test('an active subscriber receives the existing entitlement by email without a 
   process.env.WML_PRO_FROM_EMAIL = 'sender@example.org'
   process.env.BREVO_API_KEY = 'test-brevo-key'
   const end = Math.floor(Date.now() / 1000) + 30 * 86400
-  const price = { id: 'price_monthly', active: true, currency: 'eur', unit_amount: 499, recurring: { interval: 'month', interval_count: 1 } }
+  const price = { id: 'price_monthly', active: true, product: 'wml_pro_v1', currency: 'eur', unit_amount: 299, recurring: { interval: 'month', interval_count: 1 } }
   const subscription = {
     id: 'sub_existing', customer: 'cus_existing', created: Math.floor(Date.now() / 1000) - 86400,
     status: 'active', current_period_end: end,
     metadata: { wml_product: 'wml-pro', wml_plan: 'monthly', wml_price_id: price.id, wml_license_id: 'existing-license' },
     items: { data: [{ id: 'si_existing', quantity: 1, price }] },
-    latest_invoice: { id: 'in_existing', subscription: 'sub_existing', paid: true, status: 'paid', charge: { id: 'ch_existing', amount: 499, amount_refunded: 0, disputed: false }, lines: { data: [{ price, subscription_item: 'si_existing', period: { end } }] } },
+    latest_invoice: { id: 'in_existing', subscription: 'sub_existing', paid: true, status: 'paid', charge: { id: 'ch_existing', amount: 299, amount_refunded: 0, disputed: false }, lines: { data: [{ price, subscription_item: 'si_existing', period: { end } }] } },
   }
   let mailedLicense = null
   let checkoutRequests = 0

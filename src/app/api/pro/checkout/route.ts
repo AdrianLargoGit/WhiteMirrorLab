@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server'
 import { isValidEmailAddress } from '@/lib/emailValidation'
 import { validateJsonFields } from '@/lib/requestValidation'
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit'
-import { PRO_CHECKOUT_COOKIE, PRO_COOKIE_OPTIONS, PRO_PRIVATE_HEADERS, proInstallerUrl, proAllowedOrigin, proPortalLoginUrl } from '@/lib/proConfig'
+import { PRO_CHECKOUT_COOKIE, PRO_COOKIE_OPTIONS, PRO_PLANS, PRO_PRIVATE_HEADERS, PRO_PRICE_LOOKUP_VERSION, proInstallerUrl, proAllowedOrigin, proPortalLoginUrl } from '@/lib/proConfig'
 import { checkProSigningConfiguration } from '@/lib/proLicense'
 import { createProCheckout, ensureProPortal, existingProSubscriber, paidProEntitlementForEmail } from '@/lib/stripePro'
 import { makeProLicense } from '@/lib/proLicense'
@@ -12,6 +12,14 @@ import { sendPaidProLicenseEmail } from '@/lib/proEmail'
 import { proApiError } from '@/lib/proApi'
 
 export const runtime = 'nodejs'
+
+export async function GET() {
+  return NextResponse.json({
+    monthly: PRO_PLANS.monthly.amount,
+    annual: PRO_PLANS.annual.amount,
+    priceVersion: PRO_PRICE_LOOKUP_VERSION,
+  }, { headers: { 'Cache-Control': 'no-store' } })
+}
 
 export async function POST(request: Request) {
   let body: { email?: string; plan?: string; locale?: string; acceptedTerms?: boolean }

@@ -46,8 +46,8 @@ Cuando están configuradas la URL y el secreto del Worker, las operaciones de R2
 | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_WML_1_0` | Sin consumidores en el código actual; pertenecía al antiguo módulo WML 1.0. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY_WML_1_0` | Sin consumidores en el código actual; pertenecía al antiguo módulo WML 1.0. |
-| `WML_PRO_STRIPE_MONTHLY_PRICE_ID` | Estaba vacía. Su ausencia permite crear o reutilizar automáticamente el nuevo precio de 4,99 EUR/mes. |
-| `WML_PRO_STRIPE_ANNUAL_PRICE_ID` | Estaba vacía. Su ausencia permite crear o reutilizar automáticamente el nuevo precio de 45,99 EUR/año. |
+| `WML_PRO_STRIPE_MONTHLY_PRICE_ID` | Estaba vacía. Su ausencia permite crear o reutilizar automáticamente el precio de 2,99 EUR/mes. |
+| `WML_PRO_STRIPE_ANNUAL_PRICE_ID` | Estaba vacía. Su ausencia permite crear o reutilizar automáticamente el precio de 29,99 EUR/año. |
 | `WML_PRO_PORTAL_LOGIN_URL` | Estaba vacía. Su ausencia permite preparar o reutilizar automáticamente el portal de Pro. |
 | `WML_PRO_PORTAL_CONFIGURATION_ID` | ID `bpc_...` de una configuración de portal existente; evita crearla mediante la API. |
 | `WML_PRO_STRIPE_WEBHOOK_SECRET` | Estaba vacía. El webhook requiere este secreto para enviar por email la nueva licencia en cada pago confirmado; la revalidación del widget consulta Stripe directamente. |

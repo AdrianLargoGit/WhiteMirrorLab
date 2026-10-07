@@ -1,6 +1,6 @@
 # WML Pro — configuración de Stripe
 
-La web y el widget están conectados mediante licencias Ed25519 y Stripe. Pro no necesita Supabase. Los precios son **4,99 €/mes** y **45,99 €/año**.
+La web y el widget están conectados mediante licencias Ed25519 y Stripe. Pro no necesita Supabase. Los precios son **2,99 €/mes** y **29,99 €/año**.
 
 Rellena la clave Stripe en `wml/.env.local` y, desde `wml-xx0`, ejecuta **`npm run build:win`**. La preparación de licencia, compilación y verificación del widget se realizan automáticamente. Publica el instalador en GitHub Releases y actualiza su enlace como hasta ahora.
 
@@ -14,7 +14,7 @@ Sí puedes usar la clave secreta estándar de Stripe. En `wml/.env.local`, pon `
 WML_PRO_STRIPE_SECRET_KEY=sk_test_TU_CLAVE
 ```
 
-Deja sin configurar `WML_PRO_STRIPE_MONTHLY_PRICE_ID`, `WML_PRO_STRIPE_ANNUAL_PRICE_ID`, `WML_PRO_PORTAL_CONFIGURATION_ID` y `WML_PRO_PORTAL_LOGIN_URL`. En la primera compra, el servidor crea o reutiliza el producto, los precios recurrentes de **4,99 €/mes** y **45,99 €/año**, y la configuración del portal. No tienes que crearlos a mano en Stripe. Si configuras IDs de precio, WML rechazará cualquiera cuyo importe no coincida. La clave activa pertenece a un entorno separado del de prueba.
+Deja sin configurar `WML_PRO_STRIPE_MONTHLY_PRICE_ID`, `WML_PRO_STRIPE_ANNUAL_PRICE_ID`, `WML_PRO_PORTAL_CONFIGURATION_ID` y `WML_PRO_PORTAL_LOGIN_URL`. En la primera compra, el servidor crea o reutiliza el producto, los precios recurrentes de **2,99 €/mes** y **29,99 €/año**, y la configuración del portal. No tienes que crearlos a mano en Stripe. Si configuras IDs de precio, WML rechazará cualquiera cuyo importe no coincida. La clave activa pertenece a un entorno separado del de prueba.
 
 También puedes usar `STRIPE_SECRET_KEY`; la clave específica de Pro tiene prioridad. `.env.local` es el archivo de entorno de Next.js que ya utiliza el proyecto. Reinicia el servidor después de editarlo y lleva las mismas variables al entorno del despliegue. Una `sk_...` tiene acceso amplio a la cuenta: mantenla únicamente en el servidor, fuera del instalador, del repositorio y de cualquier variable `NEXT_PUBLIC_`. La clave de firma Ed25519 y el secreto `whsec_...` son diferentes de la clave API de Stripe.
 
@@ -47,7 +47,7 @@ WML_PRO_PORTAL_LOGIN_URL=
 WML_PRO_STRIPE_WEBHOOK_SECRET=
 ```
 
-Los precios deben ser recurrentes en EUR, con cantidad uno e importes de 499 y 4599 céntimos respectivamente. No se añaden pruebas gratuitas ni descuentos. Cada entrega y revalidación comprueba el estado real de Stripe; no depende de recibir previamente un webhook.
+Los precios deben ser recurrentes en EUR, con cantidad uno e importes de 299 y 2999 céntimos respectivamente. No se añaden pruebas gratuitas ni descuentos. Cada entrega y revalidación comprueba el estado real de Stripe; no depende de recibir previamente un webhook.
 
 ## Configuración ya preparada
 
@@ -111,7 +111,5 @@ Se verifica la firma sobre el cuerpo original, la fecha y la estructura. Los eve
 Las pruebas locales cubren ambos planes, configuración automática con Stripe simulado, recibo, firma, activación, segundo dispositivo, renovación, cancelación, reembolso, disputa, cookies ajenas, dominios y revocación del widget. Ambos proyectos compilan y el instalador final está comprobado.
 
 El instalador 1.0.6 se compiló y se verificó con el mismo par de claves. El sitio público aún responde 404 en `/api/pro/activate`: hay que desplegar la web nueva antes de que el widget pueda vincular un ordenador. El enlace de descarga en el código apunta ahora a 1.0.6. Falta probar la importación en un ordenador real. Tampoco se ha configurado el secreto del webhook, por lo que el correo de renovación aún no puede funcionar en el despliegue. No se han cobrado tarjetas reales ni cambiado el despliegue de la web.
-
-El 30 de septiembre de 2026 se crearon en Stripe activo los precios `price_1ULLvfJOE5U01zNxjZOy79Y3` (4,99 €/mes) y `price_1ULLvgJOE5U01zNxVqkGvgDR` (45,99 €/año). Crear estos precios no cobró a ningún cliente. El código actualizado aún no se ha desplegado, por lo que la web pública todavía no ofrece estos importes.
 
 Referencias oficiales: [Checkout](https://docs.stripe.com/api/checkout/sessions/create), [precios](https://docs.stripe.com/api/prices/create), [portal](https://docs.stripe.com/api/customer_portal/configurations/create), [idempotencia](https://docs.stripe.com/api/idempotent_requests), [webhooks](https://docs.stripe.com/billing/subscriptions/webhooks).

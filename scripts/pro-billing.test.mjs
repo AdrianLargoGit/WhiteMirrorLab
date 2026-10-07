@@ -19,8 +19,8 @@ const license = loadTypescript('src/lib/proLicense.ts')
 const webhook = loadTypescript('src/lib/proWebhook.ts')
 const now = Date.now()
 const seconds = Math.floor(now / 1000)
-const monthPrice = { id: 'price_month', active: true, currency: 'eur', unit_amount: 499, recurring: { interval: 'month', interval_count: 1 } }
-const yearPrice = { ...monthPrice, id: 'price_year', unit_amount: 4599, recurring: { interval: 'year', interval_count: 1 } }
+const monthPrice = { id: 'price_month', active: true, product: 'wml_pro_v1', currency: 'eur', unit_amount: 299, recurring: { interval: 'month', interval_count: 1 } }
+const yearPrice = { ...monthPrice, id: 'price_year', unit_amount: 2999, recurring: { interval: 'year', interval_count: 1 } }
 const paidInvoice = (price = monthPrice, end = seconds + 30 * 86400) => ({
   id: 'in_paid', subscription: 'sub_paid', paid: true, status: 'paid', charge: { id: 'ch_paid', amount: price.unit_amount, amount_refunded: 0, disputed: false },
   lines: { data: [{ subscription_item: 'si_pro', price, period: { start: seconds, end } }], has_more: false },
@@ -101,16 +101,28 @@ test('annual license signs the real paid yearly end and rejects altered dates', 
   assert.equal(license.verifyProLicense({ ...file, expiresAt: new Date(now + 400 * 86400000).toISOString() }), false)
 })
 
-test('only the configured paid plan price authorises Pro access', async () => {
+test('an existing subscription keeps access at its own paid price', async () => {
   const monthly = subscription()
   monthly.metadata.wml_price_id = monthPrice.id
   assert.equal((await billing.paidProEntitlement(monthly, now)).paidUntil, monthly.current_period_end)
-  for (const amount of [100, 498, 4600]) {
-    monthly.items.data[0].price = { ...monthPrice, unit_amount: amount }
+  const previousPrice = { ...monthPrice, id: 'price_existing', unit_amount: 399 }
+  monthly.metadata.wml_price_id = previousPrice.id
+  monthly.items.data[0].price = previousPrice
+  monthly.latest_invoice = paidInvoice(previousPrice)
+  assert.equal((await billing.paidProEntitlement(monthly, now)).paidUntil, monthly.current_period_end)
+  monthly.metadata.wml_price_id = monthPrice.id
+  monthly.items.data[0].price = monthPrice
+  assert.equal((await billing.paidProEntitlement(monthly, now)).paidUntil, monthly.current_period_end)
+  monthly.metadata.wml_price_id = previousPrice.id
+  monthly.items.data[0].price = previousPrice
+  for (const changes of [{ id: 'price_other' }, { product: 'other_product' }, { currency: 'usd' }, { unit_amount: 0 }, { recurring: { interval: 'year', interval_count: 1 } }]) {
+    monthly.items.data[0].price = { ...previousPrice, ...changes }
     await assert.rejects(billing.paidProEntitlement(monthly, now), /pro_price_mismatch/)
   }
-  monthly.items.data[0].price = monthPrice
-  monthly.latest_invoice = paidInvoice({ ...monthPrice, id: 'price_other' })
+  monthly.items.data[0].price = { ...previousPrice, unit_amount: previousPrice.unit_amount + 1 }
+  await assert.rejects(billing.paidProEntitlement(monthly, now), /license_inactive/)
+  monthly.items.data[0].price = previousPrice
+  monthly.latest_invoice = paidInvoice({ ...previousPrice, product: 'other_product' })
   await assert.rejects(billing.paidProEntitlement(monthly, now), /license_inactive/)
 })
 
@@ -171,7 +183,7 @@ test('cancel at period end preserves paid access, while immediate cancellation, 
     assert.match(url, /\/disputes\?charge=ch_paid/)
     return json({ data: [{ status: 'needs_response' }] })
   })
-  for (const change of [{ amount_refunded: 499 }, { disputed: true }]) {
+  for (const change of [{ amount_refunded: 299 }, { disputed: true }]) {
     await assert.rejects(billing.paidProEntitlement({ ...sub, latest_invoice: { ...sub.latest_invoice, charge: { ...sub.latest_invoice.charge, ...change } } }, now), /license_revoked/)
   }
   t.mock.method(globalThis, 'fetch', async () => json({ data: [{ status: 'won' }] }))

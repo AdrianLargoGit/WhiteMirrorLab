@@ -5,7 +5,7 @@ import { makeProLicense } from './proLicense'
 import { sendPaidProLicenseEmail } from './proEmail'
 
 type StripeList<T> = { data: T[]; has_more?: boolean }
-type Price = { id: string; active: boolean; currency: string; unit_amount: number; recurring?: { interval: string; interval_count: number } }
+type Price = { id: string; active: boolean; product: string; currency: string; unit_amount: number; recurring?: { interval: string; interval_count: number } }
 type Charge = { id: string; amount: number; amount_refunded: number; disputed: boolean; invoice?: string | null }
 type Invoice = {
   id: string; subscription: string; status: string; paid: boolean; charge?: string | Charge | null
@@ -87,11 +87,13 @@ export async function paidProEntitlementForEmail(email: string) {
   return null
 }
 
-function isProPrice(price: Price, plan: ProBillingPlan, expectedId?: string) {
+function isProPrice(price: Price, plan: ProBillingPlan, expectedId?: string, requireCurrentAmount = true) {
   const expected = PRO_PLANS[plan]
   return /^price_[A-Za-z0-9]+$/.test(price.id) && (!expectedId || price.id === expectedId) &&
+    price.product === 'wml_pro_v1' &&
     price.currency === 'eur' &&
-    price.unit_amount === expected.amount &&
+    Number.isInteger(price.unit_amount) && price.unit_amount > 0 &&
+    (!requireCurrentAmount || price.unit_amount === expected.amount) &&
     price.recurring?.interval === expected.interval && price.recurring.interval_count === 1
 }
 
@@ -185,7 +187,9 @@ export async function paidProEntitlement(subscription: ProSubscription, now = Da
   const item = subscription.items.data[0]
   const expectedId = subscription.metadata.wml_price_id || proPriceId(validatedPlan)
   if (!expectedId) throw new ProError('invalid_pro_subscription', 403)
-  checkPrice(item.price, validatedPlan, expectedId)
+  // Existing subscriptions keep their original immutable Stripe Price.
+  // New checkouts are checked against the current amount in resolveProPrice.
+  if (!isProPrice(item.price, validatedPlan, expectedId, false)) throw new ProError('pro_price_mismatch')
   if (item.quantity !== 1 || subscription.metadata.wml_revoked === 'true' || !['active', 'past_due'].includes(subscription.status)) {
     throw new ProError('license_inactive', 403)
   }
@@ -198,8 +202,12 @@ export async function paidProEntitlement(subscription: ProSubscription, now = Da
   if (!invoice?.paid || invoice.status !== 'paid' || invoice.subscription !== subscription.id || invoice.lines.has_more) {
     throw new ProError('license_inactive', 403)
   }
+  // A price change without proration leaves the current paid invoice on its
+  // previous immutable Price until renewal. The paid line still belongs to the
+  // same subscription item and Pro product.
   const lines = invoice.lines.data.filter(line => line.subscription_item === item.id && line.price &&
-    isProPrice(line.price, validatedPlan, item.price.id))
+    isProPrice(line.price, validatedPlan, undefined, false) && line.price.product === item.price.product &&
+    (line.price.id !== item.price.id || line.price.unit_amount === item.price.unit_amount))
   const paidUntil = Math.min(
     Math.max(0, ...lines.map(line => line.period.end)),
     subscription.current_period_end,
