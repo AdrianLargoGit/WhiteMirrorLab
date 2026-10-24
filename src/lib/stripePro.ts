@@ -3,6 +3,7 @@ import { PRO_PLANS, PRO_PRICE_LOOKUP_VERSION, ProError, proEnv, proOrigin, proPr
 import { proHash } from './proLicense'
 import { makeProLicense } from './proLicense'
 import { sendPaidProLicenseEmail } from './proEmail'
+import { addPaidProEmailToBrevo, proBrevoListId } from './proBrevo'
 
 type StripeList<T> = { data: T[]; has_more?: boolean }
 type Price = { id: string; active: boolean; product: string; currency: string; unit_amount: number; recurring?: { interval: string; interval_count: number } }
@@ -313,7 +314,8 @@ export async function deliverPaidProInvoice(subscriptionId: string, invoiceId: s
   const subscription = await retrieveProSubscription(subscriptionId)
   if (subscription.metadata?.wml_product !== 'wml-pro') return
   const latest = typeof subscription.latest_invoice === 'object' ? subscription.latest_invoice : null
-  if (subscription.metadata.wml_emailed_invoice_id === invoiceId) return
+  const needsEmail = subscription.metadata.wml_emailed_invoice_id !== invoiceId
+  if (!needsEmail && subscription.metadata.wml_brevo_pro_list_id === String(proBrevoListId())) return
   if (latest?.id !== invoiceId) {
     // Stripe can send invoice.paid before the expanded subscription reflects
     // the new invoice. Retry that case; silently ignore an older paid invoice.
@@ -324,16 +326,37 @@ export async function deliverPaidProInvoice(subscriptionId: string, invoiceId: s
     if (eventEnd > latestEnd) throw new ProError('pro_invoice_not_current')
     return
   }
-  const { plan, paidUntil } = await paidProEntitlement(subscription)
+  const entitlement = await paidProEntitlement(subscription)
+  const { plan, paidUntil } = entitlement
   const customer = await proStripeRequest<{ email: string | null }>(`/customers/${encodeURIComponent(subscription.customer)}`)
-  await sendPaidProLicenseEmail({
-    email: customer.email ?? '', plan, paidUntil,
-    license: makeProLicense({ subscriptionId, plan, issuedAt: subscription.created, paidUntil }),
-  })
-  // Mark only after Brevo accepts the message, so Stripe can retry on failure.
-  await proStripeRequest(`/subscriptions/${subscriptionId}`, new URLSearchParams({
-    'metadata[wml_emailed_invoice_id]': invoiceId,
-  }), `wml-pro-email-${invoiceId}`)
+  if (needsEmail) {
+    await sendPaidProLicenseEmail({
+      email: customer.email ?? '', plan, paidUntil,
+      license: makeProLicense({ subscriptionId, plan, issuedAt: subscription.created, paidUntil }),
+    })
+    // Mark only after Brevo accepts the message, so Stripe can retry on failure.
+    await proStripeRequest(`/subscriptions/${subscriptionId}`, new URLSearchParams({
+      'metadata[wml_emailed_invoice_id]': invoiceId,
+    }), `wml-pro-email-${invoiceId}`)
+  }
+  await ensurePaidProBrevoList(entitlement, customer.email ?? '')
+}
+
+export async function ensurePaidProBrevoList(
+  entitlement: Awaited<ReturnType<typeof paidProEntitlement>>,
+  customerEmail?: string,
+) {
+  const { subscription } = entitlement
+  const listId = proBrevoListId()
+  if (subscription.metadata.wml_brevo_pro_list_id === String(listId)) return
+  const email = customerEmail ?? (await proStripeRequest<{ email: string | null }>(
+    `/customers/${encodeURIComponent(subscription.customer)}`
+  )).email ?? ''
+  await addPaidProEmailToBrevo(email, listId)
+  // A later renewal must not re-add a contact who left the list.
+  await proStripeRequest(`/subscriptions/${subscription.id}`, new URLSearchParams({
+    'metadata[wml_brevo_pro_list_id]': String(listId),
+  }), `wml-pro-brevo-${subscription.id}-${listId}`)
 }
 
 export async function proEventSubscription(type: string, object: Record<string, unknown>): Promise<string | null> {

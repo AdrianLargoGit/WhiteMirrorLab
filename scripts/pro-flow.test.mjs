@@ -8,6 +8,7 @@ Object.assign(process.env, {
   WML_PRO_LICENSE_PRIVATE_KEY: keys.privateKey, WML_PRO_LICENSE_PUBLIC_KEY: keys.publicKey,
   WML_PRO_STRIPE_SECRET_KEY: 'sk_test_mock', WML_PRO_SITE_URL: 'https://wml.example',
   WML_PRO_STRIPE_WEBHOOK_SECRET: 'whsec_mock',
+  BREVO_API_KEY: 'brevo_mock', BREVO_LIST_ID_WMLPRO: '123',
 })
 for (const name of ['WML_PRO_STRIPE_MONTHLY_PRICE_ID', 'WML_PRO_STRIPE_ANNUAL_PRICE_ID', 'WML_PRO_PORTAL_LOGIN_URL']) delete process.env[name]
 const json = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json' } })
@@ -32,12 +33,29 @@ test('public Pro price check reports the amounts served by checkout', async () =
   assert.equal(response.headers.get('cache-control'), 'no-store')
 })
 
+test('a temporary Brevo failure never blocks a paid Pro receipt', async t => {
+  t.mock.method(console, 'error', () => {})
+  const route = loadTypescript('src/app/api/pro/fulfill/route.ts', {
+    '@/lib/proApi': {
+      browserProPurchase: async () => ({
+        plan: 'monthly', paidUntil: Math.floor(Date.now() / 1000) + 86400,
+        invoice: { id: 'in_paid', amount_paid: 299, hosted_invoice_url: null },
+      }),
+    },
+    '@/lib/stripePro': { ensurePaidProBrevoList: async () => { throw new Error('Brevo unavailable') } },
+  })
+  const response = await route.GET()
+  assert.equal(response.status, 200)
+  assert.equal((await response.json()).invoiceId, 'in_paid')
+})
+
 test('automatic Stripe provisioning and the complete purchase/activation/renewal flow work for both plans', async t => {
   for (const plan of ['monthly', 'annual']) {
     const jar = new Map()
     const mocks = { 'next/headers': { cookies: async () => ({ get: key => jar.has(key) ? { value: jar.get(key) } : undefined }) } }
     const route = name => loadTypescript(`src/app/api/pro/${name}/route.ts`, mocks)
     const paramsSeen = []
+    const brevoContacts = []
     let checkout
     let sub
     let configuration
@@ -47,11 +65,17 @@ test('automatic Stripe provisioning and the complete purchase/activation/renewal
     const end = Math.floor(Date.now() / 1000) + (plan === 'annual' ? 365 : 30) * 86400
     t.mock.method(globalThis, 'fetch', async (input, init) => {
       const url = new URL(input)
+      if (url.hostname === 'api.brevo.com') {
+        const contact = JSON.parse(init.body)
+        brevoContacts.push(contact)
+        return json({ id: 1 }, 201)
+      }
       assert.equal(url.hostname, 'api.stripe.com')
       assert.equal(init.headers['Stripe-Version'], '2024-06-20')
       const params = init.body
       if (params) paramsSeen.push({ path: url.pathname, params })
       if (url.pathname === '/v1/customers') return json({ data: [] })
+      if (url.pathname === '/v1/customers/cus_paid') return json({ email: 'buyer@example.org' })
       if (url.pathname === '/v1/billing_portal/configurations') {
         if (!params) return json({ data: configuration ? [configuration] : [] })
         assert.equal(params.get('features[subscription_cancel][mode]'), 'at_period_end')
@@ -108,6 +132,8 @@ test('automatic Stripe provisioning and the complete purchase/activation/renewal
     const receipt = await fulfilled.json()
     assert.equal(receipt.plan, plan)
     assert.equal(receipt.amountPaid, plan === 'annual' ? 2999 : 299)
+    assert.deepEqual(brevoContacts, [{ email: 'buyer@example.org', listIds: [123], updateEnabled: true }])
+    assert.equal(sub.metadata.wml_brevo_pro_list_id, '123')
     const installer = await route('installer').GET()
     assert.equal(installer.status, 303)
     assert.equal(installer.headers.get('location'), loadTypescript('src/lib/widgetDownload.ts').WIDGET_DOWNLOAD_URL)
@@ -132,6 +158,7 @@ test('automatic Stripe provisioning and the complete purchase/activation/renewal
     sub.current_period_end = renewalEnd
     sub.latest_invoice.lines.data[0].period.end = renewalEnd
     assert.equal((await (await route('fulfill').GET()).json()).paidUntil, new Date(renewalEnd * 1000).toISOString())
+    assert.equal(brevoContacts.length, 1)
     charge.amount_refunded = charge.amount
     assert.equal((await (await activate('usage', active.license)).json()).revoked, true)
     // Billing stays available even after access is revoked.

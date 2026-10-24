@@ -59,9 +59,13 @@
 .results { display: flex; align-items: center; gap: 8px; color: #a4a899; font: 10px var(--font-mono); margin-bottom: 20px; }
 .results > span:first-child { color: var(--white); }
 .resultLine { height: 1px; background: #303229; flex: 1; margin-left: 12px; }
-.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.grid { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .card { --tone: var(--accent); min-width: 0; padding: 24px; display: flex; flex-direction: column; background: #11120f; border: 1px solid #303229; transition: border-color .18s ease, transform .18s ease; }
 .card:hover { border-color: var(--tone); transform: translateY(-3px); }
+.adCard { background: linear-gradient(140deg, rgba(255, 216, 77, .035), transparent 55%), #11120f; }
+.adProbe { position: absolute; width: 320px; height: 380px; overflow: hidden; visibility: hidden; pointer-events: none; }
+.adIdentity { margin-bottom: 20px; }
+.adFrame { display: block; width: 100%; height: 250px; border: 0; margin: auto 0; }
 .development { --tone: var(--toy-blue); }
 .web { --tone: var(--toy-pink); }
 .data { --tone: var(--toy-green); }

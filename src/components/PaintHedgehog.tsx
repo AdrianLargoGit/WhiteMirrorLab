@@ -61,18 +61,24 @@ export default function PaintHedgehog() {
     const resize = () => {
       const rect = canvas.getBoundingClientRect()
       const dpr = window.devicePixelRatio || 1
-      const previous = document.createElement('canvas')
-      previous.width = canvas.width
-      previous.height = canvas.height
-      previous.getContext('2d')?.drawImage(canvas, 0, 0)
+      const width = Math.max(1, Math.round(rect.width * dpr))
+      const height = Math.max(1, Math.round(rect.height * dpr))
+      if (canvas.width === width && canvas.height === height) return
+      let previous: HTMLCanvasElement | undefined
+      if (hasDrawnRef.current) {
+        previous = document.createElement('canvas')
+        previous.width = canvas.width
+        previous.height = canvas.height
+        previous.getContext('2d')?.drawImage(canvas, 0, 0)
+      }
 
-      canvas.width = Math.max(1, Math.round(rect.width * dpr))
-      canvas.height = Math.max(1, Math.round(rect.height * dpr))
+      canvas.width = width
+      canvas.height = height
 
       const ctx = canvas.getContext('2d')
       if (!ctx) return
       ctx.scale(dpr, dpr)
-      if (previous.width && previous.height) {
+      if (previous?.width && previous.height) {
         ctx.drawImage(previous, 0, 0, previous.width, previous.height, 0, 0, rect.width, rect.height)
       }
     }

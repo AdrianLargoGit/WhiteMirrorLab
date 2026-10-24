@@ -1,12 +1,20 @@
 import { NextResponse } from 'next/server'
 import { browserProPurchase, proApiError } from '@/lib/proApi'
-import { PRO_PRIVATE_HEADERS } from '@/lib/proConfig'
+import { PRO_PRIVATE_HEADERS, ProError } from '@/lib/proConfig'
+import { ensurePaidProBrevoList } from '@/lib/stripePro'
 
 export const runtime = 'nodejs'
 
 export async function GET() {
   try {
     const purchase = await browserProPurchase()
+    // The receipt also confirms the purchase when a Stripe webhook is not configured.
+    // A Brevo outage must never prevent access to a paid license.
+    try {
+      await ensurePaidProBrevoList(purchase)
+    } catch (error) {
+      console.error('WML Pro list sync failed:', error instanceof ProError ? error.code : 'unexpected_error')
+    }
     let invoiceUrl: string | null = null
     try {
       const url = new URL(purchase.invoice.hosted_invoice_url ?? '')

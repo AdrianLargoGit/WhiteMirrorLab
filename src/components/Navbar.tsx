@@ -47,6 +47,7 @@ export default function Navbar({ lang, onLangChange }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [openGroup, setOpenGroup] = useState<'archive' | 'tools' | null>(null)
   const progressRef = useRef<HTMLDivElement>(null)
+  const scrolledRef = useRef(false)
   const groupsRef = useRef<HTMLUListElement>(null)
   const pathname = usePathname()
   const t = landingCopy[lang]
@@ -75,16 +76,28 @@ export default function Navbar({ lang, onLangChange }: NavbarProps) {
   ] as const
 
   useEffect(() => {
+    let frameId = 0
     const onScroll = () => {
-      setScrolled(window.scrollY > 50)
-      if (progressRef.current) {
-        const max = document.body.scrollHeight - window.innerHeight
-        const pct = max > 0 ? (window.scrollY / max) * 100 : 0
-        progressRef.current.style.width = `${pct}%`
-      }
+      if (frameId) return
+      frameId = window.requestAnimationFrame(() => {
+        frameId = 0
+        const isScrolled = window.scrollY > 50
+        if (scrolledRef.current !== isScrolled) {
+          scrolledRef.current = isScrolled
+          setScrolled(isScrolled)
+        }
+        if (progressRef.current) {
+          const max = document.body.scrollHeight - window.innerHeight
+          const pct = max > 0 ? (window.scrollY / max) * 100 : 0
+          progressRef.current.style.width = `${pct}%`
+        }
+      })
     }
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      if (frameId) window.cancelAnimationFrame(frameId)
+    }
   }, [])
 
   useEffect(() => {

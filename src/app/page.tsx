@@ -1,14 +1,14 @@
-'use client'
-
-import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
+import { headers } from 'next/headers'
 import Image from 'next/image'
 import Navbar from '@/components/Navbar'
 import Hero from '@/components/Hero'
-import { useLocale } from '@/hooks/useLocale'
+import RevealOnScroll from '@/components/RevealOnScroll'
+import NewsletterSignup from '@/components/NewsletterSignup'
 import { landingCopy } from '@/lib/copy'
-import { isValidEmailAddress } from '@/lib/emailValidation'
 import {
+  DEFAULT_LOCALE,
+  isLocale,
   localizedHashPath,
   blogPath,
   legalPath,
@@ -86,33 +86,9 @@ function emphasize(text: string, bold: string) {
   )
 }
 
-export default function Home() {
-  const detectedLocale = useLocale()
-  const lang: Locale = detectedLocale
-  const [emailVal, setEmailVal] = useState('')
-  const [submitState, setSubmitState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
-  const [emailError, setEmailError] = useState(false)
-
-  useEffect(() => {
-    let observer: IntersectionObserver | undefined
-    const id = setTimeout(() => {
-      const els = document.querySelectorAll('.reveal:not(.visible), .reveal-left:not(.visible), .reveal-right:not(.visible)')
-      observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('visible')
-              observer?.unobserve(entry.target)
-            }
-          })
-        },
-        { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
-      )
-      els.forEach((el) => observer?.observe(el))
-    }, 50)
-    return () => { clearTimeout(id); observer?.disconnect() }
-  }, [lang])
-
+export default async function Home() {
+  const headerLocale = (await headers()).get('x-wml-locale')
+  const lang: Locale = isLocale(headerLocale) ? headerLocale : DEFAULT_LOCALE
   const t = landingCopy[lang]
   const experimentHref = (id: string) => {
     if (id === 'safefile') return safefilePath(lang)
@@ -120,32 +96,6 @@ export default function Home() {
     if (id === 'blog') return blogPath(lang)
     if (id === 'wml1archive') return wmlPath(lang)
     return experimentsPath(lang)
-  }
-
-  const handleSignup = async () => {
-    const normalizedEmail = emailVal.trim().toLowerCase()
-
-    if (!isValidEmailAddress(normalizedEmail)) {
-      setEmailError(true)
-      setTimeout(() => setEmailError(false), 1500)
-      return
-    }
-    setSubmitState('loading')
-    try {
-      const res = await fetch('/api/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: normalizedEmail, source: 'general' }),
-      })
-      if (!res.ok) throw new Error('Failed')
-      setSubmitState('success')
-      window.setTimeout(() => {
-        window.location.assign(downloadPath(lang))
-      }, 700)
-    } catch {
-      setSubmitState('error')
-      setTimeout(() => setSubmitState('idle'), 3000)
-    }
   }
 
   return (
@@ -307,32 +257,7 @@ export default function Home() {
           <h2 className={`${styles.ctaTitle} reveal`}>{t.ctaTitle}</h2>
           <p className={`${styles.ctaDesc} reveal`}>{t.ctaDesc}</p>
 
-          {submitState === 'success' ? (
-            <p className={styles.ctaSuccessMsg}>{t.ctaSuccess}</p>
-          ) : (
-            <div className={`${styles.ctaForm} reveal`}>
-              <input
-                type="email"
-                placeholder={t.ctaPlaceholder}
-                value={emailVal}
-                onChange={(e) => setEmailVal(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSignup()}
-                style={{ borderColor: emailError ? '#ff3c00' : undefined }}
-                aria-label="Email address"
-                disabled={submitState === 'loading'}
-              />
-              <button
-                type="button"
-                onClick={handleSignup}
-                disabled={submitState === 'loading'}
-                aria-busy={submitState === 'loading'}
-              >
-                {submitState === 'loading' ? '...' : t.ctaBtn}
-              </button>
-            </div>
-          )}
-
-          {submitState === 'error' && <p className={styles.ctaErrorMsg}>{t.ctaError}</p>}
+          <NewsletterSignup lang={lang} />
           <p className={`${styles.ctaDisclaimer} reveal`}>{t.ctaDisclaimer}</p>
         </section>
       </main>
@@ -381,6 +306,7 @@ export default function Home() {
           </div>
         </div>
       </footer>
+      <RevealOnScroll />
     </div>
   )
 }

@@ -244,8 +244,8 @@ export const downloadCopy = {
     proModels: [
       { name: 'Lite', ram: '10 GB' },
       { name: 'Standard', ram: '12 GB' },
-      { name: 'Plus', ram: '14 GB' },
-      { name: 'Exclusive', ram: '24 GB' },
+      { name: 'Plus (Beta)', ram: '14 GB' },
+      { name: 'Exclusive (Beta)', ram: '24 GB' },
     ],
     proModelsNote: 'RAM total recomendada del equipo. El consumo real depende de las demás aplicaciones.',
     platformTitle: 'Elige tu sistema',
@@ -318,8 +318,8 @@ export const downloadCopy = {
     proModels: [
       { name: 'Lite', ram: '10 GB' },
       { name: 'Standard', ram: '12 GB' },
-      { name: 'Plus', ram: '14 GB' },
-      { name: 'Exclusive', ram: '24 GB' },
+      { name: 'Plus (Beta)', ram: '14 GB' },
+      { name: 'Exclusive (Beta)', ram: '24 GB' },
     ],
     proModelsNote: 'Recommended total system RAM. Actual usage depends on other apps.',
     platformTitle: 'Choose your system',
@@ -447,7 +447,7 @@ export const heroCopy = {
     ctaPrimary: 'Descargar',
     ctaGhost: 'Invítame a un café',
     statParticipants: 'Participantes',
-    statExperiments: 'Experimento',
+    statExperiments: 'Experimentos',
     statOptin: 'Control',
   },
   en: {
@@ -461,7 +461,7 @@ export const heroCopy = {
     ctaPrimary: 'Download',
     ctaGhost: 'Buy me a coffee',
     statParticipants: 'Participants',
-    statExperiments: 'Experiment',
+    statExperiments: 'Experiments',
     statOptin: 'Control',
   },
 } as const

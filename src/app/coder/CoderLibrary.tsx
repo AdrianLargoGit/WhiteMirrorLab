@@ -1,12 +1,14 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { Fragment, useState, useTransition } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import { coderCategories, type CoderCategory } from '@/data/coder-repositories'
 import { prioritizeRepositories, type GithubRepository } from '@/lib/github-repositories'
 import { homePath, type Locale } from '@/lib/i18n'
+import { adsterraFrameHtml } from '@/lib/adsterra'
+import { useAdLoaded } from '@/hooks/useAdLoaded'
 import Link from 'next/link'
 import styles from './coder.module.css'
 
@@ -31,6 +33,7 @@ const copy = {
     archived: 'Archivado', fork: 'Es un fork', noDescription: 'Este repositorio no tiene descripción en GitHub.', unknown: 'Sin especificar',
     unavailable: 'No se pudieron cargar los datos de GitHub.', stale: 'Mostrando la última información disponible.', missing: 'Repositorio privado o no encontrado.', invalid: 'El enlace no corresponde a un repositorio de GitHub.',
     retry: 'Volver a comprobar', checking: 'Comprobando…', automatic: 'Datos de GitHub · actualización automática cada hora.', topics: 'Temas', more: 'Más información',
+    ad: 'Anuncio', adTitle: 'Espacio publicitario',
   },
   en: {
     eyebrow: 'Tools / Repository library',
@@ -52,6 +55,7 @@ const copy = {
     archived: 'Archived', fork: 'Fork', noDescription: 'This repository has no description on GitHub.', unknown: 'Not specified',
     unavailable: 'Could not load GitHub data.', stale: 'Showing the latest available information.', missing: 'Repository private or not found.', invalid: 'This is not a GitHub repository URL.',
     retry: 'Check again', checking: 'Checking…', automatic: 'GitHub data · automatically updated every hour.', topics: 'Topics', more: 'More information',
+    ad: 'Advertisement', adTitle: 'Advertising space',
   },
 }
 
@@ -72,6 +76,29 @@ function RepositoryAvatar({ repo }: { repo: GithubRepository }) {
   return <div className={styles.avatar}>{repo.avatar && !failed
     ? <Image src={repo.avatar} alt={repo.owner} width={48} height={48} unoptimized onError={() => setFailed(true)} />
     : <span aria-hidden="true">{repo.name.slice(0, 2).toUpperCase()}</span>}</div>
+}
+
+const CODER_AD_SLOTS = ['coder-1', 'coder-2', 'coder-3', 'coder-4']
+
+function CoderAdCard({ lang, slotId }: { lang: Locale; slotId: string }) {
+  const loaded = useAdLoaded(slotId)
+  const t = copy[lang]
+
+  return <article className={`${styles.card} ${styles.adCard} ${loaded ? '' : styles.adProbe}`} aria-label={t.ad} aria-hidden={!loaded}>
+    <div className={styles.cardTop}><span className={styles.category}>{t.ad}</span></div>
+    <div className={`${styles.identity} ${styles.adIdentity}`}>
+      <div className={styles.avatar} aria-hidden="true">AD</div>
+      <div><p className={styles.repoPath}>coder / ads</p><h3>{t.adTitle}</h3></div>
+    </div>
+    <iframe
+      title={`${t.ad} Coder ${slotId}`}
+      className={styles.adFrame}
+      srcDoc={adsterraFrameHtml(slotId)}
+      loading="eager"
+      sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
+      referrerPolicy="no-referrer-when-downgrade"
+    />
+  </article>
 }
 
 export default function CoderLibrary({ lang, catalog }: { lang: Locale; catalog: GithubRepository[] }) {
@@ -146,7 +173,7 @@ export default function CoderLibrary({ lang, catalog }: { lang: Locale; catalog:
           <div className={styles.dataNotice}><p>{t.automatic}</p>{coderRepositories.some(repo => repo.status === 'unavailable' || repo.status === 'stale') && <button type="button" disabled={refreshing} onClick={() => startTransition(() => router.refresh())}>{refreshing ? t.checking : t.retry}</button>}</div>
           <p className={styles.results} role="status" aria-live="polite" aria-atomic="true"><span>{String(repositories.length).padStart(2, '0')}</span> {t.results}<span className={styles.resultLine} aria-hidden="true" /></p>
           {repositories.length ? <div className={styles.grid}>
-            {repositories.map(repo => <article key={repo.fullName} className={`${styles.card} ${styles[repo.category]} ${repo.recommended ? styles.recommendedCard : ''}`}>
+            {repositories.map((repo, index) => <Fragment key={repo.fullName}><article className={`${styles.card} ${styles[repo.category]} ${repo.recommended ? styles.recommendedCard : ''}`}>
               <div className={styles.cardTop}><span className={styles.category}>{coderCategories[repo.category][lang]}</span>{repo.recommended && <span className={styles.recommendedBadge}><span aria-hidden="true">🔥</span>{t.recommended}</span>}</div>
               <div className={styles.identity}><RepositoryAvatar repo={repo} /><div><p className={styles.repoPath}>{repo.fullName}</p><h3>{repo.name}</h3></div></div>
               {(repo.archived || repo.isFork) && <p className={styles.badges}>{repo.archived && <span>{t.archived}</span>}{repo.isFork && <span>{t.fork}</span>}</p>}
@@ -168,7 +195,7 @@ export default function CoderLibrary({ lang, catalog }: { lang: Locale; catalog:
                 <div><dt>{t.branch}</dt><dd>{repo.defaultBranch ?? '—'}</dd></div>
               </dl>{repo.topics.length > 6 && <ul className={styles.tags} aria-label={t.topics}>{repo.topics.slice(6).map(tag => <li key={tag}>{tag}</li>)}</ul>}{repo.homepage && <a href={repo.homepage} target="_blank" rel="noopener noreferrer">{t.website} ↗</a>}</details>
               {repo.url && <a className={styles.repoLink} href={repo.url} target="_blank" rel="noopener noreferrer" aria-label={`${repo.name}: ${t.open} (${t.newTab})`}>{t.open}<ArrowIcon /></a>}
-            </article>)}
+            </article>{index % 8 === 5 && CODER_AD_SLOTS[Math.floor(index / 8)] && <CoderAdCard lang={lang} slotId={CODER_AD_SLOTS[Math.floor(index / 8)]} />}</Fragment>)}
           </div> : <div className={styles.empty}><span aria-hidden="true">{'{ }'}</span><h3>{t.empty}</h3><p>{t.emptyHelp}</p><button type="button" onClick={resetFilters}>{t.reset} ↗</button></div>}
           <p className={styles.note}>{t.note}</p>
         </section>

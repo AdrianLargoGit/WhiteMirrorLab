@@ -12,7 +12,7 @@ Object.assign(process.env, {
   WML_PRO_SITE_URL: 'https://wml.example',
   WML_PRO_PORTAL_LOGIN_URL: 'https://billing.stripe.com/p/login/test',
   WML_PRO_STRIPE_WEBHOOK_SECRET: 'whsec_test',
-  BREVO_API_KEY: 'brevo_mock', WML_PRO_FROM_EMAIL: 'pro@example.org',
+  BREVO_API_KEY: 'brevo_mock', BREVO_LIST_ID_WMLPRO: '123', WML_PRO_FROM_EMAIL: 'pro@example.org',
 })
 const billing = loadTypescript('src/lib/stripePro.ts')
 const license = loadTypescript('src/lib/proLicense.ts')
@@ -137,6 +137,7 @@ test('a confirmed renewal emails an importable signed license once and retries f
   const sub = subscription()
   sub.latest_invoice.id = 'in_renewal'
   const emails = []
+  const contacts = []
   let failEmail = true
   t.mock.method(globalThis, 'fetch', async (url, init) => {
     if (url === 'https://api.brevo.com/v3/smtp/email') {
@@ -144,9 +145,16 @@ test('a confirmed renewal emails an importable signed license once and retries f
       emails.push(JSON.parse(init.body))
       return json({ messageId: 'sent' })
     }
+    if (url === 'https://api.brevo.com/v3/contacts') {
+      contacts.push(JSON.parse(init.body))
+      return json({ id: 1 }, 201)
+    }
     if (url.includes('/customers/cus_paid')) return json({ email: 'buyer@example.org' })
     if (init.method === 'POST') {
-      sub.metadata.wml_emailed_invoice_id = init.body.get('metadata[wml_emailed_invoice_id]')
+      for (const [key, value] of init.body) {
+        const match = /^metadata\[(.+)\]$/.exec(key)
+        if (match) sub.metadata[match[1]] = value
+      }
       return json(sub)
     }
     return json(sub)
@@ -157,10 +165,59 @@ test('a confirmed renewal emails an importable signed license once and retries f
   await billing.deliverPaidProInvoice(sub.id, 'in_renewal')
   await billing.deliverPaidProInvoice(sub.id, 'in_renewal')
   assert.equal(emails.length, 1)
+  assert.deepEqual(contacts, [{ email: 'buyer@example.org', listIds: [123], updateEnabled: true }])
+  assert.equal(sub.metadata.wml_brevo_pro_list_id, '123')
   assert.equal(emails[0].attachment[0].name, 'pro-license.txt')
   const renewed = JSON.parse(Buffer.from(emails[0].attachment[0].content, 'base64').toString())
   assert.equal(license.verifyProLicense(renewed), true)
   assert.equal(renewed.expiresAt, new Date(sub.current_period_end * 1000).toISOString())
+})
+
+test('a failed Pro list update retries without sending the paid email twice', async t => {
+  const sub = subscription()
+  let emails = 0
+  let listAttempts = 0
+  t.mock.method(globalThis, 'fetch', async (url, init) => {
+    if (url === 'https://api.brevo.com/v3/smtp/email') {
+      emails++
+      return json({ messageId: 'sent' })
+    }
+    if (url === 'https://api.brevo.com/v3/contacts') {
+      listAttempts++
+      return listAttempts === 1 ? json({ message: 'temporary failure' }, 503) : json({ id: 1 }, 201)
+    }
+    if (url.includes('/customers/cus_paid')) return json({ email: 'buyer@example.org' })
+    if (init.method === 'POST') {
+      for (const [key, value] of init.body) {
+        const match = /^metadata\[(.+)\]$/.exec(key)
+        if (match) sub.metadata[match[1]] = value
+      }
+      return json(sub)
+    }
+    return json(sub)
+  })
+  await assert.rejects(billing.deliverPaidProInvoice(sub.id, 'in_paid'), /pro_brevo_list_failed/)
+  assert.equal(sub.metadata.wml_emailed_invoice_id, 'in_paid')
+  assert.equal(sub.metadata.wml_brevo_pro_list_id, undefined)
+  await billing.deliverPaidProInvoice(sub.id, 'in_paid')
+  await billing.deliverPaidProInvoice(sub.id, 'in_paid')
+  assert.equal(emails, 1)
+  assert.equal(listAttempts, 2)
+  assert.equal(sub.metadata.wml_brevo_pro_list_id, '123')
+})
+
+test('an unpaid Pro invoice never adds its customer to the Brevo Pro list', async t => {
+  const sub = subscription()
+  sub.latest_invoice.paid = false
+  sub.latest_invoice.status = 'open'
+  let brevoCalls = 0
+  t.mock.method(globalThis, 'fetch', async url => {
+    if (url.startsWith('https://api.brevo.com/')) brevoCalls++
+    if (url.includes('/invoices?')) return json({ data: [] })
+    return json(sub)
+  })
+  await assert.rejects(billing.deliverPaidProInvoice(sub.id, 'in_paid'), /license_inactive/)
+  assert.equal(brevoCalls, 0)
 })
 
 test('invoice.paid waits for Stripe to expose a newer paid period', async t => {
