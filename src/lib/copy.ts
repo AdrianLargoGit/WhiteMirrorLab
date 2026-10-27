@@ -196,8 +196,8 @@ export const landingCopy = {
 export const downloadCopy = {
   es: {
     eyebrow: 'Widget de mascota para Windows',
-    title: '¿Estás muy solo con tu ordenador?',
-    lead: 'WML X.X.0 es una mascota flotante para Windows que vive sobre tu escritorio: gana puntos con señales locales, desbloquea skins y te ayuda con IA local sin leer lo que escribes.',
+    title: 'La burbuja puede explotar. Tu IA se queda.',
+    lead: 'Descarga WML X.X.0 y dale un hogar a tu IA: tu ordenador. Una mascota de escritorio con IA local que funciona sin internet una vez instalada. Contigo, bajo tu control y sin depender de un servicio de IA en la nube.',
     petLabel: 'Mascotas',
     pet: 'Erizo y pato',
     pointsLabel: 'Puntos',
@@ -270,8 +270,8 @@ export const downloadCopy = {
   },
   en: {
     eyebrow: 'Desktop pet widget for Windows',
-    title: 'Feeling too alone with your computer?',
-    lead: 'WML X.X.0 is a floating Windows pet that lives above your desktop: it earns points from local signals, unlocks skins, and helps through local AI without reading what you type.',
+    title: 'The bubble may burst. Your AI stays.',
+    lead: 'Download WML X.X.0 and give your AI a home: your computer. A desktop pet with local AI that works offline once installed. By your side, under your control, without relying on a cloud AI service.',
     petLabel: 'Pets',
     pet: 'Hedgehog and duck',
     pointsLabel: 'Points',

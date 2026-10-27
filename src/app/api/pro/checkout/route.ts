@@ -6,7 +6,7 @@ import { validateJsonFields } from '@/lib/requestValidation'
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit'
 import { PRO_CHECKOUT_COOKIE, PRO_COOKIE_OPTIONS, PRO_PLANS, PRO_PRIVATE_HEADERS, PRO_PRICE_LOOKUP_VERSION, proInstallerUrl, proAllowedOrigin, proPortalLoginUrl } from '@/lib/proConfig'
 import { checkProSigningConfiguration } from '@/lib/proLicense'
-import { createProCheckout, ensureProPortal, existingProSubscriber, paidProEntitlementForEmail } from '@/lib/stripePro'
+import { createProCheckout, ensurePaidProBrevoList, ensureProPortal, existingProSubscriber, paidProEntitlementForEmail } from '@/lib/stripePro'
 import { makeProLicense } from '@/lib/proLicense'
 import { sendPaidProLicenseEmail } from '@/lib/proEmail'
 import { proApiError } from '@/lib/proApi'
@@ -42,6 +42,7 @@ export async function POST(request: Request) {
       const purchase = await paidProEntitlementForEmail(email)
       if (purchase) {
         const { subscription, plan, paidUntil } = purchase
+        await ensurePaidProBrevoList(purchase, email)
         await sendPaidProLicenseEmail({
           email, plan, paidUntil,
           license: makeProLicense({ subscriptionId: subscription.id, plan, issuedAt: subscription.created, paidUntil }),

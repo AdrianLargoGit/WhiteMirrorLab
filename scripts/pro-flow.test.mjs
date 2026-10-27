@@ -207,8 +207,13 @@ test('an active subscriber receives the existing entitlement by email without a 
   }
   let mailedLicense = null
   let checkoutRequests = 0
+  const recoveredContacts = []
   t.mock.method(globalThis, 'fetch', async (input, init) => {
     const url = new URL(input)
+    if (url.hostname === 'api.brevo.com' && url.pathname === '/v3/contacts') {
+      recoveredContacts.push(JSON.parse(init.body))
+      return json({ id: 42 })
+    }
     if (url.hostname === 'api.brevo.com') {
       const email = JSON.parse(init.body)
       assert.equal(email.to[0].email, 'buyer@example.org')
@@ -217,7 +222,12 @@ test('an active subscriber receives the existing entitlement by email without a 
     }
     if (url.pathname === '/v1/customers') return json({ data: [{ id: 'cus_existing' }] })
     if (url.pathname === '/v1/subscriptions') return json({ data: [subscription] })
-    if (url.pathname === '/v1/subscriptions/sub_existing') return json(subscription)
+    if (url.pathname === '/v1/subscriptions/sub_existing') {
+      if (init?.method === 'POST') {
+        subscription.metadata.wml_brevo_pro_list_id = new URLSearchParams(init.body).get('metadata[wml_brevo_pro_list_id]')
+      }
+      return json(subscription)
+    }
     if (url.pathname === '/v1/checkout/sessions') checkoutRequests++
     throw new Error(`Unexpected endpoint: ${url.pathname}`)
   })
@@ -230,6 +240,16 @@ test('an active subscriber receives the existing entitlement by email without a 
     assert.equal(response.status, 200, JSON.stringify(await response.clone().json()))
     assert.equal((await response.json()).recovery, true)
     assert.equal(mailedLicense.subject, subscription.id)
+    assert.equal(checkoutRequests, 0)
+    assert.deepEqual(recoveredContacts, [{ email: 'buyer@example.org', listIds: [123], updateEnabled: true }])
+    assert.equal(subscription.metadata.wml_brevo_pro_list_id, '123')
+    const retry = await route.POST(new Request('https://wml.example/api/pro/checkout', {
+      method: 'POST', headers: { origin: 'https://wml.example' },
+      body: JSON.stringify({ email: 'buyer@example.org', plan: 'monthly', locale: 'es', acceptedTerms: true }),
+    }))
+    assert.equal(retry.status, 200)
+    assert.equal((await retry.json()).recovery, true)
+    assert.equal(recoveredContacts.length, 1)
     assert.equal(checkoutRequests, 0)
   } finally {
     if (previousSender === undefined) delete process.env.WML_PRO_FROM_EMAIL
