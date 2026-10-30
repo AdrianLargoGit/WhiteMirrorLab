@@ -1,3 +1,4 @@
+import { navigationCopy } from './navigationCopy'
 import type { Locale } from './i18n'
 
 export const landingCopy = {
@@ -81,20 +82,7 @@ export const landingCopy = {
     footerEthics: 'Marco etico',
     footerLegalNotice: 'Aviso legal',
     footerTerms: 'Términos',
-    navExperiments: 'Experimentos',
-    navAreas: 'Areas',
-    navBlog: 'Blog',
-    navFaro: 'FARO',
-    navManifesto: 'Manifiesto',
-    navJoin: 'Descargar',
-    navContact: 'Contacto',
-    navDownload: 'WML-X.X.0',
-    navMarketplace: 'Marketplace',
-    navCreators: 'Creadores',
-    navWml: 'WML-1.0',
-    navWmlMenu: 'WML',
-    navWmlOneSection: 'Archivo',
-    navWmlExperimentalSection: 'WML X.X.X',
+    ...navigationCopy.es,
   },
   en: {
     marqueeItems: [
@@ -176,20 +164,7 @@ export const landingCopy = {
     footerEthics: 'Ethics framework',
     footerLegalNotice: 'Legal notice',
     footerTerms: 'Terms',
-    navExperiments: 'Experiments',
-    navAreas: 'Areas',
-    navBlog: 'Blog',
-    navFaro: 'FARO',
-    navManifesto: 'Manifesto',
-    navJoin: 'Download',
-    navContact: 'Contact',
-    navDownload: 'WML-X.X.0',
-    navMarketplace: 'Marketplace',
-    navCreators: 'Creators',
-    navWml: 'WML-1.0',
-    navWmlMenu: 'WML',
-    navWmlOneSection: 'Archive',
-    navWmlExperimentalSection: 'WML X.X.X',
+    ...navigationCopy.en,
   },
 } as const
 

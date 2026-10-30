@@ -1,13 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { landingCopy } from '@/lib/copy'
+import type { landingCopy } from '@/lib/copy'
 import { downloadPath, type Locale } from '@/lib/i18n'
 import { isValidEmailAddress } from '@/lib/emailValidation'
 import styles from '@/app/page.module.css'
 
-export default function NewsletterSignup({ lang }: { lang: Locale }) {
-  const t = landingCopy[lang]
+type SignupCopy = Pick<(typeof landingCopy)[Locale], 'ctaSuccess' | 'ctaPlaceholder' | 'ctaBtn' | 'ctaError'>
+
+export default function NewsletterSignup({ lang, copy: t }: { lang: Locale; copy: SignupCopy }) {
   const [emailVal, setEmailVal] = useState('')
   const [submitState, setSubmitState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [emailError, setEmailError] = useState(false)

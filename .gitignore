@@ -39,6 +39,10 @@ dist/
 *pro-license*.json
 family-pro-*.json
 pro-private/
+# Local Pro administration (not used by the website)
+/PRO_STRIPE_SETUP.md
+/scripts/issue-family-pro-licenses.mjs
+/scripts/family-licenses.test.mjs
 .npmrc
 
 # local captures, alternate checkouts and cloud tooling state

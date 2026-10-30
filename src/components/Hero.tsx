@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import PaintHedgehog from '@/components/PaintHedgehog'
-import { heroCopy, landingCopy } from '@/lib/copy'
+import { heroCopy } from '@/lib/copy'
 import { downloadPath, type Locale } from '@/lib/i18n'
 import { BUY_ME_A_COFFEE_URL } from '@/lib/links'
 import { BREVO_COUNT_FALLBACK, fetchBrevoCount } from '@/lib/brevo-count'
@@ -11,6 +11,7 @@ import styles from './Hero.module.css'
 
 interface HeroProps {
   lang: Locale
+  experimentCount: number
 }
 
 function animateCounter(el: HTMLElement, target: number, suffix: string) {
@@ -26,7 +27,7 @@ function animateCounter(el: HTMLElement, target: number, suffix: string) {
   requestAnimationFrame(step)
 }
 
-export default function Hero({ lang }: HeroProps) {
+export default function Hero({ lang, experimentCount }: HeroProps) {
   const t = heroCopy[lang]
   const statsRef = useRef<HTMLDivElement>(null)
   const participantsRef = useRef<HTMLSpanElement>(null)
@@ -62,7 +63,7 @@ export default function Hero({ lang }: HeroProps) {
               animateCounter(participantsRef.current, totalParticipants, '')
             }
             if (experimentsRef.current) {
-              animateCounter(experimentsRef.current, landingCopy[lang].experiments.length, '')
+              animateCounter(experimentsRef.current, experimentCount, '')
             }
             // No hacemos disconnect() aquí para que sea más flexible
           }
@@ -73,7 +74,7 @@ export default function Hero({ lang }: HeroProps) {
     
     observer.observe(statsRef.current)
     return () => observer.disconnect()
-  }, [lang, totalParticipants]) // Añadido como dependencia
+  }, [lang, totalParticipants, experimentCount]) // Añadido como dependencia
 
   return (
     <section className={styles.hero}>

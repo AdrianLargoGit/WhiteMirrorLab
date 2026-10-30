@@ -10,6 +10,7 @@ export const proCopy = {
     features: [
       'Crea y edita archivos, desde hojas de cálculo hasta proyectos de programación.',
       'Analiza tus archivos y carpetas para trabajar con su contenido.',
+      'Skills: importa un archivo para especializar a tu asistente en el tema que quieras.',
       'Abre aplicaciones y usa la web para investigar y avanzar tareas.',
       'Propone cambios y acciones de escritorio para que tú los apruebes.',
       'IA local Pro más capaz, disponible sin conexión tras instalarla.',
@@ -55,6 +56,7 @@ export const proCopy = {
     features: [
       'Create and edit files, from spreadsheets to coding projects.',
       'Analyse your files and folders to work with their contents.',
+      'Skills: import a file to specialise your assistant in any topic you choose.',
       'Open apps and use the web to research and move tasks forward.',
       'Propose file changes and desktop actions for your approval.',
       'More capable local Pro AI, available offline once installed.',

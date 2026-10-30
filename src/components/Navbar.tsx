@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { landingCopy } from '@/lib/copy'
+import { navigationCopy } from '@/lib/navigationCopy'
 import {
   LOCALE_COOKIE,
   alternateLocalePath,
@@ -50,7 +50,7 @@ export default function Navbar({ lang, onLangChange }: NavbarProps) {
   const scrolledRef = useRef(false)
   const groupsRef = useRef<HTMLUListElement>(null)
   const pathname = usePathname()
-  const t = landingCopy[lang]
+  const t = navigationCopy[lang]
 
   const navLinks = [
     { href: contactPath(lang), label: t.navContact },

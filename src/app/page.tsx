@@ -103,7 +103,7 @@ export default async function Home() {
       <Navbar lang={lang} />
 
       <main>
-        <Hero lang={lang} />
+        <Hero lang={lang} experimentCount={t.experiments.length} />
 
         <div className={styles.marqueeWrap} aria-hidden="true">
           <div className={styles.marqueeTrack}>
@@ -257,7 +257,7 @@ export default async function Home() {
           <h2 className={`${styles.ctaTitle} reveal`}>{t.ctaTitle}</h2>
           <p className={`${styles.ctaDesc} reveal`}>{t.ctaDesc}</p>
 
-          <NewsletterSignup lang={lang} />
+          <NewsletterSignup lang={lang} copy={{ ctaSuccess: t.ctaSuccess, ctaPlaceholder: t.ctaPlaceholder, ctaBtn: t.ctaBtn, ctaError: t.ctaError }} />
           <p className={`${styles.ctaDisclaimer} reveal`}>{t.ctaDisclaimer}</p>
         </section>
       </main>
