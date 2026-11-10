@@ -1,0 +1,47 @@
+.offer {
+  display: block;
+  position: relative;
+  z-index: 3;
+  color: var(--white, #f5f2ee);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.offer:focus-visible { outline: 2px solid var(--accent, #ffd84d); outline-offset: 6px; }
+.offer:hover .headline { color: var(--accent, #ffd84d); }
+.message { min-width: 0; }
+.offer .headline { margin: 0; font-family: var(--font-display); font-size: clamp(18px, 1.8vw, 25px); font-weight: 700; letter-spacing: -.025em; line-height: 1.25; color: var(--white, #f5f2ee); }
+.prices { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; margin-top: 9px; font-size: 12px; }
+.prices s { color: #a6a39b; text-decoration-thickness: 1px; }
+.prices strong { color: var(--accent, #ffd84d); font-weight: 600; }
+.offer .conditions { margin: 7px 0 0; color: #aaa69f; font-size: 11px; line-height: 1.5; }
+.clock { flex-shrink: 0; }
+.digits { display: flex; gap: 24px; }
+.unit { position: relative; display: grid; min-width: 48px; gap: 5px; text-align: center; }
+.unit b { font-family: var(--font-mono); font-size: 32px; font-weight: 500; line-height: 1; letter-spacing: -.04em; font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
+.unit small { color: #aaa69f; font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: .12em; }
+.deadline { display: block; margin-top: 11px; color: #aaa69f; font-size: 10px; line-height: 1.5; text-align: right; }
+
+/* Home: a full-width announcement directly below the navigation. */
+.home { display: flex; align-items: center; justify-content: space-between; gap: 24px; width: 100%; margin: 0 0 28px; padding: 12px 0 14px; border-bottom: 1px solid rgba(255, 216, 77, .27); }
+.home .headline::before { content: ''; display: inline-block; width: 6px; height: 6px; margin: 0 12px 3px 0; border-radius: 50%; background: var(--accent, #ffd84d); }
+.home .unit:not(:last-child)::after { content: ':'; position: absolute; right: -15px; top: 3px; font-family: var(--font-mono); font-size: 22px; color: #716a50; }
+
+/* Download: aligned with the form, with four separate timer cells. */
+.download { max-width: 680px; margin: 28px 0 0; padding: 20px 24px; border-left: 3px solid var(--accent, #ffd84d); background: rgba(255, 216, 77, .035); }
+.download .headline { font-size: 21px; }
+.download .clock { margin-top: 19px; }
+.download .digits { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.download .unit { min-width: 0; gap: 8px; padding: 14px 6px 11px; border: 1px solid rgba(255, 255, 255, .1); background: rgba(255, 255, 255, .025); }
+.download .unit b { font-size: 28px; }
+.download .deadline { text-align: left; }
+
+@media (max-width: 700px) {
+  .home { align-items: flex-start; gap: 20px; flex-direction: column; margin-bottom: 28px; padding: 8px 0 20px; }
+  .home .clock { width: 100%; }
+  .home .digits { justify-content: space-between; max-width: 340px; gap: 16px; }
+  .home .unit:not(:last-child)::after { content: none; }
+  .home .deadline { text-align: left; }
+  .unit b { font-size: 28px; }
+  .download { padding: 16px; }
+}

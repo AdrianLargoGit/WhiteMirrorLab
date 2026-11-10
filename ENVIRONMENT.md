@@ -1,5 +1,13 @@
 # Variables de entorno de WML
 
+## Promoción Pro de noviembre de 2026
+
+- `WML_PRO_STRIPE_WEBHOOK_SECRET`: imprescindible para habilitar y confirmar la promoción de siete días. Configurar el `whsec_…` del destino Stripe `/api/pro/webhook` en el servidor y redesplegar. Si falta, la campaña queda desactivada; se mantiene la contratación normal.
+- `WML_PRO_TRIAL_ENABLED`: opcional. `false` retira la promoción anticipadamente; al quitarla o usar `true` se habilita solo dentro de las fechas programadas. Reiniciar/redesplegar al cambiarla. No afecta a pruebas ya concedidas.
+- El cierre está fijado en el código para el final del 18/11/2026, 23:59:59 de Madrid. No requiere variable adicional ni cron.
+
+Pasos y permisos de Stripe en [PRO_PROMOTION.md](PRO_PROMOTION.md).
+
 Revisión de `.env.local` del 2 de octubre de 2026: 28 entradas tras retirar la analítica de terceros. Se conservaron los valores restantes, incluido el par de licencias Ed25519. No se incluyen secretos en este documento.
 
 Una variable usada no es necesariamente obligatoria: algunas personalizan un valor predeterminado, habilitan una función concreta o se usan únicamente como alternativa. Esta revisión comprueba los consumidores del código local; no acredita que las credenciales funcionen ni modifica el entorno del despliegue.

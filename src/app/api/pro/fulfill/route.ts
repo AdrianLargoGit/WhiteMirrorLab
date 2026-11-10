@@ -21,7 +21,7 @@ export async function GET() {
       if (url.protocol === 'https:' && url.hostname === 'invoice.stripe.com') invoiceUrl = url.toString()
     } catch { /* Stripe did not provide a hosted invoice. */ }
     return NextResponse.json({
-      ok: true, plan: purchase.plan,
+      ok: true, plan: purchase.plan, trial: purchase.trial,
       paidUntil: new Date(purchase.paidUntil * 1000).toISOString(),
       amountPaid: typeof purchase.invoice.amount_paid === 'number' ? purchase.invoice.amount_paid : null,
       invoiceId: purchase.invoice.id,

@@ -8,6 +8,8 @@ import { downloadPath, type Locale } from '@/lib/i18n'
 import { BUY_ME_A_COFFEE_URL } from '@/lib/links'
 import { BREVO_COUNT_FALLBACK, fetchBrevoCount } from '@/lib/brevo-count'
 import styles from './Hero.module.css'
+import ProPromotion from './ProPromotion'
+import { useProPromotion } from '@/hooks/useProPromotion'
 
 interface HeroProps {
   lang: Locale
@@ -29,6 +31,7 @@ function animateCounter(el: HTMLElement, target: number, suffix: string) {
 
 export default function Hero({ lang, experimentCount }: HeroProps) {
   const t = heroCopy[lang]
+  const promotion = useProPromotion()
   const statsRef = useRef<HTMLDivElement>(null)
   const participantsRef = useRef<HTMLSpanElement>(null)
   const experimentsRef = useRef<HTMLSpanElement>(null)
@@ -77,12 +80,14 @@ export default function Hero({ lang, experimentCount }: HeroProps) {
   }, [lang, totalParticipants, experimentCount]) // Añadido como dependencia
 
   return (
-    <section className={styles.hero}>
+    <section className={`${styles.hero} ${promotion.active ? styles.heroWithPromotion : ''}`}>
       <div className={styles.heroBgGrid} aria-hidden="true" />
       <div className={styles.heroScanLine} aria-hidden="true" />
       <div className={`${styles.paintHero} ${styles.animate5}`}>
         <PaintHedgehog />
       </div>
+
+      <ProPromotion lang={lang} remaining={promotion.remaining} variant="home" />
 
       <h1 className={`${styles.heroTitle} ${styles.animate2}`}>
         <span>{t.line1}</span>

@@ -29,7 +29,11 @@ test('public Pro price check reports the amounts served by checkout', async () =
   const route = loadTypescript('src/app/api/pro/checkout/route.ts', { 'next/headers': { cookies: async () => ({ get: () => undefined }) } })
   const response = await route.GET()
   assert.equal(response.status, 200)
-  assert.deepEqual(await response.json(), { monthly: 299, annual: 2999, priceVersion: 'v3' })
+  const { promotion, ...prices } = await response.json()
+  assert.deepEqual(prices, { monthly: 299, annual: 2999, priceVersion: 'v3' })
+  assert.equal(promotion.endsAt, Date.parse('2026-11-19T00:00:00+01:00'))
+  assert.equal(typeof promotion.active, 'boolean')
+  assert.equal(typeof promotion.serverNow, 'number')
   assert.equal(response.headers.get('cache-control'), 'no-store')
 })
 
@@ -49,8 +53,10 @@ test('a temporary Brevo failure never blocks a paid Pro receipt', async t => {
   assert.equal((await response.json()).invoiceId, 'in_paid')
 })
 
-test('automatic Stripe provisioning and the complete purchase/activation/renewal flow work for both plans', async t => {
-  for (const plan of ['monthly', 'annual']) {
+test('paid purchase, activation and renewal work for both plans before, at and after the promotion cutoff', async t => {
+  const cutoff = Date.parse('2026-11-19T00:00:00+01:00')
+  for (const now of [cutoff - 86400_000, cutoff, cutoff + 30 * 86400_000]) for (const plan of ['monthly', 'annual']) {
+    t.mock.method(Date, 'now', () => now)
     const jar = new Map()
     const mocks = { 'next/headers': { cookies: async () => ({ get: key => jar.has(key) ? { value: jar.get(key) } : undefined }) } }
     const route = name => loadTypescript(`src/app/api/pro/${name}/route.ts`, mocks)
@@ -97,6 +103,9 @@ test('automatic Stripe provisioning and the complete purchase/activation/renewal
         return json(price)
       }
       if (url.pathname === '/v1/checkout/sessions') {
+        assert.equal(params.get('mode'), 'subscription')
+        assert.equal([...params.keys()].some(key => key.includes('trial') || key.startsWith('setup_intent_data')), false)
+        assert.equal(params.has('metadata[wml_campaign]'), false)
         assert.equal(params.get('line_items[0][price]'), price.id)
         charge = { id: 'ch_paid', amount: price.unit_amount, amount_refunded: 0, disputed: false }
         sub = { id: 'sub_paid', customer: 'cus_paid', created: Math.floor(Date.now() / 1000), status: 'active', current_period_end: end,
@@ -120,6 +129,16 @@ test('automatic Stripe provisioning and the complete purchase/activation/renewal
       }
       throw new Error(`Unexpected endpoint: ${url.pathname}`)
     })
+    assert.equal((await (await route('checkout').GET()).json()).promotion.active, now < cutoff)
+    if (now >= cutoff) {
+      const stale = await route('checkout').POST(new Request('https://wml.example/api/pro/checkout', {
+        method: 'POST', headers: { origin: 'https://wml.example' },
+        body: JSON.stringify({ email: 'buyer@example.org', plan, locale: 'en', acceptedTerms: true, promotion: 'pro-seven-days-november-2026' }),
+      }))
+      assert.equal(stale.status, 409)
+      assert.equal((await stale.json()).error, 'pro_trial_unavailable')
+      assert.equal(paramsSeen.some(entry => entry.path === '/v1/checkout/sessions'), false)
+    }
     const buy = await route('checkout').POST(new Request('https://wml.example/api/pro/checkout', { method: 'POST', headers: { origin: 'https://wml.example' }, body: JSON.stringify({ email: 'buyer@example.org', plan, locale: 'en', acceptedTerms: true }) }))
     assert.equal(buy.status, 200, JSON.stringify(await buy.clone().json()))
     jar.set('wml_pro_checkout', buy.cookies.get('wml_pro_checkout').value)

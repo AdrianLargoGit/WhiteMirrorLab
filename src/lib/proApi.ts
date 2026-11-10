@@ -2,10 +2,21 @@ import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { PRO_CHECKOUT_COOKIE, PRO_PRIVATE_HEADERS, PRO_SESSION_COOKIE, ProError } from './proConfig'
 import { ownedProCheckout, paidProEntitlement, requirePaidCheckout, retrieveProSubscription } from './stripePro'
+import { recoverProTrialCheckout } from './proTrialStripe'
 
 export async function browserProPurchase() {
   const jar = await cookies()
-  const session = await ownedProCheckout(jar.get(PRO_SESSION_COOKIE)?.value ?? '', jar.get(PRO_CHECKOUT_COOKIE)?.value)
+  let session = await ownedProCheckout(jar.get(PRO_SESSION_COOKIE)?.value ?? '', jar.get(PRO_CHECKOUT_COOKIE)?.value)
+  if (session.mode === 'setup' && session.status === 'complete' && !session.subscription && !session.metadata.wml_trial_rejected) {
+    const subscriptionId = await recoverProTrialCheckout(session)
+    if (subscriptionId) {
+      session.subscription = subscriptionId
+      session.metadata.wml_subscription_id = subscriptionId
+    } else {
+      // Surface the rejection recorded by the common completion handler.
+      session = await ownedProCheckout(session.id, jar.get(PRO_CHECKOUT_COOKIE)?.value)
+    }
+  }
   requirePaidCheckout(session)
   const entitlement = await paidProEntitlement(await retrieveProSubscription(session.subscription!))
   if (entitlement.subscription.customer !== session.customer) throw new ProError('checkout_not_owned', 401)

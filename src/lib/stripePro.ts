@@ -4,6 +4,7 @@ import { proHash } from './proLicense'
 import { makeProLicense } from './proLicense'
 import { sendPaidProLicenseEmail } from './proEmail'
 import { addPaidProEmailToBrevo, proBrevoListId } from './proBrevo'
+import { PRO_TRIAL_CAMPAIGN, PRO_TRIAL_SECONDS, isProPromotionDate } from './proPromotion'
 
 type StripeList<T> = { data: T[]; has_more?: boolean }
 type Price = { id: string; active: boolean; product: string; currency: string; unit_amount: number; recurring?: { interval: string; interval_count: number } }
@@ -14,11 +15,13 @@ type Invoice = {
   lines: StripeList<{ price?: Price; subscription_item?: string; period: { start: number; end: number } }>
 }
 export type ProSubscription = {
+  trial_start?: number | null; trial_end?: number | null; default_payment_method?: string | null
   id: string; customer: string; created: number; status: string; current_period_end: number; cancel_at?: number | null
   metadata: Record<string, string>; latest_invoice?: string | Invoice | null
   items: StripeList<{ id: string; price: Price; quantity: number }>
 }
 export type ProCheckout = {
+  created?: number; setup_intent?: string | null
   id: string; url?: string; mode: string; status: string; payment_status: string
   subscription: string | null; customer: string | null; metadata: Record<string, string>
 }
@@ -44,6 +47,16 @@ export async function proStripeRequest<T>(endpoint: string, params?: URLSearchPa
     if (payload?.error?.type === 'idempotency_error') throw new ProError('device_limit_reached', 403)
     if (payload?.error?.code === 'resource_already_exists') throw new ProError('stripe_resource_exists', 409)
     if (payload?.error?.code === 'resource_missing') throw new ProError('pro_not_found', 404)
+    // Keep diagnostics server-side, without credentials, customer data or bodies.
+    console.error('WML Pro Stripe request failed:', {
+      resource: endpoint.split('?')[0].split('/').filter(Boolean).slice(0, 1).join('/'),
+      method: params ? 'POST' : 'GET', status: response.status,
+      type: payload?.error?.type, code: payload?.error?.code, param: payload?.error?.param,
+      requestId: response.headers.get('request-id'),
+    })
+    if (endpoint.startsWith('/events?') && response.status === 403 && payload?.error?.code === 'more_permissions_required') {
+      throw new ProError('stripe_events_permission_missing')
+    }
     throw new ProError('stripe_unavailable')
   }
   return response.json() as Promise<T>
@@ -74,7 +87,7 @@ export async function paidProEntitlementForEmail(email: string) {
     while (true) {
       const page = await proStripeRequest<StripeList<ProSubscription>>(`/subscriptions?customer=${customer.id}&status=all&limit=100${cursor ? `&starting_after=${cursor}` : ''}`)
       for (const subscription of page.data) {
-        if (subscription.metadata?.wml_product !== 'wml-pro' || !['active', 'past_due'].includes(subscription.status)) continue
+        if (subscription.metadata?.wml_product !== 'wml-pro' || !['active', 'past_due', 'trialing'].includes(subscription.status)) continue
         try {
           return await paidProEntitlement(await retrieveProSubscription(subscription.id))
         } catch (error) {
@@ -162,13 +175,16 @@ export function isProSessionId(value: unknown): value is string {
 export async function ownedProCheckout(sessionId: string, accessToken?: string) {
   if (!isProSessionId(sessionId) || !accessToken || !/^[a-f0-9]{64}$/.test(accessToken)) throw new ProError('checkout_not_owned', 401)
   const session = await proStripeRequest<ProCheckout>(`/checkout/sessions/${sessionId}`)
-  if (session.mode !== 'subscription' || session.metadata?.wml_product !== 'wml-pro' ||
+  if ((session.mode !== 'subscription' && !(session.mode === 'setup' && session.metadata?.wml_campaign === PRO_TRIAL_CAMPAIGN)) || session.metadata?.wml_product !== 'wml-pro' ||
       session.metadata.wml_access_hash !== proHash(accessToken)) throw new ProError('checkout_not_owned', 401)
+  if (session.mode === 'setup') session.subscription = session.metadata.wml_subscription_id || null
   return session
 }
 
 export function requirePaidCheckout(session: ProCheckout) {
-  if (session.status !== 'complete' || session.payment_status !== 'paid' || !session.subscription || !session.customer) {
+  if (session.metadata?.wml_trial_rejected) throw new ProError(session.metadata.wml_trial_rejected, 409)
+  const trialSetup = session.mode === 'setup' && session.metadata?.wml_campaign === PRO_TRIAL_CAMPAIGN && session.metadata.wml_subscription_id === session.subscription
+  if (session.status !== 'complete' || (!trialSetup && session.payment_status !== 'paid') || !session.subscription || !session.customer) {
     throw new ProError('payment_pending', 409)
   }
 }
@@ -191,8 +207,19 @@ export async function paidProEntitlement(subscription: ProSubscription, now = Da
   // Existing subscriptions keep their original immutable Stripe Price.
   // New checkouts are checked against the current amount in resolveProPrice.
   if (!isProPrice(item.price, validatedPlan, expectedId, false)) throw new ProError('pro_price_mismatch')
-  if (item.quantity !== 1 || subscription.metadata.wml_revoked === 'true' || !['active', 'past_due'].includes(subscription.status)) {
+  if (item.quantity !== 1 || subscription.metadata.wml_revoked === 'true' || !['active', 'past_due', 'trialing'].includes(subscription.status)) {
     throw new ProError('license_inactive', 403)
+  }
+  if (subscription.status === 'trialing') {
+    const started = Number(subscription.metadata.wml_trial_started)
+    const end = subscription.trial_end ?? 0
+    if (subscription.metadata.wml_campaign !== PRO_TRIAL_CAMPAIGN || !isProPromotionDate(started * 1000) ||
+        !Number.isInteger(started) || end !== started + PRO_TRIAL_SECONDS) throw new ProError('license_inactive', 403)
+    const paidUntil = Math.min(end, subscription.current_period_end, subscription.cancel_at || Infinity)
+    if (!Number.isFinite(paidUntil) || paidUntil * 1000 <= now) throw new ProError('license_inactive', 403)
+    const invoice = typeof subscription.latest_invoice === 'object' ? subscription.latest_invoice : null
+    if (!invoice || invoice.subscription !== subscription.id) throw new ProError('payment_pending', 409)
+    return { plan: validatedPlan, paidUntil, subscription, invoice, trial: true }
   }
   let invoice = typeof subscription.latest_invoice === 'object' ? subscription.latest_invoice : null
   if (!invoice?.paid || invoice.status !== 'paid') {
@@ -227,7 +254,7 @@ export async function paidProEntitlement(subscription: ProSubscription, now = Da
       throw new ProError('license_revoked', 403)
     }
   }
-  return { plan: validatedPlan, paidUntil, subscription, invoice }
+  return { plan: validatedPlan, paidUntil, subscription, invoice, trial: false }
 }
 
 export async function bindProDevice(subscription: ProSubscription, deviceId: string, activationId: string) {
@@ -333,6 +360,7 @@ export async function deliverPaidProInvoice(subscriptionId: string, invoiceId: s
     await sendPaidProLicenseEmail({
       email: customer.email ?? '', plan, paidUntil,
       license: makeProLicense({ subscriptionId, plan, issuedAt: subscription.created, paidUntil }),
+      purpose: entitlement.trial ? 'trial' : 'renewal', locale: subscription.metadata.wml_locale === 'en' ? 'en' : 'es',
     })
     // Mark only after Brevo accepts the message, so Stripe can retry on failure.
     await proStripeRequest(`/subscriptions/${subscriptionId}`, new URLSearchParams({
@@ -347,6 +375,7 @@ export async function ensurePaidProBrevoList(
   customerEmail?: string,
 ) {
   const { subscription } = entitlement
+  if (entitlement.trial) return
   const listId = proBrevoListId()
   if (subscription.metadata.wml_brevo_pro_list_id === String(listId)) return
   const email = customerEmail ?? (await proStripeRequest<{ email: string | null }>(

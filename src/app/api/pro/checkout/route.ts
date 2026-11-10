@@ -10,6 +10,9 @@ import { createProCheckout, ensurePaidProBrevoList, ensureProPortal, existingPro
 import { makeProLicense } from '@/lib/proLicense'
 import { sendPaidProLicenseEmail } from '@/lib/proEmail'
 import { proApiError } from '@/lib/proApi'
+import { proPromotionStatus } from '@/lib/proPromotionServer'
+import { PRO_TRIAL_CAMPAIGN } from '@/lib/proPromotion'
+import { createProTrialCheckout } from '@/lib/proTrialStripe'
 
 export const runtime = 'nodejs'
 
@@ -18,14 +21,15 @@ export async function GET() {
     monthly: PRO_PLANS.monthly.amount,
     annual: PRO_PLANS.annual.amount,
     priceVersion: PRO_PRICE_LOOKUP_VERSION,
+    promotion: proPromotionStatus(),
   }, { headers: { 'Cache-Control': 'no-store' } })
 }
 
 export async function POST(request: Request) {
-  let body: { email?: string; plan?: string; locale?: string; acceptedTerms?: boolean }
+  let body: { email?: string; plan?: string; locale?: string; acceptedTerms?: boolean; promotion?: string }
   try {
     body = await request.json()
-    validateJsonFields(body, { strings: ['email', 'plan', 'locale'] })
+    validateJsonFields(body, { strings: ['email', 'plan', 'locale', 'promotion'] })
   } catch { return NextResponse.json({ ok: false, error: 'invalid_json' }, { status: 400 }) }
   const email = body.email?.trim().toLowerCase()
   if (!email || !isValidEmailAddress(email) || (body.plan !== 'monthly' && body.plan !== 'annual') || body.acceptedTerms !== true) {
@@ -59,7 +63,11 @@ export async function POST(request: Request) {
     const jar = await cookies()
     const existing = jar.get(PRO_CHECKOUT_COOKIE)?.value
     const accessToken = existing && /^[a-f0-9]{64}$/.test(existing) ? existing : randomBytes(32).toString('hex')
-    const session = await createProCheckout({ email, plan: body.plan, locale: body.locale === 'en' ? 'en' : 'es', accessToken, origin })
+    if (body.promotion && body.promotion !== PRO_TRIAL_CAMPAIGN) {
+      return NextResponse.json({ ok: false, error: 'pro_trial_unavailable' }, { status: 409, headers: PRO_PRIVATE_HEADERS })
+    }
+    const createCheckout = body.promotion ? createProTrialCheckout : createProCheckout
+    const session = await createCheckout({ email, plan: body.plan, locale: body.locale === 'en' ? 'en' : 'es', accessToken, origin })
     if (!session.url || new URL(session.url).protocol !== 'https:' || new URL(session.url).hostname !== 'checkout.stripe.com') throw new Error('Invalid Stripe checkout URL')
     const response = NextResponse.json({ ok: true, url: session.url }, { headers: PRO_PRIVATE_HEADERS })
     response.cookies.set(PRO_CHECKOUT_COOKIE, accessToken, PRO_COOKIE_OPTIONS)

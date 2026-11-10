@@ -16,6 +16,9 @@ import { proCopy } from '@/lib/proCopy'
 import { WIDGET_DOWNLOAD_URL as DOWNLOAD_URL } from '@/lib/widgetDownload'
 import type { ProBillingPlan } from '@/lib/proConfig'
 import styles from './page.module.css'
+import ProPromotion from '@/components/ProPromotion'
+import { useProPromotion } from '@/hooks/useProPromotion'
+import { PRO_TRIAL_CAMPAIGN, proPromotionCopy } from '@/lib/proPromotion'
 
 type Platform = 'windows' | 'linux'
 type DialogMode = 'download' | 'mobile'
@@ -69,6 +72,10 @@ export default function DownloadPage() {
   const lang = useLocale()
   const t = downloadCopy[lang]
   const p = proCopy[lang]
+  const promotion = useProPromotion()
+  const promo = proPromotionCopy[lang]
+  const [trialIneligible, setTrialIneligible] = useState(false)
+  const trialOffered = promotion.active && !trialIneligible
   const [email, setEmail] = useState('')
   const [submitState, setSubmitState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [message, setMessage] = useState('')
@@ -85,6 +92,15 @@ export default function DownloadPage() {
   const [deviceType, setDeviceType] = useState<DeviceType>('unknown')
   const [downloadCount, setDownloadCount] = useState(BREVO_COUNT_FALLBACK)
   const canDownload = deviceType === 'computer'
+  const previousTrialOffer = useRef(trialOffered)
+
+  useEffect(() => {
+    if (previousTrialOffer.current !== trialOffered) {
+      setAcceptedWidgetTerms(false)
+      setSelectedPlatform(null)
+      previousTrialOffer.current = trialOffered
+    }
+  }, [trialOffered])
 
   useEffect(() => {
     const detectDevice = window.setTimeout(() => {
@@ -197,11 +213,20 @@ export default function DownloadPage() {
           plan: billingPlan,
           locale: lang,
           acceptedTerms: acceptedWidgetTerms,
+          promotion: trialOffered ? PRO_TRIAL_CAMPAIGN : undefined,
         }),
       })
       const payload = (await response.json()) as { ok?: boolean; url?: string; recovery?: boolean; error?: string }
 
       if (!response.ok || !payload.ok) {
+        if (payload.error === 'pro_trial_unavailable') {
+          setTrialIneligible(true)
+          setAcceptedWidgetTerms(false)
+          setSelectedPlatform(null)
+          setProRequestState('error')
+          setProMessage(promo.unavailable)
+          return
+        }
         throw new Error(payload.error || 'request_failed')
       }
       if (payload.recovery) {
@@ -263,6 +288,8 @@ export default function DownloadPage() {
             <div className="section-label">{t.eyebrow}</div>
             <h1>{t.title}</h1>
             <p className={styles.lead}>{t.lead}</p>
+
+            <ProPromotion lang={lang} remaining={promotion.remaining} variant="download" />
 
             <div className={styles.downloadForm}>
               <input
@@ -361,7 +388,7 @@ export default function DownloadPage() {
                           >
                             <strong>{t.proPlanTitle}</strong>
                             <span>{p.includesFree}</span>
-                            <b>{p.monthly} · {p.annual}</b>
+                            <b>{trialOffered ? <><s>{p.monthly} · {p.annual}</s><br />{promo.free} · {promo.days}</> : <>{p.monthly} · {p.annual}</>}</b>
                             <span className={styles.planFeatures}>
                               {p.features.map(feature => <span key={feature}>{feature}</span>)}
                             </span>
@@ -372,12 +399,12 @@ export default function DownloadPage() {
                             <div className={styles.billingGrid} role="group" aria-label={lang === 'es' ? 'Periodo de pago' : 'Billing period'}>
                               {(['monthly', 'annual'] as const).map(plan => (
                                 <button key={plan} type="button" className={`${styles.planButton} ${billingPlan === plan ? styles.planButtonActive : ''}`} onClick={() => setBillingPlan(plan)} aria-pressed={billingPlan === plan}>
-                                  <strong>{p[plan]}</strong>
+                                  <strong>{trialOffered ? <><s>{p[plan]}</s><br />{promo.free} · {promo.days}</> : p[plan]}</strong>
                                 </button>
                               ))}
                             </div>
                             <p>{p.annualSaving}</p>
-                            <p>{p.renewal}</p>
+                            <p>{trialOffered ? `${promo.after}: ${p[billingPlan]}. ${promo.terms}` : p.renewal}</p>
                             <p>{p.licenseConnection}</p>
                           </>
                         )}
@@ -405,7 +432,7 @@ export default function DownloadPage() {
                             }
                           }}
                         />
-                        <span>{t.consentCheckbox}</span>
+                        <span>{t.consentCheckbox}{selectedPlan === 'pro' && trialOffered ? ` ${promo.after}: ${p[billingPlan]}. ${promo.terms}` : ''}</span>
                       </label>
 
                       <div className={styles.requirementsBlock}>
@@ -473,7 +500,7 @@ export default function DownloadPage() {
                           type="button"
                           className={styles.downloadButton}
                           onClick={handleAcceptAndDownload}
-                          disabled={!acceptedWidgetTerms || selectedPlatform !== 'windows' || proRequestState === 'loading'}
+                          disabled={!acceptedWidgetTerms || selectedPlatform !== 'windows' || proRequestState === 'loading' || (selectedPlan === 'pro' && !promotion.ready)}
                           aria-busy={proRequestState === 'loading'}
                         >
                           <IconDownload />
@@ -481,7 +508,7 @@ export default function DownloadPage() {
                             {selectedPlan === 'pro'
                               ? proRequestState === 'loading'
                                 ? p.loading
-                                : `${p.checkout} · ${p[billingPlan]}`
+                                : trialOffered ? promo.checkout : `${p.checkout} · ${p[billingPlan]}`
                               : t.consentCta}
                           </span>
                         </button>
